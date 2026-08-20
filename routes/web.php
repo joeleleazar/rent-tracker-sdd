@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\DocumentoContratoController;
+use App\Models\Locacion;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -10,7 +11,7 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('dashboard', ['locaciones' => Locacion::orderBy('nombre')->get()]);
     })->name('dashboard');
 
     Route::get('/locaciones/{locacion}/contratos', [ContratoController::class, 'index'])->name('contratos.index');

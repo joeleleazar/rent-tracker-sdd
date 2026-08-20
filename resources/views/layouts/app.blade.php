@@ -22,6 +22,7 @@
 
                 @auth
                     <div class="flex flex-wrap items-center gap-4">
+                        <a href="{{ route('dashboard') }}" class="btn-senior-secundario">Locaciones</a>
                         <span class="text-lg text-gray-700">{{ Auth::user()->name }}</span>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
