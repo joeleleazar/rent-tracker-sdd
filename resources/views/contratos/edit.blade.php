@@ -65,6 +65,10 @@
                 </p>
             </div>
 
+            @include('contratos.partials.costos-fijos-contrato', ['contrato' => $contrato])
+
+            @include('contratos.partials.garantia-contrato', ['contrato' => $contrato])
+
             <div class="flex flex-wrap gap-4">
                 <x-primary-button>Guardar Cambios</x-primary-button>
                 <a href="{{ route('contratos.show', $contrato) }}" class="btn-senior-secundario">Cancelar</a>

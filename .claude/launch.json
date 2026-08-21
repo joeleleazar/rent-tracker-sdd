@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rent-tracker",
+      "runtimeExecutable": "C:\\Users\\joel5\\.config\\herd\\bin\\php.bat",
+      "runtimeArgs": ["artisan", "serve"],
+      "port": 8000
+    }
+  ]
+}

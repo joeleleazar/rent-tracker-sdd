@@ -62,6 +62,12 @@
                 <x-input-error :messages="$errors->get('estado')" class="mt-2" />
             </div>
 
+            @include('contratos.partials.costos-fijos-contrato', ['contrato' => null])
+
+            @include('contratos.partials.garantia-contrato', ['contrato' => null])
+
+            @include('contratos.partials.representantes-contrato', ['contrato' => null])
+
             <div class="flex flex-wrap gap-4">
                 <x-primary-button>Guardar Contrato</x-primary-button>
                 <a href="{{ route('contratos.index', $locacion) }}" class="btn-senior-secundario">Cancelar</a>
