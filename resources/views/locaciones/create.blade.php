@@ -1,14 +1,14 @@
-<x-app-layout>
+<x-layouts.app-bootstrap>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-900">
+        <h2 class="fs-2 fw-bold mb-0">
             Nueva Locación
         </h2>
     </x-slot>
 
-    <div class="max-w-2xl">
+    <div class="col-12 col-lg-8" style="max-width: 42rem;">
         @if ($errors->any())
-            <x-mensaje-alerta tipo="error" class="mb-6">
-                <ul class="list-disc space-y-1 pl-6">
+            <x-mensaje-alerta tipo="error" class="mb-4">
+                <ul class="mb-0 ps-3">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -16,7 +16,7 @@
             </x-mensaje-alerta>
         @endif
 
-        <form method="POST" action="{{ route('locaciones.store') }}" class="space-y-6">
+        <form method="POST" action="{{ route('locaciones.store') }}" class="d-flex flex-column gap-4">
             @csrf
 
             <div>
@@ -39,13 +39,13 @@
 
             <div>
                 <x-input-label for="descripcion" value="Descripción" />
-                <textarea id="descripcion" name="descripcion" class="campo-senior" rows="3" required>{{ old('descripcion') }}</textarea>
+                <textarea id="descripcion" name="descripcion" class="form-control form-control-lg" rows="3" required>{{ old('descripcion') }}</textarea>
                 <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
             </div>
 
             <div>
                 <x-input-label for="locacion_padre_id" value="Locación padre (opcional)" />
-                <select id="locacion_padre_id" name="locacion_padre_id" class="campo-senior">
+                <select id="locacion_padre_id" name="locacion_padre_id" class="form-select form-select-lg">
                     <option value="">Ninguna (locación raíz)</option>
                     @foreach ($locaciones as $opcion)
                         <option value="{{ $opcion->id }}" @selected(old('locacion_padre_id') == $opcion->id)>
@@ -56,16 +56,16 @@
                 <x-input-error :messages="$errors->get('locacion_padre_id')" class="mt-2" />
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="form-check d-flex align-items-center gap-2 ps-0">
                 <input type="hidden" name="es_alquilable" value="0">
-                <input type="checkbox" id="es_alquilable" name="es_alquilable" value="1" class="h-6 w-6" @checked(old('es_alquilable'))>
-                <x-input-label for="es_alquilable" value="Es alquilable" class="!mb-0" />
+                <input type="checkbox" id="es_alquilable" name="es_alquilable" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('es_alquilable'))>
+                <label for="es_alquilable" class="form-check-label fs-5 fw-semibold">Es alquilable</label>
             </div>
 
-            <div class="flex flex-wrap gap-4">
+            <div class="d-flex flex-wrap gap-3">
                 <x-primary-button>Guardar Locación</x-primary-button>
-                <a href="{{ route('locaciones.index') }}" class="btn-senior-secundario">Cancelar</a>
+                <a href="{{ route('locaciones.index') }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
             </div>
         </form>
     </div>
-</x-app-layout>
+</x-layouts.app-bootstrap>

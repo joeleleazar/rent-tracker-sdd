@@ -1,3 +1,4 @@
 @props(['disabled' => false])
 
-<input @disabled($disabled) {{ $attributes->merge(['class' => 'campo-senior']) }}>
+{{-- Dual Tailwind/Bootstrap: ver nota en components/mensaje-alerta.blade.php --}}
+<input @disabled($disabled) {{ $attributes->merge(['class' => 'form-control form-control-lg']) }}>

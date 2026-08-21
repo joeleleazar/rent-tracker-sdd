@@ -1,12 +1,18 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
-import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/recibo-comprobante.js'],
+            input: [
+                'resources/js/recibo-comprobante.js',
+                'resources/css/bootstrap.scss',
+                'resources/js/bootstrap.js',
+                'resources/js/representantes-contrato.js',
+                'resources/js/galeria-documentos.js',
+                'resources/js/historial-consumo-medidor.js',
+            ],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
@@ -14,7 +20,6 @@ export default defineConfig({
                 }),
             ],
         }),
-        tailwindcss(),
     ],
     server: {
         watch: {

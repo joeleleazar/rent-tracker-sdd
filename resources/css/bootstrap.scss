@@ -1,0 +1,85 @@
+// Bootstrap 5.3 personalizado para los estándares Senior-First del proyecto
+// (Constitución, Principio III), horneados en las variables Sass de Bootstrap
+// ANTES de importar su fuente, en vez de sobreescribir clase por clase.
+//
+// Ver specs/010-migracion-interfaz-bootstrap/research.md §1 para el detalle
+// de esta decisión y sus alternativas descartadas.
+
+// -----------------------------------------------------------------------
+// 1. Tipografía base: 18px (en vez de los 16px por defecto de Bootstrap).
+//    Al ser $font-size-base (en rem, relativo a la raíz de 16px del
+//    navegador), todos los tamaños relativos (h1-h6, small, lead, etc.)
+//    escalan proporcionalmente sin overrides dispersos.
+// -----------------------------------------------------------------------
+$font-size-base: 1.125rem; // 18px
+
+// -----------------------------------------------------------------------
+// 2. Paleta de alto contraste (mínimo 4.5:1), tomada de los mismos tonos ya
+//    validados en resources/css/app.css (Tailwind blue-800/900,
+//    green-800/900, red-800/900, gray-*, amber-800 para "warning").
+// -----------------------------------------------------------------------
+$primary: #1e40af; // blue-800
+$secondary: #374151; // gray-700
+$success: #166534; // green-800
+$danger: #991b1b; // red-800
+$warning: #92400e; // amber-800 (más oscuro que el amarillo por defecto de Bootstrap, para mantener contraste con texto blanco)
+$info: #0c4a6e; // sky-800
+$light: #f9fafb; // gray-50
+$dark: #111827; // gray-900
+
+$body-bg: #f9fafb;
+$body-color: #111827;
+$border-color: #d1d5db; // gray-300, mismo tono ya usado en los bordes de tarjetas actuales
+
+// Bordes más gruesos (2px) en toda la librería: el diseño Senior-First actual
+// ya usa `border-2` en tarjetas, botones y campos por su mayor visibilidad.
+$border-width: 2px;
+
+// -----------------------------------------------------------------------
+// 3. Área táctil mínima de 48x48px en botones y campos de formulario
+//    (`.btn`, `.btn-lg`, `.form-control`, `.form-control-lg`, `.form-select`).
+//    Con $font-size-base en 18px (line-height 1.5 => 27px de contenido),
+//    estos paddings garantizan una altura total >= 48px incluso en el
+//    tamaño "normal" (no solo `-lg`).
+// -----------------------------------------------------------------------
+$input-btn-padding-y: .75rem;
+$input-btn-padding-x: 1.25rem;
+$input-btn-font-size: $font-size-base;
+
+$input-btn-padding-y-lg: .875rem;
+$input-btn-padding-x-lg: 1.75rem;
+$input-btn-font-size-lg: $font-size-base;
+
+$input-btn-padding-y-sm: .5rem;
+$input-btn-padding-x-sm: 1rem;
+
+// Foco visible y grueso (equivalente al focus-visible:outline-4 actual).
+$focus-ring-width: .25rem;
+$focus-ring-opacity: .5;
+
+// Bootstrap reduce el tamaño de letra de varios elementos secundarios
+// (badges, texto de ayuda de formularios, mensajes de error, `<small>`) a
+// ~0.75-0.875em por defecto. El estándar Senior-First (FR-002) exige NUNCA
+// bajar de 18px en ningún texto visible, así que se igualan estas variables
+// a 1em (= $font-size-base) en vez de dejarlas reducir el tamaño relativo.
+$small-font-size: 1em;
+$badge-font-size: 1em;
+$form-text-font-size: 1em;
+$form-feedback-font-size: 1em;
+$font-size-sm: $font-size-base;
+
+// -----------------------------------------------------------------------
+// 4. Confirmación explícita: los modales de confirmación (borrado, cambio de
+//    estado) usan el `Modal` nativo de Bootstrap; ligero refuerzo visual del
+//    encabezado para separarlo claramente del cuerpo.
+// -----------------------------------------------------------------------
+$modal-content-border-width: 2px;
+$modal-header-border-width: 2px;
+$modal-footer-border-width: 2px;
+
+// -----------------------------------------------------------------------
+// Import de Bootstrap (fuente Sass completa, no el CSS precompilado) — las
+// variables de arriba se propagan a todos sus componentes.
+// -----------------------------------------------------------------------
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons.css";

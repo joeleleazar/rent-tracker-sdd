@@ -1,5 +1,6 @@
 @props(['value'])
 
-<label {{ $attributes->merge(['class' => 'etiqueta-senior']) }}>
+{{-- Dual Tailwind/Bootstrap: ver nota en components/mensaje-alerta.blade.php --}}
+<label {{ $attributes->merge(['class' => 'form-label fw-semibold']) }}>
     {{ $value ?? $slot }}
 </label>

@@ -1,49 +1,51 @@
-<x-app-layout>
+<x-layouts.app-bootstrap>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-900">
+        <h2 class="fs-2 fw-bold mb-0">
             Historial de Contratos — {{ $locacion->nombre }}
         </h2>
     </x-slot>
 
-    <div class="max-w-3xl space-y-6">
-        @if (session('mensaje'))
-            <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
-        @endif
+    <div class="col-12 col-lg-9" style="max-width: 48rem;">
+        <div class="d-flex flex-column gap-3">
+            @if (session('mensaje'))
+                <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
+            @endif
 
-        <a href="{{ route('contratos.create', $locacion) }}" class="btn-senior-primario inline-flex w-fit">
-            Registrar Nuevo Contrato
-        </a>
+            <a href="{{ route('contratos.create', $locacion) }}" class="btn btn-primary btn-lg align-self-start">
+                Registrar Nuevo Contrato
+            </a>
 
-        @if ($contratos->isEmpty())
-            <p class="text-lg text-gray-700">Esta locación todavía no tiene contratos registrados.</p>
-        @else
-            <ul class="space-y-4">
-                @foreach ($contratos as $contrato)
-                    <li class="rounded-md border-2 {{ $contrato->estado === 'activo' ? 'border-green-800 bg-green-50' : 'border-gray-300 bg-white' }} p-6">
-                        <div class="flex flex-wrap items-center justify-between gap-4">
-                            <div>
-                                <p class="text-lg font-bold text-gray-900">Contrato #{{ $contrato->id }}</p>
-                                <p class="text-lg text-gray-700">
-                                    {{ $contrato->fecha_inicio->format('d/m/Y') }} — {{ $contrato->fecha_fin->format('d/m/Y') }}
-                                </p>
-                                <p class="text-lg text-gray-700">Inquilino: {{ $contrato->inquilino->nombre }}</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                @if ($contrato->estado === 'activo')
-                                    <span class="rounded-md border-2 border-green-800 bg-green-100 px-4 py-2 text-lg font-bold text-green-900">
-                                        Activo
-                                    </span>
-                                @else
-                                    <span class="rounded-md border-2 border-gray-700 bg-gray-100 px-4 py-2 text-lg font-semibold text-gray-900">
-                                        {{ ucfirst($contrato->estado) }}
-                                    </span>
-                                @endif
-                                <a href="{{ route('contratos.show', $contrato) }}" class="btn-senior-secundario">Ver Detalle</a>
+            @if ($contratos->isEmpty())
+                <p class="fs-5">Esta locación todavía no tiene contratos registrados.</p>
+            @else
+                <div class="d-flex flex-column gap-3">
+                    @foreach ($contratos as $contrato)
+                        <div class="card {{ $contrato->estado === 'activo' ? 'border-success' : '' }}">
+                            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div>
+                                    <p class="fs-5 fw-bold mb-0">Contrato #{{ $contrato->id }}</p>
+                                    <p class="fs-5 mb-0">
+                                        {{ $contrato->fecha_inicio->format('d/m/Y') }} — {{ $contrato->fecha_fin->format('d/m/Y') }}
+                                    </p>
+                                    <p class="fs-5 mb-0">Inquilino: {{ $contrato->inquilino->nombre }}</p>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if ($contrato->estado === 'activo')
+                                        <span class="badge text-bg-success fs-6">
+                                            Activo
+                                        </span>
+                                    @else
+                                        <span class="badge text-bg-secondary fs-6">
+                                            {{ ucfirst($contrato->estado) }}
+                                        </span>
+                                    @endif
+                                    <a href="{{ route('contratos.show', $contrato) }}" class="btn btn-outline-secondary btn-lg">Ver Detalle</a>
+                                </div>
                             </div>
                         </div>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
-</x-app-layout>
+</x-layouts.app-bootstrap>

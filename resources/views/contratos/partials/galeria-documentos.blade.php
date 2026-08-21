@@ -1,58 +1,66 @@
 @props(['contrato'])
 
-<div class="space-y-4">
+<div class="d-flex flex-column gap-3">
     @if ($contrato->documentos->first()->tipo_archivo === 'pdf')
         @php $documento = $contrato->documentos->first(); @endphp
-        <div class="flex flex-wrap items-center justify-between gap-4 rounded-md border-2 border-gray-300 p-4">
-            <a href="{{ route('contratos.documentos.show', [$contrato, $documento]) }}" target="_blank"
-               class="text-lg font-semibold text-blue-800 underline">
-                {{ $documento->nombre_archivo }}
-            </a>
-            <button type="button" class="btn-senior-peligro"
-                    x-data
-                    @click="$dispatch('abrir-confirmacion-borrado', {
-                        accion: '{{ route('contratos.documentos.destroy', [$contrato, $documento]) }}'
-                    })">
-                Eliminar
-            </button>
+        <div class="card">
+            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <a href="{{ route('contratos.documentos.show', [$contrato, $documento]) }}" target="_blank"
+                   class="fs-5 fw-semibold">
+                    {{ $documento->nombre_archivo }}
+                </a>
+                <button type="button" class="btn btn-danger btn-lg"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmar-borrado-documento"
+                        data-accion="{{ route('contratos.documentos.destroy', [$contrato, $documento]) }}">
+                    Eliminar
+                </button>
+            </div>
         </div>
     @else
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div class="row row-cols-2 row-cols-sm-3 g-3">
             @foreach ($contrato->documentos->sortBy('secuencia') as $documento)
-                <div class="space-y-2 rounded-md border-2 border-gray-300 p-3">
-                    <a href="{{ route('contratos.documentos.show', [$contrato, $documento]) }}" target="_blank">
-                        <img src="{{ route('contratos.documentos.show', [$contrato, $documento]) }}"
-                             alt="{{ $documento->nombre_archivo }}"
-                             class="h-40 w-full rounded-md object-cover">
-                    </a>
-                    <button type="button" class="btn-senior-peligro w-full"
-                            x-data
-                            @click="$dispatch('abrir-confirmacion-borrado', {
-                                accion: '{{ route('contratos.documentos.destroy', [$contrato, $documento]) }}'
-                            })">
-                        Eliminar
-                    </button>
+                <div class="col">
+                    <div class="card h-100">
+                        <a href="{{ route('contratos.documentos.show', [$contrato, $documento]) }}" target="_blank">
+                            <img src="{{ route('contratos.documentos.show', [$contrato, $documento]) }}"
+                                 alt="{{ $documento->nombre_archivo }}"
+                                 class="card-img-top object-fit-cover" style="height: 10rem;">
+                        </a>
+                        <div class="card-body p-2">
+                            <button type="button" class="btn btn-danger btn-lg w-100"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmar-borrado-documento"
+                                    data-accion="{{ route('contratos.documentos.destroy', [$contrato, $documento]) }}">
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
     @endif
 
-    {{-- Modal de confirmación de borrado (Senior-First: FR-005, borrado nunca implícito) --}}
-    <div x-data="{ visible: false, accion: '' }"
-         x-on:abrir-confirmacion-borrado.window="visible = true; accion = $event.detail.accion"
-         x-show="visible"
-         x-cloak
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-         style="display: none;">
-        <div class="w-full max-w-md space-y-6 rounded-md bg-white p-6" @click.outside="visible = false">
-            <h4 class="text-xl font-bold text-gray-900">¿Eliminar este documento?</h4>
-            <p class="text-lg text-gray-700">Esta acción no se puede deshacer.</p>
-            <form method="POST" :action="accion" class="flex flex-wrap gap-4">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-senior-peligro">Sí, Eliminar</button>
-                <button type="button" class="btn-senior-secundario" @click="visible = false">Cancelar</button>
-            </form>
-        </div>
-    </div>
+    {{--
+        Modal de confirmación de borrado, único y compartido por todas las
+        miniaturas de arriba (Senior-First: FR-005, borrado nunca implícito).
+        Ver resources/js/galeria-documentos.js para cómo se fija la acción
+        del formulario según el botón que abrió el modal.
+    --}}
+    <x-modal-bootstrap name="confirmar-borrado-documento" focusable>
+        <form method="POST">
+            @csrf
+            @method('DELETE')
+
+            <div class="modal-body p-4">
+                <h4 class="fs-4 fw-bold">¿Eliminar este documento?</h4>
+                <p class="fs-5 mb-0">Esta acción no se puede deshacer.</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar</button>
+            </div>
+        </form>
+    </x-modal-bootstrap>
 </div>

@@ -1,27 +1,27 @@
-<x-app-layout>
+<x-layouts.app-bootstrap>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-900">
+        <h2 class="fs-2 fw-bold mb-0">
             Locaciones
         </h2>
     </x-slot>
 
-    <div class="max-w-3xl space-y-6">
+    <div class="col-12 col-lg-9" style="max-width: 48rem;">
         @if ($locaciones->isEmpty())
-            <p class="text-lg text-gray-700">Todavía no hay locaciones registradas.</p>
+            <p class="fs-5">Todavía no hay locaciones registradas.</p>
         @else
-            <ul class="space-y-4">
+            <div class="d-flex flex-column gap-3">
                 @foreach ($locaciones as $locacion)
-                    <li class="rounded-md border-2 border-gray-300 bg-white p-6">
-                        <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="card">
+                        <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
                             <div>
-                                <p class="text-lg font-bold text-gray-900">{{ $locacion->nombre }}</p>
-                                <p class="text-lg text-gray-700">{{ $locacion->ubicacion_fisica }}</p>
+                                <p class="fs-5 fw-bold mb-0">{{ $locacion->nombre }}</p>
+                                <p class="fs-5 mb-0">{{ $locacion->ubicacion_fisica }}</p>
                             </div>
-                            <a href="{{ route('contratos.index', $locacion) }}" class="btn-senior-primario">Ver Contratos</a>
+                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-primary btn-lg">Ver Contratos</a>
                         </div>
-                    </li>
+                    </div>
                 @endforeach
-            </ul>
+            </div>
         @endif
     </div>
-</x-app-layout>
+</x-layouts.app-bootstrap>

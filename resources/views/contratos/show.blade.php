@@ -1,248 +1,276 @@
-<x-app-layout>
+<x-layouts.app-bootstrap>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-900">
+        <h2 class="fs-2 fw-bold mb-0">
             Contrato #{{ $contrato->id }} — {{ $contrato->locacion->nombre }}
         </h2>
     </x-slot>
 
-    <div class="max-w-2xl space-y-6">
-        @if (session('mensaje'))
-            <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
-        @endif
-
-        @if ($errors->any())
-            <x-mensaje-alerta tipo="error">
-                <ul class="list-disc space-y-1 pl-6">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </x-mensaje-alerta>
-        @endif
-
-        <div class="space-y-4 rounded-md border-2 border-gray-300 bg-white p-6">
-            <dl class="space-y-4">
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Locación</dt>
-                    <dd class="text-lg text-gray-900">{{ $contrato->locacion->nombre }}</dd>
-                </div>
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Inquilino</dt>
-                    <dd class="text-lg text-gray-900">{{ $contrato->inquilino->nombre }}</dd>
-                </div>
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Fecha de inicio</dt>
-                    <dd class="text-lg text-gray-900">{{ $contrato->fecha_inicio->format('d/m/Y') }}</dd>
-                </div>
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Fecha de fin</dt>
-                    <dd class="text-lg text-gray-900">{{ $contrato->fecha_fin->format('d/m/Y') }}</dd>
-                </div>
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Monto de renta</dt>
-                    <dd class="text-lg text-gray-900">S/ {{ number_format((float) $contrato->monto_renta, 2) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Garantía Entregada</dt>
-                    <dd class="text-lg text-gray-900">
-                        @if (! $contrato->tieneGarantia())
-                            Sin garantía registrada
-                        @else
-                            S/ {{ number_format((float) $contrato->monto_garantia, 2) }}
-                            @if ($contrato->fecha_entrega_garantia)
-                                — entregada el {{ $contrato->fecha_entrega_garantia->format('d/m/Y') }}
-                            @endif
-                            @if ($contrato->medio_entrega_garantia)
-                                ({{ ucfirst($contrato->medio_entrega_garantia) }})
-                            @endif
-                            <span class="ml-2 rounded-md border-2 border-gray-700 bg-gray-100 px-2 py-1 text-sm font-bold">
-                                {{ $contrato->garantiaResuelta() ? 'Resuelta' : 'Entregada' }}
-                            </span>
-                        @endif
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-lg font-semibold text-gray-700">Estado</dt>
-                    <dd class="text-lg text-gray-900">
-                        <span class="rounded-md border-2 border-gray-700 bg-gray-100 px-3 py-1 font-semibold">
-                            {{ ucfirst($contrato->estado) }}
-                        </span>
-                    </dd>
-                </div>
-            </dl>
-
-            <div class="flex flex-wrap gap-4 pt-2">
-                <a href="{{ route('contratos.edit', $contrato) }}" class="btn-senior-primario">Editar Contrato</a>
-                <a href="{{ route('contratos.index', $contrato->locacion) }}" class="btn-senior-secundario">Ver Historial</a>
-                <a href="{{ route('locaciones.recibos.index', $contrato->locacion) }}" class="btn-senior-secundario">Ver Recibos</a>
-                <a href="{{ route('locaciones.lecturas.index', $contrato->locacion) }}" class="btn-senior-secundario">Ver Lecturas de Medidor</a>
-            </div>
-        </div>
-
-        <div class="space-y-4 rounded-md border-2 border-gray-300 bg-white p-6">
-            <h3 class="text-xl font-bold text-gray-900">Costos Fijos de Referencia</h3>
-            <p class="text-lg text-gray-700">
-                Estos valores se usan como referencia inicial editable al generar un recibo; no afectan a recibos ya emitidos.
-            </p>
-
-            <form method="POST" action="{{ route('contratos.costos.update', $contrato) }}" class="space-y-4">
-                @csrf
-                @method('PATCH')
-
-                <div>
-                    <x-input-label for="costo_agua" value="Costo de Agua" />
-                    <x-text-input id="costo_agua" name="costo_agua" type="number" step="0.01" min="0" :value="old('costo_agua', $contrato->costo_agua)" />
-                    <x-input-error :messages="$errors->get('costo_agua')" class="mt-2" />
-                </div>
-
-                <div>
-                    <x-input-label for="costo_luz" value="Costo de Luz" />
-                    <x-text-input id="costo_luz" name="costo_luz" type="number" step="0.01" min="0" :value="old('costo_luz', $contrato->costo_luz)" />
-                    <x-input-error :messages="$errors->get('costo_luz')" class="mt-2" />
-                </div>
-
-                <div>
-                    <x-input-label for="costo_pasadizo" value="Costo de Pasadizo" />
-                    <x-text-input id="costo_pasadizo" name="costo_pasadizo" type="number" step="0.01" min="0" :value="old('costo_pasadizo', $contrato->costo_pasadizo)" />
-                    <x-input-error :messages="$errors->get('costo_pasadizo')" class="mt-2" />
-                </div>
-
-                <div>
-                    <x-input-label for="costo_seguridad" value="Costo de Seguridad" />
-                    <x-text-input id="costo_seguridad" name="costo_seguridad" type="number" step="0.01" min="0" :value="old('costo_seguridad', $contrato->costo_seguridad)" />
-                    <x-input-error :messages="$errors->get('costo_seguridad')" class="mt-2" />
-                </div>
-
-                <x-primary-button>Guardar Costos del Contrato</x-primary-button>
-            </form>
-        </div>
-
-        @if ($contrato->tieneGarantia())
-            <div class="space-y-4 rounded-md border-2 border-gray-300 bg-white p-6">
-                <h3 class="text-xl font-bold text-gray-900">Resolución de Garantía</h3>
-
-                @if ($contrato->garantiaResuelta())
-                    <dl class="space-y-2">
-                        <div>
-                            <dt class="text-lg font-semibold text-gray-700">Monto Devuelto</dt>
-                            <dd class="text-lg text-gray-900">S/ {{ number_format((float) $contrato->monto_devuelto_garantia, 2) }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-lg font-semibold text-gray-700">Monto Retenido</dt>
-                            <dd class="text-lg text-gray-900">S/ {{ number_format((float) $contrato->monto_retenido_garantia, 2) }}</dd>
-                        </div>
-                        @if ($contrato->motivo_retencion_garantia)
-                            <div>
-                                <dt class="text-lg font-semibold text-gray-700">Motivo de Retención</dt>
-                                <dd class="text-lg text-gray-900">{{ $contrato->motivo_retencion_garantia }}</dd>
-                            </div>
-                        @endif
-                        <div>
-                            <dt class="text-lg font-semibold text-gray-700">Fecha de Resolución</dt>
-                            <dd class="text-lg text-gray-900">{{ $contrato->fecha_resolucion_garantia->format('d/m/Y') }}</dd>
-                        </div>
-                    </dl>
-
-                    <x-secondary-button
-                        type="button"
-                        x-data=""
-                        x-on:click.prevent="$dispatch('open-modal', 'corregir-resolucion-garantia')"
-                    >Corregir Resolución de Garantía</x-secondary-button>
-
-                    <x-modal name="corregir-resolucion-garantia" focusable>
-                        <form method="POST" action="{{ route('contratos.garantia.resolucion', $contrato) }}" class="space-y-4 p-6">
-                            @csrf
-                            <input type="hidden" name="confirmado" value="1">
-
-                            <h2 class="text-xl font-bold text-gray-900">¿Corregir la resolución de garantía ya registrada?</h2>
-                            <p class="text-lg text-gray-700">Esta acción reemplazará los montos y el motivo ya guardados.</p>
-
-                            <div>
-                                <x-input-label for="monto_devuelto_garantia_modal" value="Monto Devuelto" />
-                                <x-text-input id="monto_devuelto_garantia_modal" name="monto_devuelto_garantia" type="number" step="0.01" min="0" :value="old('monto_devuelto_garantia', $contrato->monto_devuelto_garantia)" required />
-                            </div>
-
-                            <div>
-                                <x-input-label for="monto_retenido_garantia_modal" value="Monto Retenido" />
-                                <x-text-input id="monto_retenido_garantia_modal" name="monto_retenido_garantia" type="number" step="0.01" min="0" :value="old('monto_retenido_garantia', $contrato->monto_retenido_garantia)" required />
-                            </div>
-
-                            <div>
-                                <x-input-label for="motivo_retencion_garantia_modal" value="Motivo de Retención (obligatorio si hay retención)" />
-                                <textarea id="motivo_retencion_garantia_modal" name="motivo_retencion_garantia" class="campo-senior">{{ old('motivo_retencion_garantia', $contrato->motivo_retencion_garantia) }}</textarea>
-                            </div>
-
-                            <div class="flex justify-end gap-4 pt-2">
-                                <x-secondary-button type="button" x-on:click="$dispatch('close')">No, cancelar</x-secondary-button>
-                                <x-primary-button>Sí, corregir resolución</x-primary-button>
-                            </div>
-                        </form>
-                    </x-modal>
-                @else
-                    <p class="text-lg text-gray-700">
-                        Registre cómo se resolvió la garantía de S/ {{ number_format((float) $contrato->monto_garantia, 2) }} al finalizar el contrato.
-                    </p>
-
-                    <form method="POST" action="{{ route('contratos.garantia.resolucion', $contrato) }}" class="space-y-4">
-                        @csrf
-
-                        <div>
-                            <x-input-label for="monto_devuelto_garantia" value="Monto Devuelto" />
-                            <x-text-input id="monto_devuelto_garantia" name="monto_devuelto_garantia" type="number" step="0.01" min="0" :value="old('monto_devuelto_garantia')" required />
-                            <x-input-error :messages="$errors->get('monto_devuelto_garantia')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="monto_retenido_garantia" value="Monto Retenido" />
-                            <x-text-input id="monto_retenido_garantia" name="monto_retenido_garantia" type="number" step="0.01" min="0" :value="old('monto_retenido_garantia', 0)" required />
-                            <x-input-error :messages="$errors->get('monto_retenido_garantia')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="motivo_retencion_garantia" value="Motivo de Retención (obligatorio si hay retención)" />
-                            <textarea id="motivo_retencion_garantia" name="motivo_retencion_garantia" class="campo-senior">{{ old('motivo_retencion_garantia') }}</textarea>
-                            <x-input-error :messages="$errors->get('motivo_retencion_garantia')" class="mt-2" />
-                        </div>
-
-                        <x-primary-button>Registrar Resolución de Garantía</x-primary-button>
-                    </form>
-                @endif
-            </div>
-        @endif
-
-        @include('contratos.partials.representantes-contrato', ['contrato' => $contrato])
-
-        <div class="space-y-4 rounded-md border-2 border-gray-300 bg-white p-6">
-            <h3 class="text-xl font-bold text-gray-900">Documentos del Contrato</h3>
-
-            @php
-                $tienePdf = $contrato->documentos->contains('tipo_archivo', 'pdf');
-                $totalImagenes = $contrato->documentos->where('tipo_archivo', 'imagen')->count();
-            @endphp
-
-            @if ($contrato->documentos->isNotEmpty())
-                @include('contratos.partials.galeria-documentos', ['contrato' => $contrato])
+    <div class="col-12 col-lg-8" style="max-width: 42rem;">
+        <div class="d-flex flex-column gap-3">
+            @if (session('mensaje'))
+                <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
             @endif
 
-            @unless ($tienePdf)
-                <form method="POST" action="{{ route('contratos.documentos.store', $contrato) }}" enctype="multipart/form-data" class="space-y-4">
-                    @csrf
-                    <div class="flex flex-wrap gap-4">
-                        @if ($totalImagenes === 0)
-                            <label class="btn-senior-primario cursor-pointer">
-                                Seleccionar PDF del Contrato
-                                <input type="file" name="archivo_pdf" accept="application/pdf" class="hidden" onchange="this.form.requestSubmit()">
-                            </label>
-                        @endif
-                        @if ($totalImagenes < 10)
-                            <label class="btn-senior-primario cursor-pointer">
-                                Subir Foto de Página
-                                <input type="file" name="archivo_imagenes[]" accept="image/jpeg,image/png" multiple class="hidden" onchange="this.form.requestSubmit()">
-                            </label>
+            @if ($errors->any())
+                <x-mensaje-alerta tipo="error">
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </x-mensaje-alerta>
+            @endif
+
+            <div class="card">
+                <div class="card-body d-flex flex-column gap-3">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 fs-5 fw-semibold">Locación</dt>
+                        <dd class="col-sm-8 fs-5">{{ $contrato->locacion->nombre }}</dd>
+
+                        <dt class="col-sm-4 fs-5 fw-semibold">Inquilino</dt>
+                        <dd class="col-sm-8 fs-5">{{ $contrato->inquilino->nombre }}</dd>
+
+                        <dt class="col-sm-4 fs-5 fw-semibold">Fecha de inicio</dt>
+                        <dd class="col-sm-8 fs-5">{{ $contrato->fecha_inicio->format('d/m/Y') }}</dd>
+
+                        <dt class="col-sm-4 fs-5 fw-semibold">Fecha de fin</dt>
+                        <dd class="col-sm-8 fs-5">{{ $contrato->fecha_fin->format('d/m/Y') }}</dd>
+
+                        <dt class="col-sm-4 fs-5 fw-semibold">Monto de renta</dt>
+                        <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $contrato->monto_renta, 2) }}</dd>
+
+                        <dt class="col-sm-4 fs-5 fw-semibold">Garantía Entregada</dt>
+                        <dd class="col-sm-8 fs-5">
+                            @if (! $contrato->tieneGarantia())
+                                Sin garantía registrada
+                            @else
+                                S/ {{ number_format((float) $contrato->monto_garantia, 2) }}
+                                @if ($contrato->fecha_entrega_garantia)
+                                    — entregada el {{ $contrato->fecha_entrega_garantia->format('d/m/Y') }}
+                                @endif
+                                @if ($contrato->medio_entrega_garantia)
+                                    ({{ ucfirst($contrato->medio_entrega_garantia) }})
+                                @endif
+                                <span class="badge text-bg-secondary ms-2">
+                                    {{ $contrato->garantiaResuelta() ? 'Resuelta' : 'Entregada' }}
+                                </span>
+                            @endif
+                        </dd>
+
+                        <dt class="col-sm-4 fs-5 fw-semibold">Estado</dt>
+                        <dd class="col-sm-8 fs-5">
+                            <span class="badge text-bg-secondary fs-6">
+                                {{ ucfirst($contrato->estado) }}
+                            </span>
+                        </dd>
+                    </dl>
+
+                    <div class="d-flex flex-wrap gap-3 pt-2">
+                        <a href="{{ route('contratos.edit', $contrato) }}" class="btn btn-primary btn-lg">Editar Contrato</a>
+                        <a href="{{ route('contratos.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Historial</a>
+                        <a href="{{ route('locaciones.recibos.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Recibos</a>
+                        <a href="{{ route('locaciones.lecturas.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Lecturas de Medidor</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body d-flex flex-column gap-3">
+                    <h3 class="fs-4 fw-bold">Costos Fijos de Referencia</h3>
+                    <p class="fs-5 mb-0">
+                        Estos valores se usan como referencia inicial editable al generar un recibo; no afectan a recibos ya emitidos.
+                    </p>
+
+                    <form method="POST" action="{{ route('contratos.costos.update', $contrato) }}" class="d-flex flex-column gap-3">
+                        @csrf
+                        @method('PATCH')
+
+                        <div>
+                            <x-input-label for="costo_agua" value="Costo de Agua" />
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">S/</span>
+                                <x-text-input id="costo_agua" name="costo_agua" type="number" step="0.01" min="0" :value="old('costo_agua', $contrato->costo_agua)" />
+                            </div>
+                            <x-input-error :messages="$errors->get('costo_agua')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="costo_luz" value="Costo de Luz" />
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">S/</span>
+                                <x-text-input id="costo_luz" name="costo_luz" type="number" step="0.01" min="0" :value="old('costo_luz', $contrato->costo_luz)" />
+                            </div>
+                            <x-input-error :messages="$errors->get('costo_luz')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="costo_pasadizo" value="Costo de Pasadizo" />
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">S/</span>
+                                <x-text-input id="costo_pasadizo" name="costo_pasadizo" type="number" step="0.01" min="0" :value="old('costo_pasadizo', $contrato->costo_pasadizo)" />
+                            </div>
+                            <x-input-error :messages="$errors->get('costo_pasadizo')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="costo_seguridad" value="Costo de Seguridad" />
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">S/</span>
+                                <x-text-input id="costo_seguridad" name="costo_seguridad" type="number" step="0.01" min="0" :value="old('costo_seguridad', $contrato->costo_seguridad)" />
+                            </div>
+                            <x-input-error :messages="$errors->get('costo_seguridad')" class="mt-2" />
+                        </div>
+
+                        <x-primary-button class="align-self-start">Guardar Costos del Contrato</x-primary-button>
+                    </form>
+                </div>
+            </div>
+
+            @if ($contrato->tieneGarantia())
+                <div class="card">
+                    <div class="card-body d-flex flex-column gap-3">
+                        <h3 class="fs-4 fw-bold">Resolución de Garantía</h3>
+
+                        @if ($contrato->garantiaResuelta())
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4 fs-5 fw-semibold">Monto Devuelto</dt>
+                                <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $contrato->monto_devuelto_garantia, 2) }}</dd>
+
+                                <dt class="col-sm-4 fs-5 fw-semibold">Monto Retenido</dt>
+                                <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $contrato->monto_retenido_garantia, 2) }}</dd>
+
+                                @if ($contrato->motivo_retencion_garantia)
+                                    <dt class="col-sm-4 fs-5 fw-semibold">Motivo de Retención</dt>
+                                    <dd class="col-sm-8 fs-5">{{ $contrato->motivo_retencion_garantia }}</dd>
+                                @endif
+
+                                <dt class="col-sm-4 fs-5 fw-semibold">Fecha de Resolución</dt>
+                                <dd class="col-sm-8 fs-5">{{ $contrato->fecha_resolucion_garantia->format('d/m/Y') }}</dd>
+                            </dl>
+
+                            <x-secondary-button
+                                type="button"
+                                class="align-self-start"
+                                data-bs-toggle="modal"
+                                data-bs-target="#corregir-resolucion-garantia"
+                            >Corregir Resolución de Garantía</x-secondary-button>
+
+                            <x-modal-bootstrap name="corregir-resolucion-garantia" focusable>
+                                <form method="POST" action="{{ route('contratos.garantia.resolucion', $contrato) }}">
+                                    @csrf
+                                    <input type="hidden" name="confirmado" value="1">
+
+                                    <div class="modal-body p-4 d-flex flex-column gap-3">
+                                        <h2 class="fs-4 fw-bold">¿Corregir la resolución de garantía ya registrada?</h2>
+                                        <p class="fs-5 mb-0">Esta acción reemplazará los montos y el motivo ya guardados.</p>
+
+                                        <div>
+                                            <x-input-label for="monto_devuelto_garantia_modal" value="Monto Devuelto" />
+                                            <div class="input-group input-group-lg">
+                                                <span class="input-group-text">S/</span>
+                                                <x-text-input id="monto_devuelto_garantia_modal" name="monto_devuelto_garantia" type="number" step="0.01" min="0" :value="old('monto_devuelto_garantia', $contrato->monto_devuelto_garantia)" required />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <x-input-label for="monto_retenido_garantia_modal" value="Monto Retenido" />
+                                            <div class="input-group input-group-lg">
+                                                <span class="input-group-text">S/</span>
+                                                <x-text-input id="monto_retenido_garantia_modal" name="monto_retenido_garantia" type="number" step="0.01" min="0" :value="old('monto_retenido_garantia', $contrato->monto_retenido_garantia)" required />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <x-input-label for="motivo_retencion_garantia_modal" value="Motivo de Retención (obligatorio si hay retención)" />
+                                            <textarea id="motivo_retencion_garantia_modal" name="motivo_retencion_garantia" class="form-control form-control-lg">{{ old('motivo_retencion_garantia', $contrato->motivo_retencion_garantia) }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <x-secondary-button type="button" data-bs-dismiss="modal">No, cancelar</x-secondary-button>
+                                        <x-primary-button>Sí, corregir resolución</x-primary-button>
+                                    </div>
+                                </form>
+                            </x-modal-bootstrap>
+                        @else
+                            <p class="fs-5 mb-0">
+                                Registre cómo se resolvió la garantía de S/ {{ number_format((float) $contrato->monto_garantia, 2) }} al finalizar el contrato.
+                            </p>
+
+                            <form method="POST" action="{{ route('contratos.garantia.resolucion', $contrato) }}" class="d-flex flex-column gap-3">
+                                @csrf
+
+                                <div>
+                                    <x-input-label for="monto_devuelto_garantia" value="Monto Devuelto" />
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text">S/</span>
+                                        <x-text-input id="monto_devuelto_garantia" name="monto_devuelto_garantia" type="number" step="0.01" min="0" :value="old('monto_devuelto_garantia')" required />
+                                    </div>
+                                    <x-input-error :messages="$errors->get('monto_devuelto_garantia')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="monto_retenido_garantia" value="Monto Retenido" />
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text">S/</span>
+                                        <x-text-input id="monto_retenido_garantia" name="monto_retenido_garantia" type="number" step="0.01" min="0" :value="old('monto_retenido_garantia', 0)" required />
+                                    </div>
+                                    <x-input-error :messages="$errors->get('monto_retenido_garantia')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="motivo_retencion_garantia" value="Motivo de Retención (obligatorio si hay retención)" />
+                                    <textarea id="motivo_retencion_garantia" name="motivo_retencion_garantia" class="form-control form-control-lg">{{ old('motivo_retencion_garantia') }}</textarea>
+                                    <x-input-error :messages="$errors->get('motivo_retencion_garantia')" class="mt-2" />
+                                </div>
+
+                                <x-primary-button class="align-self-start">Registrar Resolución de Garantía</x-primary-button>
+                            </form>
                         @endif
                     </div>
-                </form>
-            @endunless
+                </div>
+            @endif
+
+            @include('contratos.partials.representantes-contrato', ['contrato' => $contrato])
+
+            <div class="card">
+                <div class="card-body d-flex flex-column gap-3">
+                    <h3 class="fs-4 fw-bold">Documentos del Contrato</h3>
+
+                    @php
+                        $tienePdf = $contrato->documentos->contains('tipo_archivo', 'pdf');
+                        $totalImagenes = $contrato->documentos->where('tipo_archivo', 'imagen')->count();
+                    @endphp
+
+                    @if ($contrato->documentos->isNotEmpty())
+                        @include('contratos.partials.galeria-documentos', ['contrato' => $contrato])
+                    @endif
+
+                    @unless ($tienePdf)
+                        <form method="POST" action="{{ route('contratos.documentos.store', $contrato) }}" enctype="multipart/form-data" class="d-flex flex-column gap-3">
+                            @csrf
+                            <div class="d-flex flex-wrap gap-3">
+                                @if ($totalImagenes === 0)
+                                    <label class="btn btn-primary btn-lg mb-0" style="cursor: pointer;">
+                                        Seleccionar PDF del Contrato
+                                        <input type="file" name="archivo_pdf" accept="application/pdf" class="d-none" onchange="this.form.requestSubmit()">
+                                    </label>
+                                @endif
+                                @if ($totalImagenes < 10)
+                                    <label class="btn btn-primary btn-lg mb-0" style="cursor: pointer;">
+                                        Subir Foto de Página
+                                        <input type="file" name="archivo_imagenes[]" accept="image/jpeg,image/png" multiple class="d-none" onchange="this.form.requestSubmit()">
+                                    </label>
+                                @endif
+                            </div>
+                        </form>
+                    @endunless
+                </div>
+            </div>
         </div>
     </div>
-</x-app-layout>
+
+    @push('scripts')
+        @vite(['resources/js/representantes-contrato.js', 'resources/js/galeria-documentos.js'])
+    @endpush
+</x-layouts.app-bootstrap>
