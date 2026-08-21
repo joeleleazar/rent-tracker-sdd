@@ -96,7 +96,7 @@
 
                     <div class="d-flex flex-wrap gap-3">
                         <x-primary-button>Guardar Cambios del Recibo</x-primary-button>
-                        <a href="{{ route('recibos.show', $recibo) }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                        <a href="{{ route('recibos.show', $recibo) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
                     </div>
                 </div>
             </form>

@@ -72,7 +72,13 @@ class ContratoController extends Controller
                 },
             );
         } catch (ContratoSolapadoException $excepcion) {
-            return back()->withInput()->withErrors(['solapamiento' => $excepcion->getMessage()]);
+            // specs/012, FR-002: se adjunta el contrato en conflicto (ya calculado por
+            // la excepción) además del mensaje, para el modal de dos bloques — no
+            // cambia el código de redirección ni la clave 'solapamiento' ya cubiertos
+            // por tests (ver research.md §3). Se flashea un array plano (no el modelo
+            // Eloquent) porque la sesión serializa/deserializa objetos como arrays.
+            return back()->withInput()->withErrors(['solapamiento' => $excepcion->getMessage()])
+                ->with('contratoEnConflicto', $this->datosContratoEnConflicto($excepcion->contratoEnConflicto));
         } catch (ContratoSinRepresentantesException|RepresentantePrincipalInvalidoException $excepcion) {
             return back()->withInput()->withErrors(['representantes' => $excepcion->getMessage()]);
         }
@@ -122,7 +128,8 @@ class ContratoController extends Controller
                 fn () => $contrato->update($datos),
             );
         } catch (ContratoSolapadoException $excepcion) {
-            return back()->withInput()->withErrors(['solapamiento' => $excepcion->getMessage()]);
+            return back()->withInput()->withErrors(['solapamiento' => $excepcion->getMessage()])
+                ->with('contratoEnConflicto', $this->datosContratoEnConflicto($excepcion->contratoEnConflicto));
         }
 
         return redirect()->route('contratos.show', $contrato)
@@ -189,6 +196,25 @@ class ContratoController extends Controller
 
         return redirect()->route('contratos.show', $contrato)
             ->with('mensaje', 'Resolución de garantía registrada correctamente.');
+    }
+
+    /**
+     * Datos del contrato en conflicto para el modal de solapamiento (specs/012,
+     * FR-002). Se devuelve un array plano (no el modelo Eloquent) porque la
+     * sesión de Laravel serializa/deserializa objetos flasheados como arrays
+     * al pasar de una petición a la siguiente — ver research.md §3.
+     *
+     * @return array{fecha_inicio: string, fecha_fin: string, inquilino_nombre: string, monto_renta: string, contrato_id: int}
+     */
+    private function datosContratoEnConflicto(Contrato $contrato): array
+    {
+        return [
+            'contrato_id' => $contrato->id,
+            'fecha_inicio' => $contrato->fecha_inicio->format('d/m/Y'),
+            'fecha_fin' => $contrato->fecha_fin->format('d/m/Y'),
+            'inquilino_nombre' => $contrato->inquilino->nombre,
+            'monto_renta' => number_format((float) $contrato->monto_renta, 2),
+        ];
     }
 
     /**

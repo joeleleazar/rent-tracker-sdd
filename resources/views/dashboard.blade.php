@@ -17,7 +17,7 @@
                                 <p class="fs-5 fw-bold mb-0">{{ $locacion->nombre }}</p>
                                 <p class="fs-5 mb-0">{{ $locacion->ubicacion_fisica }}</p>
                             </div>
-                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-primary btn-lg">Ver Contratos</a>
+                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Contratos</a>
                         </div>
                     </div>
                 @endforeach

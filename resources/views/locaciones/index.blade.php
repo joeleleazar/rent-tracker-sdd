@@ -12,7 +12,7 @@
             @endif
 
             <div class="d-flex justify-content-end">
-                <a href="{{ route('locaciones.create') }}" class="btn btn-primary btn-lg">Nueva Locación</a>
+                <a href="{{ route('locaciones.create') }}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva Locación</a>
             </div>
 
             @if ($locaciones->isEmpty())
@@ -26,7 +26,7 @@
                                     <x-ruta-jerarquia-locacion :ruta="$locacion->rutaJerarquiaTruncada()" />
                                     <p class="fs-5 mb-0 mt-1">{{ $locacion->ubicacion_fisica }}</p>
                                 </div>
-                                <a href="{{ route('locaciones.show', $locacion) }}" class="btn btn-primary btn-lg">Ver Detalle</a>
+                                <a href="{{ route('locaciones.show', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-eye" aria-hidden="true"></i> Ver Detalle</a>
                             </div>
                         </div>
                     @endforeach

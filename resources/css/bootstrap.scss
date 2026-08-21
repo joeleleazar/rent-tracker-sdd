@@ -78,8 +78,55 @@ $modal-header-border-width: 2px;
 $modal-footer-border-width: 2px;
 
 // -----------------------------------------------------------------------
+// 5. Elevación visual (specs/011): sombras sutiles para dar profundidad a las
+//    tarjetas sin afectar contraste ni tamaño de texto, y un acento distintivo
+//    del proyecto (independiente de los colores semánticos de arriba).
+// -----------------------------------------------------------------------
+$box-shadow-sm: 0 .125rem .375rem rgba(17, 24, 39, .08);
+$box-shadow: 0 .375rem 1rem rgba(17, 24, 39, .1);
+$box-shadow-lg: 0 .75rem 2rem rgba(17, 24, 39, .12);
+
+$card-border-color: $border-color;
+
+// Acento distintivo del proyecto (usado puntualmente, ej. estado "activo" o
+// elementos destacados), sin reemplazar $primary/$success/$danger/$warning.
+$accent-rent-tracker: #0e7490; // teal-700, contraste ≥4.5:1 sobre blanco
+
+// -----------------------------------------------------------------------
+// 6. Escala de espaciado (specs/011): un poco más generosa que el default de
+//    Bootstrap entre secciones ($spacer * 4/5), ya que el espacio en blanco
+//    es la herramienta de jerarquía visual que menos tensiona contra
+//    Senior-First (no reduce texto ni contraste).
+// -----------------------------------------------------------------------
+$spacer: 1.05rem;
+$spacers: (
+    0: 0,
+    1: $spacer * .25,
+    2: $spacer * .5,
+    3: $spacer,
+    4: $spacer * 1.75,
+    5: $spacer * 3.25,
+);
+
+// -----------------------------------------------------------------------
 // Import de Bootstrap (fuente Sass completa, no el CSS precompilado) — las
 // variables de arriba se propagan a todos sus componentes.
 // -----------------------------------------------------------------------
 @import "bootstrap/scss/bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+
+// -----------------------------------------------------------------------
+// 7. Profundidad de tarjetas (specs/011): sombra sutil aplicada globalmente
+//    a `.card` en vez de agregarla vista por vista, para que toda tarjeta
+//    (actual y futura) la herede de forma consistente. `.card.border-success`
+//    (contrato activo, ver contratos/index.blade.php) conserva su borde de
+//    color además de la sombra, sin conflicto.
+// -----------------------------------------------------------------------
+.card {
+    box-shadow: $box-shadow-sm;
+    transition: box-shadow .15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: $box-shadow;
+}

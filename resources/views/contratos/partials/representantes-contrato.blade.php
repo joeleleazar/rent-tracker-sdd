@@ -118,10 +118,13 @@
             @if ($contrato->representantes->isEmpty())
                 <p class="fs-5 mb-0">Este contrato no tiene representantes asociados.</p>
             @else
-                <div class="d-flex flex-column gap-3">
+                {{-- Grid de tarjetas individuales (specs/012, FR-005): ancho mínimo
+                     consistente, dos por fila en pantallas medianas o más grandes. --}}
+                <div class="row g-3">
                     @foreach ($contrato->representantes as $representante)
-                        <div class="card">
-                            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="col-md-6" style="min-width: 200px;">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column gap-3">
                                 <div>
                                     <p class="fs-5 fw-semibold mb-0">
                                         {{ $representante->nombreCompleto() }}
@@ -137,7 +140,7 @@
                                         type="button"
                                         data-bs-toggle="modal"
                                         data-bs-target="#quitar-representante-{{ $representante->id }}"
-                                    >Quitar Representante</x-danger-button>
+                                    ><i class="bi bi-trash" aria-hidden="true"></i> Quitar Representante</x-danger-button>
 
                                     <x-modal-bootstrap name="quitar-representante-{{ $representante->id }}" focusable>
                                         <form method="POST" action="{{ route('contratos.representantes.destroy', [$contrato, $representante]) }}">
@@ -170,6 +173,7 @@
                                 @endif
                             </div>
                         </div>
+                        </div>
                     @endforeach
                 </div>
             @endif
@@ -178,7 +182,7 @@
                 type="button"
                 data-bs-toggle="modal"
                 data-bs-target="#agregar-representante"
-            >Agregar Otro Representante</x-primary-button>
+            ><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar Otro Representante</x-primary-button>
 
             <x-modal-bootstrap name="agregar-representante" focusable>
                 <form
@@ -223,7 +227,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <x-secondary-button type="button" data-bs-dismiss="modal">Cancelar</x-secondary-button>
+                        <x-secondary-button type="button" data-bs-dismiss="modal"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</x-secondary-button>
                         <x-primary-button>Guardar Representante</x-primary-button>
                     </div>
                 </form>

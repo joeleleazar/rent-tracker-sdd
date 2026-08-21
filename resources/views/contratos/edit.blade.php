@@ -6,11 +6,16 @@
     </x-slot>
 
     <div class="col-12 col-lg-8" style="max-width: 42rem;">
-        @if ($errors->any())
+        @php
+            $erroresGenericos = collect($errors->keys())->reject(fn ($campo) => $campo === 'solapamiento');
+        @endphp
+        @if ($erroresGenericos->isNotEmpty())
             <x-mensaje-alerta tipo="error" class="mb-4">
                 <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                    @foreach ($erroresGenericos as $campo)
+                        @foreach ($errors->get($campo) as $mensaje)
+                            <li>{{ $mensaje }}</li>
+                        @endforeach
                     @endforeach
                 </ul>
             </x-mensaje-alerta>
@@ -74,8 +79,14 @@
 
             <div class="d-flex flex-wrap gap-3">
                 <x-primary-button>Guardar Cambios</x-primary-button>
-                <a href="{{ route('contratos.show', $contrato) }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                <a href="{{ route('contratos.show', $contrato) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
             </div>
         </form>
+
+        @include('contratos.partials.modal-solapamiento')
     </div>
+
+    @push('scripts')
+        @vite(['resources/js/costos-fijos-contrato.js'])
+    @endpush
 </x-layouts.app-bootstrap>

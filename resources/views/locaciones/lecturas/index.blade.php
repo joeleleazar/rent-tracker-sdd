@@ -12,7 +12,7 @@
             @endif
 
             <div class="d-flex flex-wrap gap-3">
-                <a href="{{ route('locaciones.lecturas.create', $locacion) }}" class="btn btn-primary btn-lg">Registrar Lectura del Medidor</a>
+                <a href="{{ route('locaciones.lecturas.create', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar Lectura del Medidor</a>
             </div>
 
             @if ($lecturas->isEmpty())
@@ -74,7 +74,7 @@
                                     </x-mensaje-alerta>
                                 @endif
                                 <div class="mt-2 d-flex flex-wrap gap-3">
-                                    <a href="{{ route('lecturas.edit', $lectura) }}" class="btn btn-outline-secondary btn-lg">Editar Lectura</a>
+                                    <a href="{{ route('lecturas.edit', $lectura) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Lectura</a>
                                     @if ($reciboDelPeriodo !== null)
                                         <a href="{{ route('recibos.show', $reciboDelPeriodo) }}" class="btn btn-outline-secondary btn-lg">Ver Recibo del Periodo</a>
                                     @endif

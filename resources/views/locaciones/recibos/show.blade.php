@@ -73,9 +73,12 @@
                     </dl>
 
                     <div class="d-flex flex-wrap gap-3 pt-2">
-                        <a href="{{ route('recibos.edit', $recibo) }}" class="btn btn-primary btn-lg">Editar Recibo</a>
-                        <a href="{{ route('recibos.comprobante', $recibo) }}" class="btn btn-primary btn-lg">Ver Comprobante</a>
-                        <a href="{{ route('locaciones.recibos.index', $recibo->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Historial de Recibos</a>
+                        <a href="{{ route('recibos.edit', $recibo) }}" class="btn btn-primary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Recibo</a>
+                        {{-- hx-boost="false": el comprobante es una página standalone con su
+                             propio <head>/CSS (ver comprobante.blade.php), no el layout compartido;
+                             debe cargarse con una navegación clásica completa, no un swap parcial. --}}
+                        <a href="{{ route('recibos.comprobante', $recibo) }}" class="btn btn-primary btn-lg" hx-boost="false">Ver Comprobante</a>
+                        <a href="{{ route('locaciones.recibos.index', $recibo->locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver Historial de Recibos</a>
                     </div>
                 </div>
             </div>
@@ -85,54 +88,45 @@
                     <h3 class="fs-4 fw-bold">Estado de Pago</h3>
 
                     {{--
-                        Nota de migración: el inventario sugiere `btn-group`/`btn-check`
-                        para este selector, pero cada acción es en realidad un
-                        formulario POST independiente con su propio conjunto de campos
-                        ocultos (no un único grupo de radios), así que se preserva esa
-                        estructura (sin cambios de comportamiento) y `btn-group` se usa
-                        solo como agrupador visual de los botones de acción.
+                        Selector unificado con las 3 opciones simultáneamente visibles
+                        (specs/012, FR-007): la opción vigente queda resaltada y
+                        deshabilitada; seleccionar otra dispara la misma transición ya
+                        validada por ReciboController@actualizarEstado, preservando
+                        exactamente qué transiciones exigen confirmación explícita (a
+                        "Anulado" siempre, y cualquier reversión desde "Anulado") y
+                        cuáles no (Pendiente ⇄ Pagado directo), sin cambios de negocio.
                     --}}
-                    <div class="btn-group flex-wrap gap-3" role="group" aria-label="Acciones de estado del recibo">
+                    <div class="btn-group flex-wrap" role="group" aria-label="Estado del recibo">
                         @if ($recibo->estado === 'pendiente')
-                            <form method="POST" action="{{ route('recibos.estado.update', $recibo) }}">
+                            <button type="button" class="btn btn-warning btn-lg" disabled aria-pressed="true">Pendiente</button>
+
+                            <form method="POST" action="{{ route('recibos.estado.update', $recibo) }}" class="d-inline">
                                 @csrf
                                 @method('patch')
                                 <input type="hidden" name="nuevo_estado" value="pagado">
                                 <input type="hidden" name="confirmado" value="1">
-                                <x-primary-button>Marcar como Pagado</x-primary-button>
+                                <button type="submit" class="btn btn-outline-success btn-lg">Pagado</button>
                             </form>
 
-                            <x-danger-button
-                                type="button"
-                                data-bs-toggle="modal"
-                                data-bs-target="#anular-recibo"
-                            >Anular Recibo</x-danger-button>
+                            <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anulado</button>
                         @elseif ($recibo->estado === 'pagado')
-                            <form method="POST" action="{{ route('recibos.estado.update', $recibo) }}">
+                            <form method="POST" action="{{ route('recibos.estado.update', $recibo) }}" class="d-inline">
                                 @csrf
                                 @method('patch')
                                 <input type="hidden" name="nuevo_estado" value="pendiente">
                                 <input type="hidden" name="confirmado" value="1">
-                                <x-secondary-button>Marcar como Pendiente</x-secondary-button>
+                                <button type="submit" class="btn btn-outline-warning btn-lg">Pendiente</button>
                             </form>
 
-                            <x-danger-button
-                                type="button"
-                                data-bs-toggle="modal"
-                                data-bs-target="#anular-recibo"
-                            >Anular Recibo</x-danger-button>
-                        @else
-                            <x-primary-button
-                                type="button"
-                                data-bs-toggle="modal"
-                                data-bs-target="#revertir-pendiente"
-                            >Revertir Anulación a Pendiente</x-primary-button>
+                            <button type="button" class="btn btn-success btn-lg" disabled aria-pressed="true">Pagado</button>
 
-                            <x-primary-button
-                                type="button"
-                                data-bs-toggle="modal"
-                                data-bs-target="#revertir-pagado"
-                            >Revertir Anulación a Pagado</x-primary-button>
+                            <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anulado</button>
+                        @else
+                            <button type="button" class="btn btn-outline-warning btn-lg" data-bs-toggle="modal" data-bs-target="#revertir-pendiente">Pendiente</button>
+
+                            <button type="button" class="btn btn-outline-success btn-lg" data-bs-toggle="modal" data-bs-target="#revertir-pagado">Pagado</button>
+
+                            <button type="button" class="btn btn-danger btn-lg" disabled aria-pressed="true">Anulado</button>
                         @endif
                     </div>
                 </div>

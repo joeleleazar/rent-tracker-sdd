@@ -134,12 +134,25 @@
             color: #991b1b;
         }
 
+        {{--
+            Reglas de impresión (specs/012, FR-008): ocultan la navegación y los
+            controles de interacción (ya marcados `.no-imprimir`) y ajustan el
+            comprobante a un documento limpio de una sola columna, sin la
+            decoración de "tarjeta flotante" pensada para pantalla.
+        --}}
         @media print {
             .no-imprimir {
                 display: none !important;
             }
             body {
                 background: white !important;
+                padding: 0;
+            }
+            #comprobante-recibo {
+                max-width: none;
+                border: none;
+                border-radius: 0;
+                padding: 0;
             }
         }
     </style>

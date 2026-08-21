@@ -13,7 +13,7 @@
                         data-bs-toggle="modal"
                         data-bs-target="#confirmar-borrado-documento"
                         data-accion="{{ route('contratos.documentos.destroy', [$contrato, $documento]) }}">
-                    Eliminar
+                    <i class="bi bi-trash" aria-hidden="true"></i> Eliminar
                 </button>
             </div>
         </div>
@@ -32,7 +32,7 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#confirmar-borrado-documento"
                                     data-accion="{{ route('contratos.documentos.destroy', [$contrato, $documento]) }}">
-                                Eliminar
+                                <i class="bi bi-trash" aria-hidden="true"></i> Eliminar
                             </button>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</button>
                 <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar</button>
             </div>
         </form>

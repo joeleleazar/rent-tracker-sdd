@@ -44,16 +44,16 @@
                     </dl>
 
                     <div class="d-flex flex-wrap gap-3 pt-2">
-                        <a href="{{ route('locaciones.edit', $locacion) }}" class="btn btn-primary btn-lg">Editar Locación</a>
+                        <a href="{{ route('locaciones.edit', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Locación</a>
                         @if ($locacion->es_alquilable)
-                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Contratos</a>
+                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Contratos</a>
                         @endif
 
                         <x-danger-button
                             type="button"
                             data-bs-toggle="modal"
                             data-bs-target="#confirmar-eliminar-locacion"
-                        >Eliminar Locación</x-danger-button>
+                        ><i class="bi bi-trash" aria-hidden="true"></i> Eliminar Locación</x-danger-button>
                     </div>
                 </div>
             </div>

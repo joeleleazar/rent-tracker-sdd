@@ -64,7 +64,7 @@
 
             <div class="d-flex flex-wrap gap-3">
                 <x-primary-button>Guardar Locación</x-primary-button>
-                <a href="{{ route('locaciones.index') }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                <a href="{{ route('locaciones.index') }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
             </div>
         </form>
     </div>

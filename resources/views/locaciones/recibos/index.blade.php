@@ -12,7 +12,7 @@
             @endif
 
             <div class="d-flex flex-wrap gap-3">
-                <a href="{{ route('locaciones.recibos.create', $locacion) }}" class="btn btn-primary btn-lg">Emitir Recibo</a>
+                <a href="{{ route('locaciones.recibos.create', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> Emitir Recibo</a>
             </div>
 
             @if ($recibos->isEmpty())

@@ -66,10 +66,10 @@
                     </dl>
 
                     <div class="d-flex flex-wrap gap-3 pt-2">
-                        <a href="{{ route('contratos.edit', $contrato) }}" class="btn btn-primary btn-lg">Editar Contrato</a>
-                        <a href="{{ route('contratos.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Historial</a>
-                        <a href="{{ route('locaciones.recibos.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Recibos</a>
-                        <a href="{{ route('locaciones.lecturas.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg">Ver Lecturas de Medidor</a>
+                        <a href="{{ route('contratos.edit', $contrato) }}" class="btn btn-primary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Contrato</a>
+                        <a href="{{ route('contratos.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver Historial</a>
+                        <a href="{{ route('locaciones.recibos.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-receipt" aria-hidden="true"></i> Ver Recibos</a>
+                        <a href="{{ route('locaciones.lecturas.index', $contrato->locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-speedometer2" aria-hidden="true"></i> Ver Lecturas de Medidor</a>
                     </div>
                 </div>
             </div>
@@ -81,44 +81,55 @@
                         Estos valores se usan como referencia inicial editable al generar un recibo; no afectan a recibos ya emitidos.
                     </p>
 
-                    <form method="POST" action="{{ route('contratos.costos.update', $contrato) }}" class="d-flex flex-column gap-3">
+                    <form method="POST" action="{{ route('contratos.costos.update', $contrato) }}" class="d-flex flex-column gap-3 costos-fijos-grid">
                         @csrf
                         @method('PATCH')
 
-                        <div>
-                            <x-input-label for="costo_agua" value="Costo de Agua" />
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="costo_agua" name="costo_agua" type="number" step="0.01" min="0" :value="old('costo_agua', $contrato->costo_agua)" />
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <x-input-label for="costo_agua" value="Costo de Agua" />
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">S/</span>
+                                    <x-text-input id="costo_agua" name="costo_agua" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_agua', $contrato->costo_agua)" />
+                                </div>
+                                <x-input-error :messages="$errors->get('costo_agua')" class="mt-2" />
                             </div>
-                            <x-input-error :messages="$errors->get('costo_agua')" class="mt-2" />
-                        </div>
 
-                        <div>
-                            <x-input-label for="costo_luz" value="Costo de Luz" />
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="costo_luz" name="costo_luz" type="number" step="0.01" min="0" :value="old('costo_luz', $contrato->costo_luz)" />
+                            <div class="col-md-6">
+                                <x-input-label for="costo_luz" value="Costo de Luz" />
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">S/</span>
+                                    <x-text-input id="costo_luz" name="costo_luz" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_luz', $contrato->costo_luz)" />
+                                </div>
+                                <x-input-error :messages="$errors->get('costo_luz')" class="mt-2" />
                             </div>
-                            <x-input-error :messages="$errors->get('costo_luz')" class="mt-2" />
-                        </div>
 
-                        <div>
-                            <x-input-label for="costo_pasadizo" value="Costo de Pasadizo" />
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="costo_pasadizo" name="costo_pasadizo" type="number" step="0.01" min="0" :value="old('costo_pasadizo', $contrato->costo_pasadizo)" />
+                            <div class="col-md-6">
+                                <x-input-label for="costo_pasadizo" value="Costo de Pasadizo" />
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">S/</span>
+                                    <x-text-input id="costo_pasadizo" name="costo_pasadizo" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_pasadizo', $contrato->costo_pasadizo)" />
+                                </div>
+                                <x-input-error :messages="$errors->get('costo_pasadizo')" class="mt-2" />
                             </div>
-                            <x-input-error :messages="$errors->get('costo_pasadizo')" class="mt-2" />
-                        </div>
 
-                        <div>
-                            <x-input-label for="costo_seguridad" value="Costo de Seguridad" />
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="costo_seguridad" name="costo_seguridad" type="number" step="0.01" min="0" :value="old('costo_seguridad', $contrato->costo_seguridad)" />
+                            <div class="col-md-6">
+                                <x-input-label for="costo_seguridad" value="Costo de Seguridad" />
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">S/</span>
+                                    <x-text-input id="costo_seguridad" name="costo_seguridad" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_seguridad', $contrato->costo_seguridad)" />
+                                </div>
+                                <x-input-error :messages="$errors->get('costo_seguridad')" class="mt-2" />
                             </div>
-                            <x-input-error :messages="$errors->get('costo_seguridad')" class="mt-2" />
+
+                            <div class="col-md-6">
+                                <x-input-label for="costo_total_referencia_show" value="Total de Referencia" />
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">S/</span>
+                                    <input id="costo_total_referencia_show" type="text" class="form-control form-control-lg costo-fijo-total" readonly value="0.00">
+                                </div>
+                                <small class="fs-6 text-secondary d-block mt-2">Suma de los 4 costos de arriba</small>
+                            </div>
                         </div>
 
                         <x-primary-button class="align-self-start">Guardar Costos del Contrato</x-primary-button>
@@ -247,23 +258,30 @@
                     @endif
 
                     @unless ($tienePdf)
-                        <form method="POST" action="{{ route('contratos.documentos.store', $contrato) }}" enctype="multipart/form-data" class="d-flex flex-column gap-3">
-                            @csrf
-                            <div class="d-flex flex-wrap gap-3">
-                                @if ($totalImagenes === 0)
-                                    <label class="btn btn-primary btn-lg mb-0" style="cursor: pointer;">
-                                        Seleccionar PDF del Contrato
-                                        <input type="file" name="archivo_pdf" accept="application/pdf" class="d-none" onchange="this.form.requestSubmit()">
-                                    </label>
-                                @endif
-                                @if ($totalImagenes < 10)
-                                    <label class="btn btn-primary btn-lg mb-0" style="cursor: pointer;">
-                                        Subir Foto de Página
-                                        <input type="file" name="archivo_imagenes[]" accept="image/jpeg,image/png" multiple class="d-none" onchange="this.form.requestSubmit()">
-                                    </label>
-                                @endif
-                            </div>
-                        </form>
+                        {{-- Dropzone visual (specs/012, FR-001): solo presentación, sin
+                             arrastrar-soltar funcional (no exigido por ningún Acceptance
+                             Scenario) — ver research.md §7. --}}
+                        <div class="border border-2 border-dashed rounded-3 p-4 text-center">
+                            <p class="fs-5 fw-semibold mb-3">Seleccionar Documento</p>
+                            <form method="POST" action="{{ route('contratos.documentos.store', $contrato) }}" enctype="multipart/form-data" class="d-flex flex-column gap-3">
+                                @csrf
+                                <div class="d-flex flex-wrap justify-content-center gap-3">
+                                    @if ($totalImagenes === 0)
+                                        <label class="btn btn-outline-primary btn-lg mb-0" style="cursor: pointer; min-height: 60px;">
+                                            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Seleccionar PDF del Contrato (máx 15MB)
+                                            <input type="file" name="archivo_pdf" accept="application/pdf" class="d-none" onchange="this.form.requestSubmit()">
+                                        </label>
+                                    @endif
+                                    @if ($totalImagenes < 10)
+                                        <label class="btn btn-outline-primary btn-lg mb-0" style="cursor: pointer; min-height: 60px;">
+                                            <i class="bi bi-camera" aria-hidden="true"></i> Subir Fotos de Páginas (máx 10, 5MB c/u)
+                                            <input type="file" name="archivo_imagenes[]" accept="image/jpeg,image/png" multiple class="d-none" onchange="this.form.requestSubmit()">
+                                        </label>
+                                    @endif
+                                </div>
+                                <p class="fs-6 text-secondary mb-0">O arrastra archivos aquí</p>
+                            </form>
+                        </div>
                     @endunless
                 </div>
             </div>
@@ -271,6 +289,6 @@
     </div>
 
     @push('scripts')
-        @vite(['resources/js/representantes-contrato.js', 'resources/js/galeria-documentos.js'])
+        @vite(['resources/js/representantes-contrato.js', 'resources/js/galeria-documentos.js', 'resources/js/costos-fijos-contrato.js'])
     @endpush
 </x-layouts.app-bootstrap>

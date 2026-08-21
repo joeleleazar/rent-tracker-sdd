@@ -6,11 +6,18 @@
     </x-slot>
 
     <div class="col-12 col-lg-8" style="max-width: 42rem;">
-        @if ($errors->any())
+        @php
+            // El error 'solapamiento' se presenta en su propio modal de dos bloques
+            // (specs/012, FR-002), no en esta alerta genérica de campos.
+            $erroresGenericos = collect($errors->keys())->reject(fn ($campo) => $campo === 'solapamiento');
+        @endphp
+        @if ($erroresGenericos->isNotEmpty())
             <x-mensaje-alerta tipo="error" class="mb-4">
                 <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                    @foreach ($erroresGenericos as $campo)
+                        @foreach ($errors->get($campo) as $mensaje)
+                            <li>{{ $mensaje }}</li>
+                        @endforeach
                     @endforeach
                 </ul>
             </x-mensaje-alerta>
@@ -73,12 +80,14 @@
 
             <div class="d-flex flex-wrap gap-3">
                 <x-primary-button>Guardar Contrato</x-primary-button>
-                <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
             </div>
         </form>
+
+        @include('contratos.partials.modal-solapamiento')
     </div>
 
     @push('scripts')
-        @vite(['resources/js/representantes-contrato.js'])
+        @vite(['resources/js/representantes-contrato.js', 'resources/js/costos-fijos-contrato.js'])
     @endpush
 </x-layouts.app-bootstrap>
