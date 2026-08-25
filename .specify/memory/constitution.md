@@ -1,6 +1,21 @@
 <!--
 Sync Impact Report
-Version change: 2.0.0 → 2.1.0
+Version change: 2.1.0 → 2.1.1
+Modified principles:
+- VI. Sistema de Componentes Visuales (Bootstrap 5), bullet "Documentos de referencia de
+  diseño" — corrige la referencia desactualizada a docs/referencias-diseno-bootstrap/: los 3
+  documentos que ahí vivían fueron eliminados el 2026-08-24 (contenían decisiones preliminares
+  ya superadas: Senior-First, Alpine.js, Tailwind CSS, navbar plano). El bullet ahora deja
+  constancia de que existieron y por qué se removieron, en vez de seguir afirmando que el
+  material sigue viviendo en esa carpeta.
+Added sections: N/A
+Removed sections: N/A
+Modified sections: N/A
+Follow-up TODOs: N/A
+-->
+
+<!--
+Sync Impact Report (histórico) — Version change: 2.0.0 → 2.1.0
 Modified principles:
 - VI. Sistema de Componentes Visuales (Bootstrap 5) — se agrega el requisito de revisión con
   el skill `impeccable` (instalado en .claude/skills/impeccable) como paso obligatorio para
@@ -90,7 +105,7 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
 - **Excepción de paleta de colores**: la paleta de colores vinculante del proyecto es la definida en `resources/css/bootstrap.scss` (variables `$primary`/`$secondary`/`$success`/`$danger`/`$warning`/`$info`), no la paleta genérica de cualquier documento de referencia de diseño. Estos valores fueron elegidos deliberadamente más oscuros que los por defecto de Bootstrap (ej. `$warning: #92400e` en vez de `#FFC107`) para satisfacer el contraste mínimo del Principio III; ningún documento de referencia de diseño puede introducir un color que no cumpla ese contraste, sin importar qué tan extendido sea su uso en dicho documento.
 - **Excepción de interactividad asíncrona**: la interactividad de escritura (crear/editar/eliminar) del proyecto se implementa con **htmx** (`hx-boost`), no con Alpine.js, por la decisión técnica documentada en `specs/011-elevacion-diseno-async/research.md` — htmx permite que la interfaz se sienta asíncrona sin exigir cambios en los controladores y con degradación elegante a envío clásico si JavaScript falla, lo que Alpine.js no resuelve de la misma forma. Cualquier sugerencia futura de usar Alpine.js para este propósito queda descartada salvo que se documente una nueva reconciliación explícita.
 - **Revisión de diseño con el skill `impeccable`**: toda tarea que cree o modifique una o más vistas Blade (`resources/views/**`) DEBE pasar, antes de darse por completa, por una revisión con el skill `impeccable` instalado en `.claude/skills/impeccable` (comando `/impeccable polish`, `audit` o `critique`, según corresponda al alcance del cambio). El hook determinístico configurado en `.claude/settings.json` corre automáticamente después de cada edición de una vista y en cada `Stop`, pero solo señala hallazgos mecánicos (contraste, patrones prohibidos); no reemplaza la revisión explícita exigida por este punto. Esta revisión es adicional a — nunca un sustituto de — el resto de este Principio VI, y su resultado se documenta según corresponda en `DESIGN.md` (ver `/impeccable document`).
-- **Documentos de referencia de diseño**: material de consulta no normativo (mockups, wireframes, ejemplos de componentes) vive en `docs/referencias-diseno-bootstrap/`, fuera de este documento. Donde ese material sugiera algo que contradiga una decisión ya implementada y documentada en una spec (ej. navegación con sidebar en vez de navbar plano, definido en `specs/010-migracion-interfaz-bootstrap`), la decisión ya implementada prevalece salvo que una nueva spec la reemplace explícitamente.
+- **Documentos de referencia de diseño (histórico)**: `docs/referencias-diseno-bootstrap/` contuvo 3 documentos de consulta no normativos (`RESUMEN_EJECUTIVO_SPECS.md`, `ANALISIS_SPECS_PARA_VISTAS_BOOTSTRAP.md`, `GUIA_COMPONENTES_BOOTSTRAP.md`) que originaron este Principio VI. Se eliminaron el 2026-08-24 porque reflejaban decisiones preliminares ya superadas por specs posteriores (tipografía/botones "Senior-First", Alpine.js, Tailwind CSS, navbar plano en vez del sidebar fijo de `specs/010-migracion-interfaz-bootstrap`) — ver `docs/referencias-diseno-bootstrap/README.md` para el detalle de cada reemplazo. El estado actual del sistema de diseño implementado se documenta en `/DESIGN.md` (generado con el skill `impeccable`), material igualmente descriptivo y no normativo.
 
 ## Restricciones Técnicas y Estándares de Interfaz
 
@@ -116,4 +131,4 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
   - **PATCH**: Ajustes de redacción, correcciones tipográficas o clarificaciones operativas.
 - Todo desarrollo, Pull Request o revisión de código DEBE verificar el estricto cumplimiento de estos artículos antes de ser aprobado.
 
-**Version**: 2.1.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-24
+**Version**: 2.1.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-24
