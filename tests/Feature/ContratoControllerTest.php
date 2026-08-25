@@ -18,7 +18,7 @@ test('un administrador autenticado puede crear un contrato sin solapamiento', fu
         'fecha_fin' => '2026-12-31',
         'monto_renta' => '1500.00',
         'estado' => 'activo',
-        'representantes' => [
+        'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '12345678', 'fecha_nacimiento' => '1960-05-15'],
         ],
     ]);
@@ -40,7 +40,7 @@ test('permite registrar los costos fijos del contrato y usa 0.00 por defecto si 
         'costo_agua' => '50.00',
         'costo_luz' => '80.00',
         'costo_seguridad' => '40.00',
-        'representantes' => [
+        'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '13245678', 'fecha_nacimiento' => '1960-05-15'],
         ],
     ]);
@@ -130,7 +130,7 @@ test('rechaza la creacion de un contrato que se solapa con uno existente', funct
         'fecha_fin' => '2027-05-31',
         'monto_renta' => '1200.00',
         'estado' => 'activo',
-        'representantes' => [
+        'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '87654321', 'fecha_nacimiento' => '1960-05-15'],
         ],
     ]);
@@ -178,7 +178,7 @@ test('permite registrar la garantia entregada al crear un contrato', function ()
         'monto_garantia' => '1500.00',
         'fecha_entrega_garantia' => '2026-08-19',
         'medio_entrega_garantia' => 'efectivo',
-        'representantes' => [
+        'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '11223344', 'fecha_nacimiento' => '1960-05-15'],
         ],
     ]);
@@ -199,7 +199,7 @@ test('permite crear un contrato sin garantia sin bloquear el guardado', function
         'fecha_fin' => '2026-12-31',
         'monto_renta' => '1500.00',
         'estado' => 'activo',
-        'representantes' => [
+        'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '99112233', 'fecha_nacimiento' => '1960-05-15'],
         ],
     ]);
@@ -218,7 +218,7 @@ test('exige fecha de entrega de garantia cuando se registra un monto mayor a cer
         'monto_renta' => '1500.00',
         'estado' => 'activo',
         'monto_garantia' => '1500.00',
-        'representantes' => [
+        'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '55667788', 'fecha_nacimiento' => '1960-05-15'],
         ],
     ]);

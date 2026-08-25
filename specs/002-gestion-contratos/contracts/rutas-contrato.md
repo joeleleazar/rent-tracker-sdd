@@ -9,7 +9,7 @@ Aplicación monolítica Laravel con vistas Blade server-rendered (sin API JSON p
 | Método | Ruta | Controlador@acción | Descripción | Respuesta esperada |
 |---|---|---|---|---|
 | GET | `/locaciones/{locacion}/contratos` | `ContratoController@index` | Historial cronológico de contratos de una locación (US3) | 200, vista con listado, contrato activo destacado |
-| GET | `/locaciones/{locacion}/contratos/crear` | `ContratoController@create` | Formulario de nuevo contrato | 200, formulario Senior-First |
+| GET | `/locaciones/{locacion}/contratos/crear` | `ContratoController@create` | Formulario de nuevo contrato | 200, formulario accesible |
 | POST | `/locaciones/{locacion}/contratos` | `ContratoController@store` | Crea un contrato (US1) | 302 redirect a `show` en éxito; 422 + errores persistentes si hay solapamiento (FR-003) o validación fallida |
 | GET | `/contratos/{contrato}` | `ContratoController@show` | Detalle del contrato + galería/preview de documentos | 200 |
 | GET | `/contratos/{contrato}/editar` | `ContratoController@edit` | Formulario de edición (incluye cambio de estado a "rescindido") | 200 |
@@ -30,6 +30,6 @@ Aplicación monolítica Laravel con vistas Blade server-rendered (sin API JSON p
 - `SolicitudGuardarContrato` (`store`/`update` de `ContratoController`): valida `locacion_id`, `inquilino_id`, `fecha_inicio`, `fecha_fin` (`fecha_fin >= fecha_inicio`), `monto_renta` (numérico, > 0), `estado`.
 - `SolicitudSubirDocumentoContrato` (`store` de `DocumentoContratoController`): valida `archivo_pdf` (mimes:pdf, max:15360) XOR `archivo_imagenes.*` (mimes:jpg,png, max:5120, max 10 elementos).
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - Todo error de validación se muestra junto al campo y en un resumen superior persistente (no desaparece automáticamente), con tipografía ≥18px y contraste WCAG AA/AAA, conforme al Principio III de la Constitución.

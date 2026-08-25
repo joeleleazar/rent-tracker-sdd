@@ -32,7 +32,7 @@
 
 **Rationale**: `ReciboController::actualizarEstado()` ya es un único endpoint parametrizado por `nuevo_estado` (confirmado en el código actual), por lo que este componente es 100% de presentación: no requiere ningún cambio de controlador, ruta o Form Request. Satisface FR-007 (3 opciones simultáneamente visibles) sin tocar la lógica de negocio que valida las transiciones permitidas.
 
-**Alternatives considered**: Un `<select>` con las 3 opciones: rechazado, el snippet de referencia especifica explícitamente un `btn-group`/`btn-check` visual, más acorde a botones grandes Senior-First que un desplegable.
+**Alternatives considered**: Un `<select>` con las 3 opciones: rechazado, el snippet de referencia especifica explícitamente un `btn-group`/`btn-check` visual, más claro que un desplegable para mostrar las 3 opciones simultáneamente.
 
 ## 5. Tarjetas de representante en grid (FR-005, FR-006)
 

@@ -2,11 +2,11 @@
 
 **Feature**: `011-elevacion-diseno-async` | **Date**: 2026-08-21
 
-## 1. Refinamiento visual manteniendo Senior-First
+## 1. Refinamiento visual manteniendo el contraste
 
-**Decision**: Ampliar `resources/css/bootstrap.scss` (ya existente desde `specs/010`) con: (a) una escala de sombras propia (`$box-shadow-sm`/`$box-shadow`/`$box-shadow-lg` de Bootstrap, ajustadas a una opacidad sutil pero visible sobre el fondo claro actual) para dar profundidad a las `card`; (b) una paleta ampliada con un color de acento distintivo (ej. un tono secundario cálido para elementos destacados, sin reemplazar los colores semánticos `$primary`/`$success`/`$danger`/`$warning` ya validados por contraste); (c) una escala de espaciado (`$spacer` y el mapa `$spacers`) ligeramente más generosa entre secciones, ya que el espacio en blanco es la herramienta principal de jerarquía visual que no compromete legibilidad. Ninguna de estas variables afecta `$font-size-base`, `$input-btn-padding-*` ni los demás mínimos Senior-First ya fijados en `specs/010`.
+**Decision**: Ampliar `resources/css/bootstrap.scss` (ya existente desde `specs/010`) con: (a) una escala de sombras propia (`$box-shadow-sm`/`$box-shadow`/`$box-shadow-lg` de Bootstrap, ajustadas a una opacidad sutil pero visible sobre el fondo claro actual) para dar profundidad a las `card`; (b) una paleta ampliada con un color de acento distintivo (ej. un tono secundario cálido para elementos destacados, sin reemplazar los colores semánticos `$primary`/`$success`/`$danger`/`$warning` ya validados por contraste); (c) una escala de espaciado (`$spacer` y el mapa `$spacers`) ligeramente más generosa entre secciones, ya que el espacio en blanco es la herramienta principal de jerarquía visual que no compromete legibilidad. Ninguna de estas variables afecta el contraste de la paleta ya fijado en `specs/010`.
 
-**Rationale**: El mismo mecanismo (variables Sass antes del `@import` de Bootstrap) que ya se usó en 010 para hornear los mínimos de accesibilidad es el lugar correcto para agregar carácter visual, evitando volver a la trampa original (overrides de CSS dispersos por vista). Sombra y espaciado son, de las herramientas de jerarquía visual disponibles, las que menos tensionan contra Senior-First (no reducen tamaño de texto ni contraste).
+**Rationale**: El mismo mecanismo (variables Sass antes del `@import` de Bootstrap) que ya se usó en 010 para hornear los requisitos de accesibilidad es el lugar correcto para agregar carácter visual, evitando volver a la trampa original (overrides de CSS dispersos por vista). Sombra y espaciado son, de las herramientas de jerarquía visual disponibles, las que menos tensionan contra la legibilidad (no reducen tamaño de texto ni contraste).
 
 **Alternatives considered**: Introducir un segundo framework/tema visual (ej. un theme de Bootstrap de terceros): rechazado, agrega una dependencia externa no auditada contra los criterios de contraste ya validados.
 

@@ -10,7 +10,7 @@ export default defineConfig({
                 'resources/css/bootstrap.scss',
                 'resources/js/bootstrap.js',
                 'resources/js/htmx.js',
-                'resources/js/representantes-contrato.js',
+                'resources/js/inquilinos-contrato.js',
                 'resources/js/galeria-documentos.js',
                 'resources/js/historial-consumo-medidor.js',
                 'resources/js/costos-fijos-contrato.js',

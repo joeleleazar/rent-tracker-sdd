@@ -24,7 +24,7 @@ No existe una ruta de servidor para "enviar por WhatsApp": la acción ocurre ín
 
 - `SolicitudActualizarEstadoRecibo` (`actualizarEstado` de `ReciboController`): valida `nuevo_estado` (`required`, `in:pendiente,pagado,anulado`), `confirmado` (`boolean`, `required_if` la transición involucra `anulado`, verificado en `ServicioCambioEstadoRecibo` no solo en el Form Request para evitar condiciones de carrera).
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - Antes de invocar `PATCH /recibos/{recibo}/estado` hacia o desde `anulado`, la vista MUST mostrar un modal de confirmación con botones "Sí, anular recibo" / "No, cancelar" (o el texto equivalente para revertir), consistente con el Principio III.
 - La marca "ANULADO" MUST ser visible y de alto contraste en el comprobante (impreso o capturado como imagen) de cualquier recibo en ese estado (FR-009), sin excepción.

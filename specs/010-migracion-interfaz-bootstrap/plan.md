@@ -8,7 +8,7 @@
 
 ## Summary
 
-Reemplazar el sistema de presentación actual (Tailwind CSS v4 + Alpine.js + componentes Blade custom Senior-First) por Bootstrap 5.3 en las ~30 vistas Blade de las 9 features ya implementadas (001-009), en tres tandas de prioridad (P1: 001-004, P2: 005/007/009, P3: 006+gráfico/008), sin tocar rutas, controladores, modelos, servicios ni Form Requests. Enfoque técnico: instalar Bootstrap 5.3 vía npm (SCSS + JS bundle, con Popper incluido), personalizar sus variables SCSS para hornear los requisitos Senior-First (tipografía base 18px, radios, colores de alto contraste) directamente en el framework en vez de sobreescribir clase por clase, mantener un layout Blade paralelo (Tailwind vs Bootstrap) durante la migración incremental, y retirar Tailwind/Alpine del proyecto solo al completar las 3 historias de usuario.
+Reemplazar el sistema de presentación actual (Tailwind CSS v4 + Alpine.js + componentes Blade custom) por Bootstrap 5.3 en las ~30 vistas Blade de las 9 features ya implementadas (001-009), en tres tandas de prioridad (P1: 001-004, P2: 005/007/009, P3: 006+gráfico/008), sin tocar rutas, controladores, modelos, servicios ni Form Requests. Enfoque técnico: instalar Bootstrap 5.3 vía npm (SCSS + JS bundle, con Popper incluido), personalizar sus variables SCSS para hornear los requisitos de accesibilidad y diseño del proyecto (radios, colores de alto contraste) directamente en el framework en vez de sobreescribir clase por clase, mantener un layout Blade paralelo (Tailwind vs Bootstrap) durante la migración incremental, y retirar Tailwind/Alpine del proyecto solo al completar las 3 historias de usuario.
 
 ## Technical Context
 
@@ -38,7 +38,7 @@ Reemplazar el sistema de presentación actual (Tailwind CSS v4 + Alpine.js + com
 |---|---|
 | I. Stack Tecnológico Moderno (PHP/Laravel/PostgreSQL) | ✅ Sin cambios en PHP/Laravel/PostgreSQL/Eloquent; la Constitución permite explícitamente "Blade Templates o componentes desacoplados con CSS semántico accesible" sin fijar un framework CSS específico, por lo que Bootstrap 5 es una opción tan válida como Tailwind dentro de esa restricción |
 | II. Nomenclatura en Español | ✅ Los componentes Blade custom nuevos o modificados (ej. wrappers de tarjetas/badges reutilizables) se nombran en español; las clases utilitarias de Bootstrap (`btn`, `card`, `modal`, `badge`) se usan tal cual las define el framework en inglés, igual criterio ya aplicado a los sufijos técnicos de Laravel (`Controller`, `Request`) |
-| III. Accesibilidad Senior-First | ✅ Objetivo explícito y no negociable de esta feature (FR-002): tipografía ≥18px, contraste WCAG AA/AAA, botones ≥48x48px, navegación plana, confirmación explícita — todo horneado en las variables SCSS de Bootstrap (ver `research.md` §1) en vez de overrides dispersos |
+| III. Diseño Moderno e Intuitivo | ✅ Objetivo explícito de esta feature (FR-002): contraste WCAG AA, navegación clara, confirmación explícita — horneado en las variables SCSS de Bootstrap (ver `research.md` §1) en vez de overrides dispersos |
 | IV. Pruebas Automatizadas Exhaustivas | ✅ No se agregan pruebas de negocio nuevas (no hay lógica de negocio nueva), pero la suite completa existente (191 pruebas) se ejecuta como gate de no-regresión después de migrar cada bloque de prioridad (P1/P2/P3), conforme a FR-004/SC-002 |
 | V. Integridad de Datos y Seguridad Transaccional | ✅ Sin cambios: ningún flujo transaccional, de validación ni de persistencia se modifica; esta feature es exclusivamente de presentación |
 
@@ -65,7 +65,7 @@ specs/010-migracion-interfaz-bootstrap/
 resources/
 ├── css/
 │   ├── app.css                        # Tailwind (existente); se retira al completar P3
-│   └── bootstrap.scss                 # Nuevo: import de Bootstrap + variables Senior-First personalizadas
+│   └── bootstrap.scss                 # Nuevo: import de Bootstrap + variables personalizadas del proyecto
 ├── js/
 │   ├── app.js                         # Se le agrega el import del bundle JS de Bootstrap (modal, collapse)
 │   └── historial-consumo-medidor.js   # Nuevo: inicialización de Chart.js para FR-005 (006)

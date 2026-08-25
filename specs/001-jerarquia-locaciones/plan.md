@@ -8,7 +8,7 @@
 
 ## Summary
 
-Permitir registrar locaciones (galerías, pisos, locales) con una jerarquía padre-hijo reflexiva, mostrando siempre el contexto jerárquico completo (truncado a 3 niveles) de cualquier locación marcada como alquilable, e impidiendo ciclos y eliminaciones que dejen locaciones huérfanas. Enfoque técnico: extender el modelo `Locacion` ya existente (creado como prerrequisito mínimo de `specs/002-gestion-contratos`) con validación de ciclos y bloqueo de borrado en un Service dentro de `DB::transaction`, más un `LocacionController` y vistas Blade con un componente de breadcrumb accesible (Senior-First).
+Permitir registrar locaciones (galerías, pisos, locales) con una jerarquía padre-hijo reflexiva, mostrando siempre el contexto jerárquico completo (truncado a 3 niveles) de cualquier locación marcada como alquilable, e impidiendo ciclos y eliminaciones que dejen locaciones huérfanas. Enfoque técnico: extender el modelo `Locacion` ya existente (creado como prerrequisito mínimo de `specs/002-gestion-contratos`) con validación de ciclos y bloqueo de borrado en un Service dentro de `DB::transaction`, más un `LocacionController` y vistas Blade con un componente de breadcrumb accesible.
 
 ## Technical Context
 
@@ -38,7 +38,7 @@ Permitir registrar locaciones (galerías, pisos, locales) con una jerarquía pad
 |---|---|
 | I. Stack Tecnológico Moderno (PHP/Laravel/PostgreSQL) | ✅ PHP 8.3+, PostgreSQL 15+/16+, Eloquent ORM, migraciones, Form Requests, Service desacoplado (`ServicioValidacionJerarquiaLocacion`) para la lógica de ciclos; sin SQL crudo sin sanitizar. ⚠️ Nota: la Constitución fija "Laravel 11.x" como restricción explícita, pero el proyecto instalado usa Laravel 13.x — ver observación en `research.md` §1 (discrepancia preexistente, no introducida por este plan) |
 | II. Nomenclatura en Español | ✅ Modelo `Locacion` (ya existente, español), tabla `locaciones`, columnas (`nombre`, `tamano`, `ubicacion_fisica`, `descripcion`, `locacion_padre_id`, `es_alquilable`) en español; nuevo `LocacionController`, `SolicitudGuardarLocacion`, `ServicioValidacionJerarquiaLocacion` en español con sufijos técnicos de Laravel en inglés por convención (igual criterio que `specs/002`) |
-| III. Accesibilidad Senior-First | ✅ Componente de breadcrumb (`resources/views/components/ruta-jerarquia-locacion.blade.php`) con tipografía ≥18px, contraste WCAG AA/AAA, sin dropdowns; confirmación explícita antes de bloquear/impedir eliminación de locaciones con hijos (FR-007) |
+| III. Diseño Moderno e Intuitivo | ✅ Componente de breadcrumb (`resources/views/components/ruta-jerarquia-locacion.blade.php`) con contraste WCAG AA; confirmación explícita antes de bloquear/impedir eliminación de locaciones con hijos (FR-007) |
 | IV. Pruebas Automatizadas Exhaustivas | ✅ Pest cubre modelo `Locacion` (relación reflexiva, scope de alquilables, detección de ciclos), `LocacionController` (happy path, validación, códigos HTTP, bloqueo de eliminación) — ver `quickstart.md` |
 | V. Integridad de Datos y Seguridad Transaccional | ✅ `DB::transaction` para creación/edición y para la verificación de ciclos antes de guardar; `tamano` ya es `NUMERIC(10,2)`/`decimal:2` en la migración existente; bloqueo de eliminación con sub-locaciones asociadas a nivel de aplicación y de restricción de clave foránea (`nullOnDelete` ya definido, se reforzará con verificación previa en el Service) |
 

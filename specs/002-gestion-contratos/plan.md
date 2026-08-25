@@ -38,7 +38,7 @@ Permitir registrar contratos de alquiler por locación (inquilino, fechas de vig
 |---|---|
 | I. Stack Tecnológico Moderno (PHP/Laravel/PostgreSQL) | ✅ PHP 8.3+, Laravel 11.x+, PostgreSQL 16+; Eloquent ORM, migraciones, Form Requests, Services desacoplados para la lógica de solapamiento; sin SQL crudo sin sanitizar |
 | II. Nomenclatura en Español | ✅ Modelos (`Contrato`, `DocumentoContrato`, `Inquilino`), tablas/columnas (`contratos`, `documentos_contrato`, `locacion_id`, `fecha_inicio`) y métodos de negocio en español; sufijos técnicos de Laravel (`Controller`, `Request`, `Migration`) se mantienen en inglés por convención del framework, igual que el ejemplo `RegistrarPagoRequest` de la propia Constitución |
-| III. Accesibilidad Senior-First | ✅ Formularios y listados con tipografía ≥18px, contraste WCAG AA/AAA, botones ≥48x48px, navegación plana, confirmación explícita antes de eliminar documentos (ver `contracts/rutas-contrato.md`) |
+| III. Diseño Moderno e Intuitivo | ✅ Formularios y listados con contraste WCAG AA, navegación clara, confirmación explícita antes de eliminar documentos (ver `contracts/rutas-contrato.md`) |
 | IV. Pruebas Automatizadas Exhaustivas | ✅ Pest cubre modelo `Contrato` (relaciones, scope de solapamiento, casts), `ContratoController` y `DocumentoContratoController` (happy path, validación, códigos HTTP, autorización, persistencia) — ver `quickstart.md` |
 | V. Integridad de Datos y Seguridad Transaccional | ✅ `DB::transaction` + `lockForUpdate()` para la validación de solapamiento y para la creación conjunta de contrato/documentos; `monto_renta` como `NUMERIC(12,2)`/`decimal:2`; CSRF activo (comportamiento por defecto de Laravel); archivos servidos por ruta autenticada, no públicos |
 

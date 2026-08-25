@@ -1,34 +1,43 @@
 <x-layouts.app-bootstrap>
     <x-slot name="header">
         <h2 class="fs-2 fw-bold mb-0">
-            Locaciones Alquilables
+            Locaciones
         </h2>
     </x-slot>
 
-    <div class="col-12 col-lg-9" style="max-width: 48rem;">
+    <div class="col-12">
         <div class="d-flex flex-column gap-3">
             @if (session('mensaje'))
                 <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
             @endif
 
+            @if ($errors->any())
+                <x-mensaje-alerta tipo="error">
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </x-mensaje-alerta>
+            @endif
+
             <div class="d-flex justify-content-end">
-                <a href="{{ route('locaciones.create') }}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva Locación</a>
+                <a href="{{ route('locaciones.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva Locación</a>
             </div>
 
-            @if ($locaciones->isEmpty())
-                <p class="fs-5">Todavía no hay locaciones alquilables registradas.</p>
+            @if (empty($raices))
+                <p>Todavía no hay locaciones registradas.</p>
             @else
-                <div class="d-flex flex-column gap-3">
-                    @foreach ($locaciones as $locacion)
-                        <div class="card">
-                            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                                <div>
-                                    <x-ruta-jerarquia-locacion :ruta="$locacion->rutaJerarquiaTruncada()" />
-                                    <p class="fs-5 mb-0 mt-1">{{ $locacion->ubicacion_fisica }}</p>
-                                </div>
-                                <a href="{{ route('locaciones.show', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-eye" aria-hidden="true"></i> Ver Detalle</a>
-                            </div>
-                        </div>
+                <div class="tabla-arbol-locaciones">
+                    <div class="tabla-arbol-locaciones__encabezado">
+                        <div>Nombre / Locación</div>
+                        <div>Estado</div>
+                        <div>Tipo</div>
+                        <div>Acciones</div>
+                    </div>
+
+                    @foreach ($raices as $nodo)
+                        @include('locaciones.partials.fila-arbol-locacion', ['locacion' => $nodo['locacion'], 'hijos' => $nodo['hijos'], 'profundidad' => 0])
                     @endforeach
                 </div>
             @endif

@@ -76,9 +76,9 @@ Como Administrador, quiero registrar cómo se resolvió la garantía de un contr
 - **FR-007**: El sistema MUST exigir un motivo de retención (texto obligatorio) cuando el monto retenido registrado sea mayor a cero.
 - **FR-008**: El sistema MUST validar que la suma del monto devuelto y el monto retenido sea exactamente igual al monto de garantía entregada, bloqueando el guardado y mostrando un mensaje explícito en caso de discrepancia.
 - **FR-009**: El sistema MUST registrar la fecha en que se guarda la resolución de la garantía y marcar el estado de la garantía como "Resuelta" una vez registrada.
-- **FR-010**: El sistema MUST solicitar una confirmación explícita de alta visibilidad (Senior-First) antes de permitir editar una resolución de garantía ya registrada.
+- **FR-010**: El sistema MUST solicitar una confirmación explícita de alta visibilidad antes de permitir editar una resolución de garantía ya registrada.
 - **FR-011**: El sistema MUST registrar de forma transaccional y atómica (`DB::transaction`) el guardado de la información de garantía (entrega y resolución) junto con el resto de los datos del contrato.
-- **FR-012**: La interfaz de registro y consulta de la garantía del contrato MUST cumplir los estándares Senior-First del proyecto (tipografía mínima de 18px, alto contraste y etiquetas explícitas como "Monto de Garantía Entregada", "Fecha de Entrega de Garantía", "Registrar Resolución de Garantía").
+- **FR-012**: La interfaz de registro y consulta de la garantía del contrato MUST usar alto contraste y etiquetas explícitas ("Monto de Garantía Entregada", "Fecha de Entrega de Garantía", "Registrar Resolución de Garantía").
 
 ### Key Entities *(include if feature involves data)*
 

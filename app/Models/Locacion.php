@@ -28,6 +28,24 @@ class Locacion extends Model
         'descripcion',
         'locacion_padre_id',
         'es_alquilable',
+        'tipo',
+    ];
+
+    /**
+     * Lista fija de tipos de locación (specs/013-arbol-jerarquico-locaciones,
+     * FR-010): etiqueta e ícono Bootstrap Icons por valor, usados tanto en el
+     * <select> de los formularios como en la columna Tipo de la tabla
+     * jerárquica. `tipo` es nullable a nivel de base de datos (locaciones ya
+     * existentes antes de esta revisión no tienen un valor asignado).
+     *
+     * @var array<string, array{etiqueta: string, icono: string}>
+     */
+    public const TIPOS = [
+        'galeria' => ['etiqueta' => 'Galería', 'icono' => 'bi-building'],
+        'piso' => ['etiqueta' => 'Piso', 'icono' => 'bi-layers'],
+        'sector' => ['etiqueta' => 'Sector', 'icono' => 'bi-grid'],
+        'pasillo' => ['etiqueta' => 'Pasillo', 'icono' => 'bi-signpost-split'],
+        'local' => ['etiqueta' => 'Local', 'icono' => 'bi-shop'],
     ];
 
     protected function casts(): array
@@ -36,6 +54,16 @@ class Locacion extends Model
             'tamano' => 'decimal:2',
             'es_alquilable' => 'boolean',
         ];
+    }
+
+    public function etiquetaTipo(): string
+    {
+        return self::TIPOS[$this->tipo]['etiqueta'] ?? 'Sin tipo';
+    }
+
+    public function iconoTipo(): string
+    {
+        return self::TIPOS[$this->tipo]['icono'] ?? 'bi-question-circle';
     }
 
     public function locacionPadre(): BelongsTo
@@ -114,7 +142,7 @@ class Locacion extends Model
     /**
      * Devuelve los últimos 3 niveles de la jerarquía (incluyendo esta locación),
      * con un indicador de omisión ("...") si la cadena real es más profunda
-     * (FR-004, Senior-First: tipografía mínima de 18px sin scroll horizontal).
+     * (FR-004: mantener la ruta legible sin abrumar la interfaz).
      *
      * @return array{omitido: bool, niveles: array<int, Locacion>}
      */

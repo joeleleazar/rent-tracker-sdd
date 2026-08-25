@@ -16,7 +16,7 @@ Esta especificación no agrega rutas nuevas: reutiliza y refina el comportamient
 
 - `SolicitudGuardarLecturaMedidor` (de `specs/005`, se extiende): agrega `lectura_anterior` (`numeric`, `nullable`, sin restricción de coincidencia con ningún otro registro), renombra el campo antes llamado `lectura` a `lectura_actual` (`numeric`, `required`, `min:0`).
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - El indicador de discrepancia en el historial (FR-007) MUST ser visible con alto contraste, pero MUST NOT bloquear ninguna acción de guardado ni edición.
 - El campo `lectura_anterior` vacío por ausencia de periodo previo MUST mostrar el texto explícito "Sin lectura previa registrada" en vez de un campo en blanco ambiguo (US1, Acceptance Scenario 2).

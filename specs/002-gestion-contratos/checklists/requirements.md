@@ -34,5 +34,5 @@
 - Todas las aclaraciones de alcance han sido resueltas exitosamente con el usuario:
   - **Resolución de solapamientos**: Rescisión manual obligatoria. El administrador debe rescindir y recortar explícitamente el contrato previo que entra en conflicto para liberar el rango de fechas.
   - **Límites de carga**: Carga flexible con límite estándar de 1 PDF (máx 15MB) O hasta 10 fotos (JPG/PNG, máx 5MB por foto).
-- La especificación se alinea rigurosamente con los principios constitucionales (Strict Spanish, Senior-First UI con tamaños de letra >=18px y transaccionalidad atómica en PostgreSQL).
+- La especificación se alinea rigurosamente con los principios constitucionales (Strict Spanish, Diseño Moderno e Intuitivo y transaccionalidad atómica en PostgreSQL).
 - Listo para continuar con la fase de planificación `/speckit.plan`.

@@ -33,6 +33,6 @@
 
 - Todas las aclaraciones de alcance han sido resueltas exitosamente con el usuario:
   - Eliminación de locaciones padre: Se aplicará una restricción estricta de bloqueo (bloquea la eliminación si existen locaciones hijas asociadas).
-  - Profundidad y visualización: Base de datos con soporte ilimitado, pero interfaz de usuario truncada a los últimos 3 niveles en formato plano (ej. "... > Piso > Local") para asegurar legibilidad a mínimo 18px (Senior-First).
-- La especificación cumple al 100% con los principios constitucionales del proyecto, en especial con "Nomenclatura y Código Estrictamente en Español" y "Accesibilidad Extrema y UX para Adultos Mayores (Senior-First)".
+  - Profundidad y visualización: Base de datos con soporte ilimitado, pero interfaz de usuario truncada a los últimos 3 niveles en formato plano (ej. "... > Piso > Local") para mantener la ruta legible sin abrumar la interfaz.
+- La especificación cumple al 100% con los principios constitucionales del proyecto, en especial con "Nomenclatura y Código Estrictamente en Español" y "Diseño Moderno e Intuitivo".
 - Listo para continuar con la fase de planificación `/speckit.plan`.

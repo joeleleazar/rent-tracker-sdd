@@ -24,7 +24,7 @@
 
 ## 3. Confirmación explícita antes de corregir una resolución ya registrada (FR-010)
 
-**Decision**: `ContratoController@registrarResolucionGarantia` acepta un parámetro `confirmado` (booleano) en el body; si `Contrato.estado_garantia === 'resuelta'` (es decir, ya existe una resolución previa) y `confirmado !== true`, la acción rechaza con 422 sin persistir nada, y la vista muestra el modal de confirmación Senior-First antes de reintentar la petición con `confirmado = true`. Este es el mismo patrón ya usado en `ServicioCambioEstadoRecibo` (`specs/007`) para las transiciones hacia/desde "anulado".
+**Decision**: `ContratoController@registrarResolucionGarantia` acepta un parámetro `confirmado` (booleano) en el body; si `Contrato.estado_garantia === 'resuelta'` (es decir, ya existe una resolución previa) y `confirmado !== true`, la acción rechaza con 422 sin persistir nada, y la vista muestra el modal de confirmación explícita antes de reintentar la petición con `confirmado = true`. Este es el mismo patrón ya usado en `ServicioCambioEstadoRecibo` (`specs/007`) para las transiciones hacia/desde "anulado".
 
 **Rationale**: Reutilizar el patrón de "confirmación explícita vía parámetro booleano validado en el Service/controlador" mantiene consistencia arquitectónica con `specs/007`, en vez de introducir un mecanismo distinto (ej. un token de confirmación de un solo uso) para un caso de uso equivalente en espíritu (una acción de re-edición sensible que requiere alta visibilidad, Principio III).
 

@@ -12,23 +12,23 @@
             @endif
 
             <div class="d-flex flex-wrap gap-3">
-                <a href="{{ route('locaciones.recibos.create', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> Emitir Recibo</a>
+                <a href="{{ route('locaciones.recibos.create', $locacion) }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Emitir Recibo</a>
             </div>
 
             @if ($recibos->isEmpty())
-                <p class="fs-5">Esta locación todavía no tiene recibos emitidos.</p>
+                <p>Esta locación todavía no tiene recibos emitidos.</p>
             @else
                 <div class="d-flex flex-column gap-3">
                     @foreach ($recibos as $recibo)
                         <a href="{{ route('recibos.show', $recibo) }}" class="card text-decoration-none text-body">
                             <div class="card-body">
-                                <p class="fs-5 fw-semibold mb-1">
+                                <p class="fw-semibold mb-1">
                                     Periodo: {{ $recibo->periodo->translatedFormat('F Y') }}
                                 </p>
-                                <p class="fs-5 mb-1">
+                                <p class="mb-1">
                                     Total cobrado: S/ {{ number_format($recibo->total(), 2) }}
                                 </p>
-                                <p class="fs-5 mb-0">
+                                <p class="mb-0">
                                     Emitido el {{ $recibo->fecha_emision->format('d/m/Y') }}
                                 </p>
                             </div>

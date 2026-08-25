@@ -12,15 +12,15 @@
 
 ### User Story 1 - Visualización Accesible de Jerarquía (Priority: P1)
 
-Como Administrador e Inquilino (incluyendo Adultos Mayores), quiero ver de manera clara e inequívoca la jerarquía completa de una locación que se ofrece en alquiler (por ejemplo, "Galería El Sol > Primer Piso > Local 12") con tipografía de alta legibilidad (mínimo 18px) y alto contraste, para ubicar perfectamente el espacio sin confusión ni necesidad de destreza motora fina.
+Como Administrador e Inquilino, quiero ver de manera clara e inequívoca la jerarquía completa de una locación que se ofrece en alquiler (por ejemplo, "Galería El Sol > Primer Piso > Local 12") con tipografía legible y alto contraste, para ubicar perfectamente el espacio sin confusión.
 
-**Why this priority**: Es la necesidad central del negocio. Permite identificar la procedencia y ubicación exacta de la locación en alquiler, respetando los estándares de accesibilidad extrema (Senior-First) definidos en la Constitución del proyecto.
+**Why this priority**: Es la necesidad central del negocio. Permite identificar la procedencia y ubicación exacta de la locación en alquiler, respetando el principio de diseño moderno e intuitivo definido en la Constitución del proyecto.
 
-**Independent Test**: Se puede verificar accediendo al detalle de una locación marcada como alquilable y comprobando que se renderice su "ruta de navegación" (breadcrumbs) completa con tamaño de fuente de 18px o superior y con contraste accesible (relación mínima 4.5:1), sin menús desplegables complejos.
+**Independent Test**: Se puede verificar accediendo al detalle de una locación marcada como alquilable y comprobando que se renderice su "ruta de navegación" (breadcrumbs) completa con contraste accesible (relación mínima 4.5:1).
 
 **Acceptance Scenarios**:
 
-1. **Given** que existe la jerarquía "Galería El Sol" (No Alquilable) -> "Piso 1" (No Alquilable) -> "Local A" (Alquilable), **When** un usuario visualiza el detalle de "Local A", **Then** el sistema muestra la cadena completa "Galería El Sol > Piso 1 > Local A" en un tamaño de fuente de al menos 18px y con contraste adecuado.
+1. **Given** que existe la jerarquía "Galería El Sol" (No Alquilable) -> "Piso 1" (No Alquilable) -> "Local A" (Alquilable), **When** un usuario visualiza el detalle de "Local A", **Then** el sistema muestra la cadena completa "Galería El Sol > Piso 1 > Local A" con contraste adecuado.
 2. **Given** que un usuario visualiza la lista de locaciones disponibles para alquiler, **When** examina las opciones, **Then** solo se ofrecen para alquilar aquellas marcadas explícitamente como "alquilables", pero se visualiza de forma estática su locación contenedora asociada para dar contexto de ubicación.
 
 ---
@@ -36,7 +36,7 @@ Como Administrador, quiero crear locaciones de cualquier nivel, registrando sus 
 **Acceptance Scenarios**:
 
 1. **Given** que existe una locación "Galería Central", **When** el administrador registra una nueva locación con nombre "Piso 1", tamaño "120.00", ubicacion "Sector Norte", descripción "Primer nivel de la galería", seleccionando "Galería Central" como locación padre y marcando "No Alquilable", **Then** el sistema guarda exitosamente la relación en la base de datos.
-2. **Given** el formulario de creación de locación, **When** se intenta guardar una locación con el campo tamaño vacío o con un valor no numérico, **Then** el sistema detiene el proceso y muestra un mensaje de error explícito y persistente de alta visibilidad (Senior-First).
+2. **Given** el formulario de creación de locación, **When** se intenta guardar una locación con el campo tamaño vacío o con un valor no numérico, **Then** el sistema detiene el proceso y muestra un mensaje de error explícito y persistente de alta visibilidad.
 
 ---
 
@@ -55,7 +55,7 @@ Como Administrador, quiero que el sistema me impida asignar una locación padre 
 ### Edge Cases
 
 - **Locaciones Huérfanas por Eliminación**: ¿Qué ocurre si se elimina una locación contenedora que tiene sub-locaciones asociadas? El sistema aplica una **Restricción Estricta (Bloqueo)**. Se impedirá la eliminación de cualquier locación que posea sub-locaciones asociadas en la base de datos. El administrador debe eliminar o desvincular/reasignar las locaciones hijas manualmente antes de poder proceder.
-- **Profundidad Excesiva de la Jerarquía**: ¿Existe un límite de profundidad para evitar problemas visuales o de rendimiento en pantallas de tamaño estándar? A nivel de base de datos la profundidad es **ilimitada**. Sin embargo, para cumplir con el estándar de accesibilidad Senior-First (tamaño mínimo de 18px), la interfaz de usuario **truncará la visualización** a un máximo de los últimos 3 niveles (ej. "... > Piso 1 > Local 10"), asegurando que la ruta quepa holgadamente en pantalla sin requerir desplazamiento horizontal.
+- **Profundidad Excesiva de la Jerarquía**: ¿Existe un límite de profundidad para evitar problemas visuales o de rendimiento en pantallas de tamaño estándar? A nivel de base de datos la profundidad es **ilimitada**. Sin embargo, para mantener la ruta legible sin abrumar la interfaz, la interfaz de usuario **truncará la visualización** a un máximo de los últimos 3 niveles (ej. "... > Piso 1 > Local 10"), asegurando que la ruta quepa holgadamente en pantalla sin requerir desplazamiento horizontal.
 - **Cambio de Atributo Alquilable**: Si una locación pasa de "Alquilable" a "No Alquilable" pero tiene contratos de alquiler activos o históricos, el sistema debe bloquear el cambio o manejar la transición de manera segura para preservar la integridad transaccional (Principio V de la Constitución).
 
 ## Requirements *(mandatory)*
@@ -65,7 +65,7 @@ Como Administrador, quiero que el sistema me impida asignar una locación padre 
 - **FR-001**: El sistema MUST permitir el registro de locaciones con los campos obligatorios: nombre (texto), tamaño (numérico exacto decimal), ubicación física (texto), descripción (texto), locación_padre_id (entero, opcional/nullable) y es_alquilable (booleano).
 - **FR-002**: El sistema MUST admitir relaciones reflexivas (padre-hijo) de modo que cualquier locación pueda tener cero o una locación padre.
 - **FR-003**: El sistema MUST validar antes de guardar que no se generen dependencias circulares directas o indirectas en la jerarquía de locaciones.
-- **FR-004**: La interfaz de usuario MUST presentar la jerarquía de locaciones en un formato plano lineal con tamaño de fuente base de mínimo 18px y contraste WCAG AA/AAA. Si la jerarquía supera los 3 niveles, la visualización se truncará mostrando un indicador de omisión y únicamente los últimos 3 niveles (ej. "... > Padre > Hijo > Local") para preservar la legibilidad Senior-First.
+- **FR-004**: La interfaz de usuario MUST presentar la jerarquía de locaciones en un formato plano lineal con contraste WCAG AA. Si la jerarquía supera los 3 niveles, la visualización se truncará mostrando un indicador de omisión y únicamente los últimos 3 niveles (ej. "... > Padre > Hijo > Local") para preservar la legibilidad.
 - **FR-005**: El sistema MUST permitir filtrar las búsquedas para mostrar únicamente locaciones marcadas como `es_alquilable = true`, pero mostrando siempre su contexto jerárquico truncado asociado.
 - **FR-006**: Las operaciones de creación y edición de locaciones jerárquicas MUST ejecutarse bajo transacciones atómicas de base de datos (`DB::transaction`) para garantizar la consistencia relacional (Principio V de la Constitución).
 - **FR-007**: El sistema MUST bloquear la eliminación de una locación que tenga sub-locaciones hijas asociadas, lanzando una confirmación explícita con explicación clara.

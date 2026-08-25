@@ -23,7 +23,7 @@ Los campos `monto_garantia`/`fecha_entrega_garantia`/`medio_entrega_garantia` se
 - `SolicitudGuardarContrato` (extendida de `specs/002`/`004`): agrega `monto_garantia` (`numeric`, `nullable`, `min:0`), `fecha_entrega_garantia` (`date`, `required_if:monto_garantia,>,0`), `medio_entrega_garantia` (`nullable`, `in:efectivo,transferencia,cheque`).
 - `SolicitudRegistrarResolucionGarantia` (`registrarResolucionGarantia` de `ContratoController`): valida `monto_devuelto_garantia`/`monto_retenido_garantia` (`numeric`, `required`, `min:0`), `motivo_retencion_garantia` (`required_if` monto retenido > 0), `confirmado` (`boolean`).
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - El detalle del contrato MUST mostrar "Sin garantía registrada" cuando `monto_garantia` sea `null` o `0.00`, en vez de un campo vacío ambiguo (FR-004, SC-003).
 - El mensaje de discrepancia de montos (FR-008) MUST ser explícito, indicando la diferencia detectada, con tipografía ≥18px y alto contraste.

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Locacion;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -37,6 +38,7 @@ class SolicitudGuardarLocacion extends FormRequest
                 Rule::notIn(array_filter([$locacionActualId])),
             ],
             'es_alquilable' => ['boolean'],
+            'tipo' => ['required', Rule::in(array_keys(Locacion::TIPOS))],
         ];
     }
 
@@ -51,6 +53,8 @@ class SolicitudGuardarLocacion extends FormRequest
             'descripcion.required' => 'La descripción es obligatoria.',
             'locacion_padre_id.exists' => 'La locación padre seleccionada no es válida.',
             'locacion_padre_id.not_in' => 'No se puede asignar una locación hija como padre.',
+            'tipo.required' => 'Debe seleccionar el tipo de locación.',
+            'tipo.in' => 'El tipo de locación seleccionado no es válido.',
         ];
     }
 }

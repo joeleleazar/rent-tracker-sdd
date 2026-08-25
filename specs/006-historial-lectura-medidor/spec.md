@@ -70,7 +70,7 @@ Como Administrador, quiero consultar el historial completo de lecturas anteriore
 - **FR-006**: El sistema MUST tratar cada registro de periodo como independiente una vez guardado: si el administrador edita manualmente la "lectura anterior" autocompletada de un nuevo periodo, el registro del periodo previo del cual se trasladó el valor NO se modifica automáticamente.
 - **FR-007**: El sistema MUST advertir de forma explícita y de alto contraste cuando exista una discrepancia entre la "lectura actual" guardada de un periodo y la "lectura anterior" utilizada en el periodo inmediatamente posterior (por ejemplo, tras una edición manual desincronizada), sin bloquear el registro.
 - **FR-008**: El sistema MUST mostrar el historial de lecturas de una locación en orden cronológico, indicando por cada periodo su "lectura anterior", "lectura actual" y consumo calculado.
-- **FR-009**: La interfaz de registro y consulta de lecturas MUST cumplir los estándares Senior-First del proyecto (tipografía mínima de 18px, alto contraste, botones de al menos 48x48px y etiquetas explícitas como "Guardar Lectura del Periodo").
+- **FR-009**: La interfaz de registro y consulta de lecturas MUST usar alto contraste y etiquetas explícitas ("Guardar Lectura del Periodo").
 
 ### Key Entities *(include if feature involves data)*
 

@@ -46,9 +46,9 @@ Aplicación Laravel monolítica única — rutas relativas a la raíz del reposi
 
 ---
 
-## Phase 3: User Story 1 - Diseño Visual Elevado Manteniendo Senior-First (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Diseño Visual Elevado (Priority: P1) 🎯 MVP
 
-**Goal**: Refinar jerarquía visual, espaciado, profundidad de tarjetas, paleta e iconografía sin afectar ningún mínimo Senior-First.
+**Goal**: Refinar jerarquía visual, espaciado, profundidad de tarjetas, paleta e iconografía sin afectar el contraste ni la legibilidad.
 
 **Independent Test**: Navegar cualquier pantalla ya migrada y confirmar visualmente jerarquía/espaciado/profundidad mejorados, con tipografía ≥18px, contraste ≥4.5:1 y botones ≥48x48px intactos.
 

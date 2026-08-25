@@ -42,7 +42,7 @@ Los campos `costo_agua`/`costo_luz`/`costo_pasadizo`/`costo_seguridad` se editan
 
 `php artisan contratos:verificar-vencimientos` — ejecutado diariamente por el scheduler (`routes/console.php`: `Schedule::command('contratos:verificar-vencimientos')->daily()`); no expone ruta HTTP, ver `data-model.md`/`research.md` §3-4 para su lógica.
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - Todo error de validación se muestra junto al campo y en un resumen superior persistente, tipografía ≥18px, contraste WCAG AA/AAA (Principio III).
 - El botón de emisión de recibo MUST tener la etiqueta explícita "Emitir Recibo" (≥48x48px); el de edición de costos, "Guardar Costos del Contrato".

@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ContratoSinRepresentantesException;
+use App\Exceptions\ContratoSinInquilinosException;
 use App\Exceptions\ContratoSolapadoException;
 use App\Exceptions\GarantiaDescuadreException;
+use App\Exceptions\InquilinoPrincipalInvalidoException;
+use App\Exceptions\InquilinoPrincipalSinReemplazoException;
 use App\Exceptions\MotivoRetencionRequeridoException;
-use App\Exceptions\RepresentantePrincipalInvalidoException;
 use App\Exceptions\ResolucionGarantiaRequiereConfirmacionException;
-use App\Exceptions\UltimoRepresentanteException;
-use App\Http\Requests\SolicitudAsociarRepresentante;
+use App\Exceptions\UltimoInquilinoException;
+use App\Http\Requests\SolicitudAsociarInquilino;
 use App\Http\Requests\SolicitudGuardarContrato;
 use App\Http\Requests\SolicitudGuardarCostosContrato;
+use App\Http\Requests\SolicitudQuitarInquilino;
 use App\Http\Requests\SolicitudRegistrarResolucionGarantia;
 use App\Models\Contrato;
 use App\Models\Inquilino;
 use App\Models\Locacion;
-use App\Models\Representante;
-use App\Services\ServicioAsociacionRepresentantesContrato;
+use App\Services\ServicioAsociacionInquilinosContrato;
 use App\Services\ServicioResolucionGarantiaContrato;
 use App\Services\ServicioValidacionSolapamientoContrato;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +28,7 @@ class ContratoController extends Controller
 {
     public function __construct(
         private readonly ServicioValidacionSolapamientoContrato $servicioValidacionSolapamiento,
-        private readonly ServicioAsociacionRepresentantesContrato $servicioRepresentantes,
+        private readonly ServicioAsociacionInquilinosContrato $servicioInquilinos,
         private readonly ServicioResolucionGarantiaContrato $servicioResolucionGarantia,
     ) {
     }
@@ -36,7 +37,7 @@ class ContratoController extends Controller
     {
         return view('contratos.index', [
             'locacion' => $locacion,
-            'contratos' => $locacion->contratos()->historialCronologico()->with('inquilino')->get(),
+            'contratos' => $locacion->contratos()->historialCronologico()->with('inquilinos')->get(),
         ]);
     }
 
@@ -44,18 +45,17 @@ class ContratoController extends Controller
     {
         return view('contratos.create', [
             'locacion' => $locacion,
-            'inquilinos' => Inquilino::orderBy('nombre')->get(),
         ]);
     }
 
     public function store(SolicitudGuardarContrato $solicitud, Locacion $locacion): RedirectResponse
     {
         $datos = $solicitud->validated();
-        $representantesInput = $datos['representantes'] ?? [];
+        $inquilinosInput = $datos['inquilinos'] ?? [];
         $principalIndex = $datos['principal_index'] ?? null;
-        unset($datos['representantes'], $datos['principal_index']);
+        unset($datos['inquilinos'], $datos['principal_index']);
 
-        $representantesData = $this->prepararRepresentantes($representantesInput, $principalIndex);
+        $inquilinosData = $this->prepararInquilinos($inquilinosInput, $principalIndex);
         $datos = $this->conEstadoGarantia($datos);
 
         try {
@@ -64,9 +64,9 @@ class ContratoController extends Controller
                 $datos['fecha_inicio'],
                 $datos['fecha_fin'],
                 null,
-                function () use ($locacion, $datos, $representantesData) {
+                function () use ($locacion, $datos, $inquilinosData) {
                     $contrato = $locacion->contratos()->create($datos);
-                    $this->servicioRepresentantes->sincronizar($contrato, $representantesData);
+                    $this->servicioInquilinos->sincronizar($contrato, $inquilinosData);
 
                     return $contrato;
                 },
@@ -79,8 +79,8 @@ class ContratoController extends Controller
             // Eloquent) porque la sesión serializa/deserializa objetos como arrays.
             return back()->withInput()->withErrors(['solapamiento' => $excepcion->getMessage()])
                 ->with('contratoEnConflicto', $this->datosContratoEnConflicto($excepcion->contratoEnConflicto));
-        } catch (ContratoSinRepresentantesException|RepresentantePrincipalInvalidoException $excepcion) {
-            return back()->withInput()->withErrors(['representantes' => $excepcion->getMessage()]);
+        } catch (ContratoSinInquilinosException|InquilinoPrincipalInvalidoException $excepcion) {
+            return back()->withInput()->withErrors(['inquilinos' => $excepcion->getMessage()]);
         }
 
         return redirect()->route('contratos.show', $contrato)
@@ -89,7 +89,7 @@ class ContratoController extends Controller
 
     public function show(Contrato $contrato): View
     {
-        $contrato->load(['locacion', 'inquilino', 'documentos', 'representantes']);
+        $contrato->load(['locacion', 'inquilinos', 'documentos']);
 
         return view('contratos.show', [
             'contrato' => $contrato,
@@ -100,7 +100,6 @@ class ContratoController extends Controller
     {
         return view('contratos.edit', [
             'contrato' => $contrato,
-            'inquilinos' => Inquilino::orderBy('nombre')->get(),
         ]);
     }
 
@@ -149,31 +148,32 @@ class ContratoController extends Controller
     }
 
     /**
-     * Asocia un representante (existente o nuevo) a un contrato ya persistido (US2),
+     * Asocia un inquilino (existente o nuevo) a un contrato ya persistido (US2),
      * gestionado de forma atómica desde la vista de detalle, igual que los documentos.
      */
-    public function agregarRepresentante(SolicitudAsociarRepresentante $solicitud, Contrato $contrato): RedirectResponse
+    public function agregarInquilino(SolicitudAsociarInquilino $solicitud, Contrato $contrato): RedirectResponse
     {
-        $this->servicioRepresentantes->agregar($contrato, $solicitud->validated());
+        $this->servicioInquilinos->agregar($contrato, $solicitud->validated());
 
         return redirect()->route('contratos.show', $contrato)
-            ->with('mensaje', 'Representante asociado al contrato correctamente.');
+            ->with('mensaje', 'Inquilino asociado al contrato correctamente.');
     }
 
     /**
-     * Quita un representante de un contrato ya persistido, bloqueando la acción si es
-     * el único asociado (FR-004).
+     * Quita un inquilino de un contrato ya persistido, bloqueando la acción si es
+     * el único asociado (FR-004) o si es el Principal y no se designó un
+     * reemplazo entre los inquilinos restantes (FR-009).
      */
-    public function quitarRepresentante(Contrato $contrato, Representante $representante): RedirectResponse
+    public function quitarInquilino(SolicitudQuitarInquilino $solicitud, Contrato $contrato, Inquilino $inquilino): RedirectResponse
     {
         try {
-            $this->servicioRepresentantes->quitar($contrato, $representante);
-        } catch (UltimoRepresentanteException $excepcion) {
-            return back()->withErrors(['representantes' => $excepcion->getMessage()]);
+            $this->servicioInquilinos->quitar($contrato, $inquilino, $solicitud->validated('nuevo_principal_id'));
+        } catch (UltimoInquilinoException|InquilinoPrincipalSinReemplazoException $excepcion) {
+            return back()->withErrors(['inquilinos' => $excepcion->getMessage()]);
         }
 
         return redirect()->route('contratos.show', $contrato)
-            ->with('mensaje', 'Representante removido del contrato correctamente.');
+            ->with('mensaje', 'Inquilino removido del contrato correctamente.');
     }
 
     /**
@@ -212,7 +212,7 @@ class ContratoController extends Controller
             'contrato_id' => $contrato->id,
             'fecha_inicio' => $contrato->fecha_inicio->format('d/m/Y'),
             'fecha_fin' => $contrato->fecha_fin->format('d/m/Y'),
-            'inquilino_nombre' => $contrato->inquilino->nombre,
+            'inquilino_nombre' => $contrato->inquilinoPrincipal()?->nombreCompleto() ?? '—',
             'monto_renta' => number_format((float) $contrato->monto_renta, 2),
         ];
     }
@@ -241,21 +241,21 @@ class ContratoController extends Controller
     }
 
     /**
-     * @param array<int, array<string, mixed>> $representantesInput
+     * @param array<int, array<string, mixed>> $inquilinosInput
      * @return array<int, array<string, mixed>>
      */
-    private function prepararRepresentantes(array $representantesInput, ?int $principalIndex): array
+    private function prepararInquilinos(array $inquilinosInput, ?int $principalIndex): array
     {
-        $representantes = [];
+        $inquilinos = [];
 
-        foreach (array_values($representantesInput) as $indice => $datos) {
+        foreach (array_values($inquilinosInput) as $indice => $datos) {
             $datos['es_principal'] = $principalIndex !== null
                 ? $indice === $principalIndex
                 : $indice === 0;
 
-            $representantes[] = $datos;
+            $inquilinos[] = $datos;
         }
 
-        return $representantes;
+        return $inquilinos;
     }
 }

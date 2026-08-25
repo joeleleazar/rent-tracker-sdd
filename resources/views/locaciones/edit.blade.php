@@ -40,13 +40,26 @@
 
             <div>
                 <x-input-label for="descripcion" value="Descripción" />
-                <textarea id="descripcion" name="descripcion" class="form-control form-control-lg" rows="3" required>{{ old('descripcion', $locacion->descripcion) }}</textarea>
+                <textarea id="descripcion" name="descripcion" class="form-control" rows="3" required>{{ old('descripcion', $locacion->descripcion) }}</textarea>
                 <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
             </div>
 
             <div>
+                <x-input-label for="tipo" value="Tipo" />
+                <select id="tipo" name="tipo" class="form-select" required>
+                    <option value="">Seleccione un tipo</option>
+                    @foreach (\App\Models\Locacion::TIPOS as $valor => $datos)
+                        <option value="{{ $valor }}" @selected(old('tipo', $locacion->tipo) === $valor)>
+                            {{ $datos['etiqueta'] }}
+                        </option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('tipo')" class="mt-2" />
+            </div>
+
+            <div>
                 <x-input-label for="locacion_padre_id" value="Locación padre (opcional)" />
-                <select id="locacion_padre_id" name="locacion_padre_id" class="form-select form-select-lg">
+                <select id="locacion_padre_id" name="locacion_padre_id" class="form-select">
                     <option value="">Ninguna (locación raíz)</option>
                     @foreach ($locaciones as $opcion)
                         <option value="{{ $opcion->id }}" @selected(old('locacion_padre_id', $locacion->locacion_padre_id) == $opcion->id)>
@@ -60,12 +73,12 @@
             <div class="form-check d-flex align-items-center gap-2 ps-0">
                 <input type="hidden" name="es_alquilable" value="0">
                 <input type="checkbox" id="es_alquilable" name="es_alquilable" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('es_alquilable', $locacion->es_alquilable))>
-                <label for="es_alquilable" class="form-check-label fs-5 fw-semibold">Es alquilable</label>
+                <label for="es_alquilable" class="form-check-label fw-semibold">Es alquilable</label>
             </div>
 
             <div class="d-flex flex-wrap gap-3">
                 <x-primary-button>Guardar Cambios</x-primary-button>
-                <a href="{{ route('locaciones.show', $locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
+                <a href="{{ route('locaciones.show', $locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
             </div>
         </form>
     </div>

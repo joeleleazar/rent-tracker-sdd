@@ -9,7 +9,10 @@ class InquilinoFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => fake()->name(),
+            'apellidos' => fake()->lastName(),
+            'nombres' => fake()->firstName(),
+            'dni' => fake()->unique()->numerify('########'),
+            'fecha_nacimiento' => fake()->dateTimeBetween('-80 years', '-18 years')->format('Y-m-d'),
         ];
     }
 }

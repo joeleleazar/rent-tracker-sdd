@@ -6,13 +6,13 @@
 
 **Status**: Draft
 
-**Input**: User description: "Migrar toda la interfaz de usuario del sistema (actualmente construida con Tailwind CSS v4 + Alpine.js sobre Blade, cubriendo las 9 features 001-009 ya implementadas) a Bootstrap 5.3, manteniendo exactamente los mismos principios de accesibilidad Senior-First ya vigentes y sin cambiar ninguna regla de negocio, validación, ruta, controlador ni modelo ya implementados — es exclusivamente un reemplazo del framework CSS/JS de presentación. Priorizar en el mismo orden de criticidad que las features originales: P1 (001-004), P2 (005, 007, 009), P3 (006 con gráfico de consumo, 008)."
+**Input**: User description: "Migrar toda la interfaz de usuario del sistema (actualmente construida con Tailwind CSS v4 + Alpine.js sobre Blade, cubriendo las 9 features 001-009 ya implementadas) a Bootstrap 5.3, manteniendo el mismo nivel de accesibilidad ya vigente y sin cambiar ninguna regla de negocio, validación, ruta, controlador ni modelo ya implementados — es exclusivamente un reemplazo del framework CSS/JS de presentación. Priorizar en el mismo orden de criticidad que las features originales: P1 (001-004), P2 (005, 007, 009), P3 (006 con gráfico de consumo, 008)."
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Migración de las Vistas Fundamentales del Negocio (Priority: P1)
 
-Como Administrador, quiero que las pantallas de locaciones, contratos, representantes y condiciones/costos del contrato (features 001 a 004) se vean y se comporten igual que hoy pero construidas con componentes Bootstrap 5 (cards, tablas responsive, modales, formularios), para seguir gestionando el núcleo del negocio sin perder ninguna funcionalidad ni el nivel de accesibilidad Senior-First ya alcanzado.
+Como Administrador, quiero que las pantallas de locaciones, contratos, representantes y condiciones/costos del contrato (features 001 a 004) se vean y se comporten igual que hoy pero construidas con componentes Bootstrap 5 (cards, tablas responsive, modales, formularios), para seguir gestionando el núcleo del negocio sin perder ninguna funcionalidad ni el nivel de accesibilidad ya alcanzado.
 
 **Why this priority**: Son las pantallas de mayor uso diario y las que sustentan todo el resto del sistema (un contrato no puede existir sin una locación, un representante o sus costos). Migrarlas primero permite validar tempranamente que el nuevo sistema de componentes cumple los mismos estándares de accesibilidad antes de extenderlo al resto de la aplicación.
 
@@ -20,7 +20,7 @@ Como Administrador, quiero que las pantallas de locaciones, contratos, represent
 
 **Acceptance Scenarios**:
 
-1. **Given** el listado de locaciones alquilables, **When** el Administrador lo visualiza, **Then** se presenta con tarjetas o tabla responsive de Bootstrap 5, manteniendo tipografía mínima de 18px, contraste WCAG AA/AAA y el breadcrumb jerárquico truncado a 3 niveles.
+1. **Given** el listado de locaciones alquilables, **When** el Administrador lo visualiza, **Then** se presenta con tarjetas o tabla responsive de Bootstrap 5, manteniendo contraste WCAG AA y el breadcrumb jerárquico truncado a 3 niveles.
 2. **Given** el formulario de creación de un contrato con representantes, costos y garantía, **When** el Administrador lo completa y guarda, **Then** el sistema guarda el contrato exactamente con las mismas reglas de validación ya vigentes (solapamiento, mínimo un representante, exactamente un Principal), mostrando los errores en componentes de alerta Bootstrap en vez de los componentes Tailwind actuales.
 3. **Given** un intento de eliminar una locación con sub-locaciones asociadas, **When** el Administrador confirma la eliminación en el modal Bootstrap, **Then** el sistema bloquea la operación con el mismo mensaje explícito ya definido, mostrado en un modal Bootstrap en vez del modal Alpine.js actual.
 
@@ -37,7 +37,7 @@ Como Administrador, quiero que las pantallas de lecturas de medidor, recibos por
 **Acceptance Scenarios**:
 
 1. **Given** un periodo con lectura de medidor registrada, **When** el Administrador genera el recibo, **Then** el formulario de conceptos editables se presenta con `input-group` de Bootstrap con el símbolo "S/", conservando la misma lógica de cálculo de consumo y prorrateo.
-2. **Given** un recibo pendiente, **When** el Administrador cambia su estado a "Pagado", **Then** el selector de estado (implementado hoy con botones Senior-First) se reemplaza por un `btn-group`/`btn-check` de Bootstrap con el mismo comportamiento y confirmación donde corresponda.
+2. **Given** un recibo pendiente, **When** el Administrador cambia su estado a "Pagado", **Then** el selector de estado (implementado hoy con botones custom) se reemplaza por un `btn-group`/`btn-check` de Bootstrap con el mismo comportamiento y confirmación donde corresponda.
 3. **Given** un contrato con garantía entregada, **When** el Administrador registra la resolución con retención parcial, **Then** el formulario de resolución (monto devuelto, retenido, motivo) se presenta con componentes Bootstrap, conservando la validación de cuadre exacto y el mensaje de error correspondiente.
 
 ---
@@ -52,7 +52,7 @@ Como Administrador, quiero que el historial de lecturas de medidor (feature 006)
 
 **Acceptance Scenarios**:
 
-1. **Given** una locación con historial de 6 periodos de lectura de medidor, **When** el Administrador visualiza su historial, **Then** se muestra un gráfico de consumo por periodo además de la tabla histórica, ambos con tipografía y contraste Senior-First.
+1. **Given** una locación con historial de 6 periodos de lectura de medidor, **When** el Administrador visualiza su historial, **Then** se muestra un gráfico de consumo por periodo además de la tabla histórica, ambos con tipografía legible y alto contraste.
 2. **Given** el panel de configuración general, **When** el Administrador ajusta los días de anticipación para la alerta de fecha límite de pago, **Then** el formulario se presenta con componentes Bootstrap, conservando la misma validación y persistencia ya implementadas.
 
 ### Edge Cases
@@ -67,12 +67,12 @@ Como Administrador, quiero que el historial de lecturas de medidor (feature 006)
 ### Functional Requirements
 
 - **FR-001**: El sistema MUST presentar todas las vistas de las 9 features ya implementadas (001 a 009) usando componentes de Bootstrap 5.3 (cards, tablas responsive, modales, formularios, badges, grupos de botones) en lugar de los componentes Tailwind/Alpine.js custom actuales, sin alterar ninguna ruta, controlador, modelo, servicio o regla de validación ya implementada.
-- **FR-002**: El sistema MUST conservar, en cada vista migrada, los mismos estándares de accesibilidad Senior-First ya vigentes: tipografía base mínima de 18px, contraste WCAG AA/AAA, botones y áreas táctiles de mínimo 48x48px, navegación plana sin menús desplegables complejos, y confirmación explícita mediante modal antes de cualquier acción destructiva o irreversible.
+- **FR-002**: El sistema MUST conservar, en cada vista migrada, contraste WCAG AA y confirmación explícita mediante modal antes de cualquier acción destructiva o irreversible.
 - **FR-003**: El sistema MUST migrar las vistas en tres bloques de prioridad: (P1) locaciones, contratos, representantes y condiciones/costos de contrato; (P2) lecturas de medidor, recibos por periodo, estado y envío de recibos, y garantía de contrato; (P3) historial de lecturas de medidor con gráfico de consumo y prorrateo/alertas de pago.
 - **FR-004**: El sistema MUST mantener el comportamiento visible de cada pantalla (mensajes de error, mensajes de éxito, datos mostrados, condiciones de habilitación/deshabilitación de controles) idéntico al actual durante y después de la migración, verificable mediante la suite de pruebas automatizadas existente.
 - **FR-005**: El sistema MUST agregar un gráfico visual de consumo histórico de medidor (por periodo) a la vista de historial de lecturas (feature 006), como mejora nueva incluida en el alcance de esta migración.
 - **FR-006**: El sistema MUST permitir que, durante la migración incremental, las vistas ya migradas (Bootstrap) y las pendientes (Tailwind/Alpine) coexistan sin conflicto visual ni funcional en la misma aplicación.
-- **FR-007**: El sistema MUST retirar el sistema de estilos Tailwind/Alpine.js específico de esta aplicación (utilidades y componentes Senior-First custom) únicamente al completarse la migración de las tres historias de usuario, no antes.
+- **FR-007**: El sistema MUST retirar el sistema de estilos Tailwind/Alpine.js específico de esta aplicación (utilidades y componentes custom) únicamente al completarse la migración de las tres historias de usuario, no antes.
 
 ### Key Entities
 

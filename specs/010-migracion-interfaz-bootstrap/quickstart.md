@@ -31,7 +31,7 @@ Guía de validación end-to-end de la migración, una vez implementada por bloqu
 
 1. Migrar/extender la vista de historial de lecturas con un `<canvas>` Chart.js mostrando el consumo por periodo, y la vista de configuración general.
 2. Navegar al historial de una locación con 6+ periodos registrados.
-3. **Resultado esperado**: se ve el gráfico de consumo además de la tabla histórica ya migrada, ambos con tipografía y contraste Senior-First.
+3. **Resultado esperado**: se ve el gráfico de consumo además de la tabla histórica ya migrada, ambos con tipografía legible y alto contraste.
 4. Ejecutar `php artisan test` completo — 191/191 deben seguir pasando.
 
 ## Escenario 4 — Retiro del sistema de estilos anterior (cierre de la migración)

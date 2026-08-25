@@ -14,9 +14,8 @@
          * fuera del elemento capturado — lanza
          * "Attempting to parse an unsupported color function oklch" y aborta toda
          * la captura. Por eso esta página entera usa CSS propio con colores
-         * hexadecimales, mantenido con los mismos criterios Senior-First
-         * (tipografía ≥18px, alto contraste, controles ≥48x48px) que el resto del
-         * proyecto expresa vía Tailwind.
+         * hexadecimales, manteniendo el mismo criterio de diseño moderno y alto
+         * contraste que el resto del proyecto expresa vía Bootstrap.
          */
         * {
             box-sizing: border-box;
@@ -39,13 +38,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 48px;
-            min-width: 48px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1.125rem;
+            padding: 0.5rem 1.25rem;
+            font-size: 1rem;
             font-weight: 600;
             border-radius: 0.375rem;
-            border: 2px solid transparent;
+            border: 1px solid transparent;
             cursor: pointer;
             text-decoration: none;
         }
@@ -61,11 +58,11 @@
         .estado-envio {
             margin: 0 auto 1.5rem auto;
             max-width: 42rem;
-            border: 2px solid #1e40af;
+            border: 1px solid #1e40af;
             background: #eff6ff;
             color: #1e3a8a;
             padding: 1rem;
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 600;
             border-radius: 0.375rem;
         }
@@ -77,7 +74,7 @@
             margin: 0 auto;
             max-width: 42rem;
             background: #ffffff;
-            border: 2px solid #d1d5db;
+            border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             padding: 2rem;
         }
@@ -94,17 +91,17 @@
             margin-bottom: 1rem;
         }
         #comprobante-recibo dt {
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #374151;
         }
         #comprobante-recibo dd {
-            font-size: 1.125rem;
+            font-size: 1rem;
             color: #111827;
             margin: 0;
         }
         #comprobante-recibo .fila-total {
-            border-top: 2px solid #d1d5db;
+            border-top: 1px solid #d1d5db;
             padding-top: 1rem;
             margin-top: 1rem;
         }
@@ -182,7 +179,7 @@
             </div>
             <div class="fila">
                 <dt>Inquilino</dt>
-                <dd>{{ $recibo->contrato->inquilino->nombre }}</dd>
+                <dd>{{ $recibo->contrato->inquilinoPrincipal()?->nombreCompleto() ?? '—' }}</dd>
             </div>
             <div class="fila">
                 <dt>Periodo</dt>

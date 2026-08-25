@@ -3,11 +3,10 @@
 use App\Http\Controllers\ConfiguracionGeneralController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\DocumentoContratoController;
+use App\Http\Controllers\InquilinoController;
 use App\Http\Controllers\LecturaMedidorController;
 use App\Http\Controllers\LocacionController;
 use App\Http\Controllers\ReciboController;
-use App\Http\Controllers\RepresentanteController;
-use App\Models\Locacion;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,8 +14,11 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // specs/013-arbol-jerarquico-locaciones: el listado general de locaciones
+    // se consolidó en locaciones.index (árbol jerárquico unificado); esta ruta
+    // se conserva como alias de navegación post-login en vez de eliminarse.
     Route::get('/dashboard', function () {
-        return view('dashboard', ['locaciones' => Locacion::orderBy('nombre')->get()]);
+        return redirect()->route('locaciones.index');
     })->name('dashboard');
 
     Route::get('/locaciones', [LocacionController::class, 'index'])->name('locaciones.index');
@@ -40,10 +42,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/contratos/{contrato}/documentos/{documento}', [DocumentoContratoController::class, 'show'])->name('contratos.documentos.show');
     Route::delete('/contratos/{contrato}/documentos/{documento}', [DocumentoContratoController::class, 'destroy'])->name('contratos.documentos.destroy');
 
-    Route::get('/representantes/buscar', [RepresentanteController::class, 'buscar'])->name('representantes.buscar');
-    Route::post('/representantes', [RepresentanteController::class, 'store'])->name('representantes.store');
-    Route::post('/contratos/{contrato}/representantes', [ContratoController::class, 'agregarRepresentante'])->name('contratos.representantes.store');
-    Route::delete('/contratos/{contrato}/representantes/{representante}', [ContratoController::class, 'quitarRepresentante'])->name('contratos.representantes.destroy');
+    Route::get('/inquilinos/buscar', [InquilinoController::class, 'buscar'])->name('inquilinos.buscar');
+    Route::post('/inquilinos', [InquilinoController::class, 'store'])->name('inquilinos.store');
+    Route::post('/contratos/{contrato}/inquilinos', [ContratoController::class, 'agregarInquilino'])->name('contratos.inquilinos.store');
+    Route::delete('/contratos/{contrato}/inquilinos/{inquilino}', [ContratoController::class, 'quitarInquilino'])->name('contratos.inquilinos.destroy');
 
     // Recibos: rutas locación-céntricas (no contrato-céntricas), ver
     // specs/005-lecturas-medidor-recibo-periodo/research.md §1 — reconciliación

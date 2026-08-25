@@ -32,7 +32,7 @@ Este documento resuelve las decisiones técnicas necesarias antes del diseño (F
 
 **Alternatives considered**:
 - Cambiar la migración a `restrictOnDelete()` en vez de `nullOnDelete()`: viable como refuerzo a nivel de base de datos, pero requeriría una nueva migración de alteración de columna; se documenta como mejora opcional en `tasks.md`, no como bloqueante de esta feature, dado que la migración ya está aplicada y usada por `specs/002`.
-- Confiar únicamente en la restricción de base de datos y capturar la excepción SQL: rechazado, el mensaje de error resultante no sería el mensaje explícito y persistente Senior-First que exige el Principio III.
+- Confiar únicamente en la restricción de base de datos y capturar la excepción SQL: rechazado, el mensaje de error resultante no sería el mensaje explícito y persistente que exige el Principio III.
 
 ## 4. Truncamiento de la jerarquía a 3 niveles en la interfaz (FR-004)
 

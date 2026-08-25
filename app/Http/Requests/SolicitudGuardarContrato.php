@@ -45,7 +45,6 @@ class SolicitudGuardarContrato extends FormRequest
     public function rules(): array
     {
         $reglas = [
-            'inquilino_id' => ['required', 'integer', 'exists:inquilinos,id'],
             'fecha_inicio' => ['required', 'date'],
             'fecha_fin' => ['required', 'date', 'after_or_equal:fecha_inicio'],
             'monto_renta' => ['required', 'numeric', 'gt:0'],
@@ -68,18 +67,19 @@ class SolicitudGuardarContrato extends FormRequest
             'medio_entrega_garantia' => ['nullable', 'in:efectivo,transferencia,cheque'],
         ];
 
-        // Representantes (specs/003-representantes-contrato): solo se exigen al crear el
-        // contrato (POST). Al editar (PUT), los representantes se gestionan de forma
-        // atómica desde la vista de detalle (agregarRepresentante/quitarRepresentante),
+        // Inquilinos (specs/003-representantes-contrato, corrección 2026-08-23: el
+        // inquilino ES el representante del contrato): solo se exigen al crear el
+        // contrato (POST). Al editar (PUT), los inquilinos se gestionan de forma
+        // atómica desde la vista de detalle (agregarInquilino/quitarInquilino),
         // igual que los documentos del contrato — ver research.md/tasks.md de 003, Notes.
         if ($this->isMethod('POST')) {
             $reglas += [
-                'representantes' => ['required', 'array', 'min:1'],
-                'representantes.*.representante_id' => ['nullable', 'integer', 'exists:representantes,id'],
-                'representantes.*.apellidos' => ['required_without:representantes.*.representante_id', 'nullable', 'string', 'max:255'],
-                'representantes.*.nombres' => ['required_without:representantes.*.representante_id', 'nullable', 'string', 'max:255'],
-                'representantes.*.dni' => ['required_without:representantes.*.representante_id', 'nullable', 'string', 'regex:/^[0-9]{8}$/'],
-                'representantes.*.fecha_nacimiento' => ['required_without:representantes.*.representante_id', 'nullable', 'date', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
+                'inquilinos' => ['required', 'array', 'min:1'],
+                'inquilinos.*.inquilino_id' => ['nullable', 'integer', 'exists:inquilinos,id'],
+                'inquilinos.*.apellidos' => ['required_without:inquilinos.*.inquilino_id', 'nullable', 'string', 'max:255'],
+                'inquilinos.*.nombres' => ['required_without:inquilinos.*.inquilino_id', 'nullable', 'string', 'max:255'],
+                'inquilinos.*.dni' => ['required_without:inquilinos.*.inquilino_id', 'nullable', 'string', 'regex:/^[0-9]{8}$/'],
+                'inquilinos.*.fecha_nacimiento' => ['required_without:inquilinos.*.inquilino_id', 'nullable', 'date', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
                 'principal_index' => ['nullable', 'integer'],
             ];
         }
@@ -90,8 +90,6 @@ class SolicitudGuardarContrato extends FormRequest
     public function messages(): array
     {
         return [
-            'inquilino_id.required' => 'Debe seleccionar un inquilino.',
-            'inquilino_id.exists' => 'El inquilino seleccionado no es válido.',
             'fecha_inicio.required' => 'La fecha de inicio es obligatoria.',
             'fecha_fin.required' => 'La fecha de fin es obligatoria.',
             'fecha_fin.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
@@ -112,14 +110,14 @@ class SolicitudGuardarContrato extends FormRequest
             'fecha_entrega_garantia.date' => 'La fecha de entrega de garantía no es válida.',
             'fecha_entrega_garantia.required' => 'La fecha de entrega de garantía es obligatoria cuando se registra un monto de garantía.',
             'medio_entrega_garantia.in' => 'El medio de entrega de garantía seleccionado no es válido.',
-            'representantes.required' => 'Debe asociar por lo menos un representante al contrato antes de guardar.',
-            'representantes.min' => 'Debe asociar por lo menos un representante al contrato antes de guardar.',
-            'representantes.*.apellidos.required_without' => 'Los apellidos del representante son obligatorios.',
-            'representantes.*.nombres.required_without' => 'Los nombres del representante son obligatorios.',
-            'representantes.*.dni.required_without' => 'El DNI del representante es obligatorio.',
-            'representantes.*.dni.regex' => 'El DNI debe tener formato válido (8 dígitos numéricos).',
-            'representantes.*.fecha_nacimiento.required_without' => 'La fecha de nacimiento del representante es obligatoria.',
-            'representantes.*.fecha_nacimiento.before_or_equal' => 'El representante debe ser mayor de edad.',
+            'inquilinos.required' => 'Debe asociar por lo menos un inquilino al contrato antes de guardar.',
+            'inquilinos.min' => 'Debe asociar por lo menos un inquilino al contrato antes de guardar.',
+            'inquilinos.*.apellidos.required_without' => 'Los apellidos del inquilino son obligatorios.',
+            'inquilinos.*.nombres.required_without' => 'Los nombres del inquilino son obligatorios.',
+            'inquilinos.*.dni.required_without' => 'El DNI del inquilino es obligatorio.',
+            'inquilinos.*.dni.regex' => 'El DNI debe tener formato válido (8 dígitos numéricos).',
+            'inquilinos.*.fecha_nacimiento.required_without' => 'La fecha de nacimiento del inquilino es obligatoria.',
+            'inquilinos.*.fecha_nacimiento.before_or_equal' => 'El inquilino debe ser mayor de edad.',
         ];
     }
 }

@@ -36,14 +36,14 @@
                             required
                         />
                         <x-input-error :messages="$errors->get('correo_notificaciones_vencimiento')" class="mt-2" />
-                        <p class="fs-5 mt-2 mb-0">
+                        <p class="mt-2 mb-0">
                             A esta dirección se enviarán todas las notificaciones automáticas de vencimiento de contratos.
                         </p>
                     </div>
 
                     <div>
                         <x-input-label for="tarifa_luz_por_unidad" value="Tarifa de Luz por Unidad de Consumo (S/)" />
-                        <div class="input-group input-group-lg">
+                        <div class="input-group">
                             <span class="input-group-text">S/</span>
                             <x-text-input
                                 id="tarifa_luz_por_unidad"
@@ -56,7 +56,7 @@
                             />
                         </div>
                         <x-input-error :messages="$errors->get('tarifa_luz_por_unidad')" class="mt-2" />
-                        <p class="fs-5 mt-2 mb-0">
+                        <p class="mt-2 mb-0">
                             Se usa para calcular el monto sugerido de luz de cada recibo (consumo × tarifa).
                         </p>
                     </div>
@@ -73,7 +73,7 @@
                             required
                         />
                         <x-input-error :messages="$errors->get('dias_anticipacion_alerta_pago')" class="mt-2" />
-                        <p class="fs-5 mt-2 mb-0">
+                        <p class="mt-2 mb-0">
                             El sistema avisará con esta cantidad de días de anticipación antes del último sábado de cada mes (fecha límite de pago).
                         </p>
                     </div>

@@ -35,7 +35,7 @@ Aplicación monolítica Laravel con vistas Blade server-rendered, consistente co
 - `SolicitudGuardarLecturaMedidor` (`store`/`update` de `LecturaMedidorController`): valida `periodo` (fecha válida, normalizada al día 1 del mes), `lectura` (`numeric`, `required`, `min:0`), `confirmar_consumo_negativo` (`boolean`, requerido solo si el cálculo resulta negativo, ver `research.md` §4).
 - `SolicitudGuardarRecibo` (extendida de `specs/004`): agrega `incluye_alquiler`/`incluye_luz`/`incluye_agua`/`incluye_seguridad`/`incluye_pasadizo` (`boolean`, cada uno por defecto `true`), y valida que `periodo` no tenga ya un recibo asociado a la misma locación salvo que se esté editando ese mismo registro.
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - La advertencia de "consumo negativo" MUST mostrarse en alto contraste antes de permitir el guardado definitivo (Edge Case).
 - El mensaje de "ya existe un recibo para este periodo" y el de "no existe contrato activo en este periodo" MUST ser explícitos y distintos entre sí, con tipografía ≥18px (Principio III).

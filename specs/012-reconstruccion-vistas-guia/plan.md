@@ -38,7 +38,7 @@ Reconstruir 6 componentes visuales específicos (dropzone de documentos, modal d
 |---|---|
 | I. Stack Tecnológico Moderno | ✅ Sin cambios en PHP/Laravel/PostgreSQL |
 | II. Nomenclatura en Español | ✅ Cualquier variable/función JS nueva (recálculo de total, timeline) en español |
-| III. Accesibilidad Senior-First | ✅ Objetivo explícito (FR-011): tipografía ≥18px, contraste, botones ≥48x48px y confirmaciones explícitas se preservan en cada componente reconstruido |
+| III. Diseño Moderno e Intuitivo | ✅ Objetivo explícito (FR-011): contraste y confirmaciones explícitas se preservan en cada componente reconstruido |
 | IV. Pruebas Automatizadas Exhaustivas | ✅ La suite completa (193 pruebas) actúa como gate de no-regresión; no se prevé lógica de negocio nueva que requiera pruebas adicionales, salvo verificar que la ampliación aditiva de §3 no rompe ninguna aserción existente |
 | V. Integridad de Datos y Seguridad Transaccional | ✅ Sin cambios: ninguna transacción, validación ni persistencia se altera |
 | VI. Sistema de Componentes Visuales (Bootstrap 5) | ✅ Es precisamente el principio que esta feature ejecuta con mayor literalidad; las 3 reconciliaciones ya fijadas en este principio (sidebar, htmx, paleta) se preservan sin excepción (FR-009) |

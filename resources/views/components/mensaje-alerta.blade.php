@@ -18,8 +18,8 @@
 
 {{--
     Mensaje persistente (no se oculta automáticamente) de alto contraste,
-    conforme al Principio III (Senior-First) de la Constitución.
+    conforme al Principio III de la Constitución.
 --}}
-<div {{ $attributes->merge(['class' => "alert $claseBootstrap rounded-md border-2 px-6 py-4 text-lg font-semibold $estilos"]) }} role="alert">
+<div {{ $attributes->merge(['class' => "alert $claseBootstrap rounded-md px-6 py-4 text-lg font-semibold $estilos"]) }} role="alert">
     {{ $slot }}
 </div>

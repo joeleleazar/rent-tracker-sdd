@@ -24,8 +24,8 @@
             <div class="card">
                 <div class="card-body d-flex flex-column gap-3">
                     <dl class="row mb-0">
-                        <dt class="col-sm-4 fs-5 fw-semibold">Estado</dt>
-                        <dd class="col-sm-8 fs-5">
+                        <dt class="col-sm-4 fw-semibold">Estado</dt>
+                        <dd class="col-sm-8">
                             @php
                                 $claseEstado = match ($recibo->estado) {
                                     'pagado' => 'text-bg-success',
@@ -33,52 +33,52 @@
                                     default => 'text-bg-secondary',
                                 };
                             @endphp
-                            <span class="badge {{ $claseEstado }} fs-6">
+                            <span class="badge {{ $claseEstado }}">
                                 {{ ucfirst($recibo->estado) }}
                             </span>
                         </dd>
 
-                        <dt class="col-sm-4 fs-5 fw-semibold">Locación</dt>
-                        <dd class="col-sm-8 fs-5">{{ $recibo->locacion->nombre }}</dd>
+                        <dt class="col-sm-4 fw-semibold">Locación</dt>
+                        <dd class="col-sm-8">{{ $recibo->locacion->nombre }}</dd>
 
-                        <dt class="col-sm-4 fs-5 fw-semibold">Periodo</dt>
-                        <dd class="col-sm-8 fs-5">{{ $recibo->periodo->translatedFormat('F Y') }}</dd>
+                        <dt class="col-sm-4 fw-semibold">Periodo</dt>
+                        <dd class="col-sm-8">{{ $recibo->periodo->translatedFormat('F Y') }}</dd>
 
-                        <dt class="col-sm-4 fs-5 fw-semibold">Fecha de emisión</dt>
-                        <dd class="col-sm-8 fs-5">{{ $recibo->fecha_emision->format('d/m/Y') }}</dd>
+                        <dt class="col-sm-4 fw-semibold">Fecha de emisión</dt>
+                        <dd class="col-sm-8">{{ $recibo->fecha_emision->format('d/m/Y') }}</dd>
 
                         @if ($recibo->incluye_alquiler)
-                            <dt class="col-sm-4 fs-5 fw-semibold">Monto de Renta</dt>
-                            <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
+                            <dt class="col-sm-4 fw-semibold">Monto de Renta</dt>
+                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_agua)
-                            <dt class="col-sm-4 fs-5 fw-semibold">Monto de Agua</dt>
-                            <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $recibo->monto_agua, 2) }}</dd>
+                            <dt class="col-sm-4 fw-semibold">Monto de Agua</dt>
+                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_agua, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_luz)
-                            <dt class="col-sm-4 fs-5 fw-semibold">Monto de Luz</dt>
-                            <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $recibo->monto_luz, 2) }}</dd>
+                            <dt class="col-sm-4 fw-semibold">Monto de Luz</dt>
+                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_luz, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_pasadizo)
-                            <dt class="col-sm-4 fs-5 fw-semibold">Monto de Luz de Pasadizo</dt>
-                            <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $recibo->monto_pasadizo, 2) }}</dd>
+                            <dt class="col-sm-4 fw-semibold">Monto de Luz de Pasadizo</dt>
+                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_pasadizo, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_seguridad)
-                            <dt class="col-sm-4 fs-5 fw-semibold">Monto de Seguridad</dt>
-                            <dd class="col-sm-8 fs-5">S/ {{ number_format((float) $recibo->monto_seguridad, 2) }}</dd>
+                            <dt class="col-sm-4 fw-semibold">Monto de Seguridad</dt>
+                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_seguridad, 2) }}</dd>
                         @endif
 
-                        <dt class="col-sm-4 fs-5 fw-bold">Total</dt>
-                        <dd class="col-sm-8 fs-5 fw-bold">S/ {{ number_format($recibo->total(), 2) }}</dd>
+                        <dt class="col-sm-4 fw-bold">Total</dt>
+                        <dd class="col-sm-8 fw-bold">S/ {{ number_format($recibo->total(), 2) }}</dd>
                     </dl>
 
                     <div class="d-flex flex-wrap gap-3 pt-2">
-                        <a href="{{ route('recibos.edit', $recibo) }}" class="btn btn-primary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Recibo</a>
+                        <a href="{{ route('recibos.edit', $recibo) }}" class="btn btn-primary"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Recibo</a>
                         {{-- hx-boost="false": el comprobante es una página standalone con su
                              propio <head>/CSS (ver comprobante.blade.php), no el layout compartido;
                              debe cargarse con una navegación clásica completa, no un swap parcial. --}}
-                        <a href="{{ route('recibos.comprobante', $recibo) }}" class="btn btn-primary btn-lg" hx-boost="false">Ver Comprobante</a>
-                        <a href="{{ route('locaciones.recibos.index', $recibo->locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver Historial de Recibos</a>
+                        <a href="{{ route('recibos.comprobante', $recibo) }}" class="btn btn-primary" hx-boost="false">Ver Comprobante</a>
+                        <a href="{{ route('locaciones.recibos.index', $recibo->locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver Historial de Recibos</a>
                     </div>
                 </div>
             </div>
@@ -98,35 +98,35 @@
                     --}}
                     <div class="btn-group flex-wrap" role="group" aria-label="Estado del recibo">
                         @if ($recibo->estado === 'pendiente')
-                            <button type="button" class="btn btn-warning btn-lg" disabled aria-pressed="true">Pendiente</button>
+                            <button type="button" class="btn btn-warning" disabled aria-pressed="true">Pendiente</button>
 
                             <form method="POST" action="{{ route('recibos.estado.update', $recibo) }}" class="d-inline">
                                 @csrf
                                 @method('patch')
                                 <input type="hidden" name="nuevo_estado" value="pagado">
                                 <input type="hidden" name="confirmado" value="1">
-                                <button type="submit" class="btn btn-outline-success btn-lg">Pagado</button>
+                                <button type="submit" class="btn btn-outline-success">Pagado</button>
                             </form>
 
-                            <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anulado</button>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anulado</button>
                         @elseif ($recibo->estado === 'pagado')
                             <form method="POST" action="{{ route('recibos.estado.update', $recibo) }}" class="d-inline">
                                 @csrf
                                 @method('patch')
                                 <input type="hidden" name="nuevo_estado" value="pendiente">
                                 <input type="hidden" name="confirmado" value="1">
-                                <button type="submit" class="btn btn-outline-warning btn-lg">Pendiente</button>
+                                <button type="submit" class="btn btn-outline-warning">Pendiente</button>
                             </form>
 
-                            <button type="button" class="btn btn-success btn-lg" disabled aria-pressed="true">Pagado</button>
+                            <button type="button" class="btn btn-success" disabled aria-pressed="true">Pagado</button>
 
-                            <button type="button" class="btn btn-outline-danger btn-lg" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anulado</button>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anulado</button>
                         @else
-                            <button type="button" class="btn btn-outline-warning btn-lg" data-bs-toggle="modal" data-bs-target="#revertir-pendiente">Pendiente</button>
+                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#revertir-pendiente">Pendiente</button>
 
-                            <button type="button" class="btn btn-outline-success btn-lg" data-bs-toggle="modal" data-bs-target="#revertir-pagado">Pagado</button>
+                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#revertir-pagado">Pagado</button>
 
-                            <button type="button" class="btn btn-danger btn-lg" disabled aria-pressed="true">Anulado</button>
+                            <button type="button" class="btn btn-danger" disabled aria-pressed="true">Anulado</button>
                         @endif
                     </div>
                 </div>
@@ -141,7 +141,7 @@
 
                     <div class="modal-body p-4">
                         <h2 class="fs-4 fw-bold">¿Anular este recibo?</h2>
-                        <p class="fs-5 mb-0">
+                        <p class="mb-0">
                             Un recibo anulado se marcará visiblemente como "ANULADO" en su comprobante.
                         </p>
                     </div>

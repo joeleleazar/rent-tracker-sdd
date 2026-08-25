@@ -4,7 +4,7 @@ use App\Models\Contrato;
 use App\Models\Inquilino;
 use App\Models\Locacion;
 
-test('un contrato pertenece a una locacion y a un inquilino', function () {
+test('un contrato pertenece a una locacion y tiene un inquilino principal', function () {
     $locacion = Locacion::factory()->create();
     $inquilino = Inquilino::factory()->create();
 
@@ -15,8 +15,8 @@ test('un contrato pertenece a una locacion y a un inquilino', function () {
 
     expect($contrato->locacion)->toBeInstanceOf(Locacion::class);
     expect($contrato->locacion->id)->toBe($locacion->id);
-    expect($contrato->inquilino)->toBeInstanceOf(Inquilino::class);
-    expect($contrato->inquilino->id)->toBe($inquilino->id);
+    expect($contrato->inquilinoPrincipal())->toBeInstanceOf(Inquilino::class);
+    expect($contrato->inquilinoPrincipal()->id)->toBe($inquilino->id);
 });
 
 test('monto_renta se castea como decimal con dos posiciones', function () {
@@ -29,7 +29,7 @@ test('estado por defecto es borrador', function () {
     $contrato = Contrato::factory()->create();
     $contrato->estado = null;
 
-    $nuevo = new Contrato($contrato->only(['locacion_id', 'inquilino_id', 'fecha_inicio', 'fecha_fin', 'monto_renta']));
+    $nuevo = new Contrato($contrato->only(['locacion_id', 'fecha_inicio', 'fecha_fin', 'monto_renta']));
 
     expect($nuevo->estado)->toBe('borrador');
 });
@@ -50,11 +50,9 @@ test('rechaza un valor de estado invalido a nivel de base de datos', function ()
 
 test('los costos fijos tienen por defecto 0.00 y se castean como decimal', function () {
     $locacion = Locacion::factory()->create();
-    $inquilino = Inquilino::factory()->create();
 
     $contrato = new Contrato([
         'locacion_id' => $locacion->id,
-        'inquilino_id' => $inquilino->id,
         'fecha_inicio' => '2026-01-01',
         'fecha_fin' => '2026-12-31',
         'monto_renta' => 1000,

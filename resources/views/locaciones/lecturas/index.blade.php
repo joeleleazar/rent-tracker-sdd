@@ -12,11 +12,11 @@
             @endif
 
             <div class="d-flex flex-wrap gap-3">
-                <a href="{{ route('locaciones.lecturas.create', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar Lectura del Medidor</a>
+                <a href="{{ route('locaciones.lecturas.create', $locacion) }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar Lectura del Medidor</a>
             </div>
 
             @if ($lecturas->isEmpty())
-                <p class="fs-5">Esta locación todavía no tiene lecturas de medidor registradas.</p>
+                <p>Esta locación todavía no tiene lecturas de medidor registradas.</p>
             @else
                 @php
                     // Gráfico de consumo histórico (FR-005): mismo dato ya calculado
@@ -46,10 +46,10 @@
                         @endphp
                         <div class="card">
                             <div class="card-body">
-                                <p class="fs-5 fw-semibold mb-1">
+                                <p class="fw-semibold mb-1">
                                     Periodo: {{ $lectura->periodo->translatedFormat('F Y') }}
                                 </p>
-                                <p class="fs-5 mb-1">
+                                <p class="mb-1">
                                     Lectura anterior:
                                     @if ($lectura->lectura_anterior === null)
                                         sin lectura previa registrada
@@ -57,10 +57,10 @@
                                         {{ number_format((float) $lectura->lectura_anterior, 2) }}
                                     @endif
                                 </p>
-                                <p class="fs-5 mb-1">
+                                <p class="mb-1">
                                     Lectura actual: {{ number_format((float) $lectura->lectura_actual, 2) }}
                                 </p>
-                                <p class="fs-5 mb-1">
+                                <p class="mb-1">
                                     Consumo:
                                     @if ($lectura->consumo_calculado === null)
                                         sin dato anterior
@@ -74,9 +74,9 @@
                                     </x-mensaje-alerta>
                                 @endif
                                 <div class="mt-2 d-flex flex-wrap gap-3">
-                                    <a href="{{ route('lecturas.edit', $lectura) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Lectura</a>
+                                    <a href="{{ route('lecturas.edit', $lectura) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Lectura</a>
                                     @if ($reciboDelPeriodo !== null)
-                                        <a href="{{ route('recibos.show', $reciboDelPeriodo) }}" class="btn btn-outline-secondary btn-lg">Ver Recibo del Periodo</a>
+                                        <a href="{{ route('recibos.show', $reciboDelPeriodo) }}" class="btn btn-outline-secondary">Ver Recibo del Periodo</a>
                                     @endif
                                 </div>
                             </div>

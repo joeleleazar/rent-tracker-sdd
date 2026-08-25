@@ -90,7 +90,7 @@ Aplicación Laravel monolítica única (single project) — rutas relativas a la
 
 - [X] T017 [US2] Implementar acciones `create`/`store`/`edit`/`update` de `LocacionController` en `app/Http/Controllers/LocacionController.php` (depende de T007, T008, T012)
 - [X] T018 [US2] Registrar rutas de creación/edición de locación en `routes/web.php` (depende de T017)
-- [X] T019 [US2] Crear vista `locaciones.create` (formulario Senior-First, selector de padre) en `resources/views/locaciones/create.blade.php` (depende de T018)
+- [X] T019 [US2] Crear vista `locaciones.create` (formulario accesible, selector de padre) en `resources/views/locaciones/create.blade.php` (depende de T018)
 - [X] T020 [US2] Crear vista `locaciones.edit` en `resources/views/locaciones/edit.blade.php` (depende de T018)
 
 **Checkpoint**: User Story 1 y 2 funcionan de forma independiente
@@ -113,7 +113,7 @@ Aplicación Laravel monolítica única (single project) — rutas relativas a la
 - [X] T023 [US3] Integrar `ServicioValidacionJerarquiaLocacion` en `store`/`update` de `LocacionController` (rechazo con mensaje explícito ante ciclo) en `app/Http/Controllers/LocacionController.php` (depende de T007, T017)
 - [X] T024 [US3] Implementar acción `destroy` de `LocacionController` (bloqueo si `locacionesHijas()->exists()`) en `app/Http/Controllers/LocacionController.php` (depende de T007, T023)
 - [X] T025 [US3] Registrar ruta `DELETE /locaciones/{locacion}` en `routes/web.php` (depende de T024)
-- [X] T026 [US3] Agregar modal/pantalla de confirmación explícita antes de eliminar (Senior-First) a la vista `locaciones.show` en `resources/views/locaciones/show.blade.php` (depende de T015, T025) — modal Alpine.js reutilizando `x-modal`, mismo patrón que `delete-user-form.blade.php`
+- [X] T026 [US3] Agregar modal/pantalla de confirmación explícita antes de eliminar a la vista `locaciones.show` en `resources/views/locaciones/show.blade.php` (depende de T015, T025) — modal Alpine.js reutilizando `x-modal`, mismo patrón que `delete-user-form.blade.php`
 
 **Checkpoint**: Las 3 historias de usuario funcionan de forma independiente
 

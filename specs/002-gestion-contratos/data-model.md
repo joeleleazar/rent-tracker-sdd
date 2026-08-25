@@ -63,7 +63,7 @@ Representa el archivo digital de respaldo (PDF o foto) adjunto a un contrato.
 
 **Validaciones de negocio** (FR-004, en el Form Request + Service):
 - Un contrato tiene exactamente **un** documento de `tipo_archivo = pdf` (máx. 15MB) **O** hasta 10 documentos de `tipo_archivo = imagen` (máx. 5MB cada uno) — no ambos tipos simultáneamente para el mismo contrato.
-- Antes de eliminar un `DocumentoContrato`, la interfaz MUST solicitar confirmación explícita (FR-005 / Senior-First); el borrado del archivo físico y del registro ocurre dentro de la misma transacción.
+- Antes de eliminar un `DocumentoContrato`, la interfaz MUST solicitar confirmación explícita (FR-005); el borrado del archivo físico y del registro ocurre dentro de la misma transacción.
 
 ## Relaciones
 

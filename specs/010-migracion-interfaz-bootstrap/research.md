@@ -2,11 +2,11 @@
 
 **Feature**: `010-migracion-interfaz-bootstrap` | **Date**: 2026-08-21
 
-## 1. Instalación y personalización Senior-First de Bootstrap 5
+## 1. Instalación y personalización del sistema visual de Bootstrap 5
 
-**Decision**: Instalar Bootstrap 5.3.3 vía npm (`bootstrap`, con su JS bundle que incluye Popper) y compilarlo desde su fuente SCSS (no el CSS precompilado), en un nuevo archivo `resources/css/bootstrap.scss` que sobreescribe las variables Sass de Bootstrap ANTES de importarlo: `$font-size-base: 1.125rem` (18px, en vez del default 16px de Bootstrap), `$btn-padding-y`/`$btn-padding-x`/`$input-btn-padding-y` ajustados para que el área táctil mínima resultante sea ≥48x48px, y la paleta de `$primary`/`$success`/`$danger`/`$warning` fijada a los mismos tonos ya validados con contraste WCOG AA/AAA en `resources/css/app.css` actual (azul #1e40af-equivalente, verde/rojo de alto contraste). Se agrega `sass` (dart-sass) como devDependency de Vite para compilar este SCSS.
+**Decision** (histórico; ver `resources/css/bootstrap.scss` actual y Constitución v2.0.0 para los valores vigentes): Instalar Bootstrap 5.3.3 vía npm (`bootstrap`, con su JS bundle que incluye Popper) y compilarlo desde su fuente SCSS (no el CSS precompilado), en un nuevo archivo `resources/css/bootstrap.scss` que sobreescribe las variables Sass de Bootstrap ANTES de importarlo, fijando la paleta de `$primary`/`$success`/`$danger`/`$warning` a los mismos tonos ya validados con contraste WCAG AA en `resources/css/app.css` actual (azul #1e40af-equivalente, verde/rojo de alto contraste). Se agrega `sass` (dart-sass) como devDependency de Vite para compilar este SCSS.
 
-**Rationale**: Bootstrap expone explícitamente sus variables de diseño en Sass para este propósito exacto: cambiar `$font-size-base` propaga automáticamente a todos los tamaños relativos (`$font-size-lg`, `$h1-font-size`, etc.) igual que hoy lo hace `html { font-size: 18px }` con las utilidades `rem` de Tailwind — es el equivalente funcional directo, evitando tener que sobreescribir clase por clase como haría el CSS precompilado. Usar el bundle JS con Popper incluido cubre modales, dropdowns (aunque el proyecto los evita por Senior-First) y tooltips sin depender de una librería adicional.
+**Rationale**: Bootstrap expone explícitamente sus variables de diseño en Sass para este propósito exacto — evita tener que sobreescribir clase por clase como haría el CSS precompilado. Usar el bundle JS con Popper incluido cubre modales, dropdowns y tooltips sin depender de una librería adicional.
 
 **Alternatives considered**:
 - CDN de Bootstrap (CSS/JS precompilados sin personalización de variables): rechazado, obligaría a sobreescribir con CSS custom encima (`!important` o especificidad manual) la tipografía base y el tamaño de botones, en vez de definir la fuente de verdad una sola vez en las variables Sass.
@@ -52,7 +52,7 @@
 
 ## 6. Orden de migración y verificación de accesibilidad
 
-**Decision**: Cada vista migrada se verifica individualmente contra los 4 criterios Senior-First (tipografía ≥18px, contraste ≥4.5:1, botones ≥48x48px, confirmación explícita en acciones destructivas) antes de darse por completa, en el mismo orden P1→P2→P3 ya fijado por la especificación, reutilizando el inventario de `contracts/inventario-vistas-migradas.md` como checklist de cobertura.
+**Decision**: Cada vista migrada se verifica individualmente contra el contraste ≥4.5:1 y la confirmación explícita en acciones destructivas antes de darse por completa, en el mismo orden P1→P2→P3 ya fijado por la especificación, reutilizando el inventario de `contracts/inventario-vistas-migradas.md` como checklist de cobertura.
 
 **Rationale**: Evita descubrir al final de la migración que una vista temprana (P1) no cumple el estándar, lo que obligaría a revisar retroactivamente vistas ya dadas por completas.
 

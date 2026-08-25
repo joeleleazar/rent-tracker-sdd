@@ -77,7 +77,7 @@ Como Administrador, quiero que la vista de impresión del recibo use las reglas 
 - **FR-008**: El sistema MUST aplicar reglas de estilo de impresión a la vista de comprobante de recibo, ocultando los elementos de navegación e interacción no relevantes para un documento impreso.
 - **FR-009**: El sistema MUST mantener, en toda vista reconstruida, la navegación por sidebar fijo, la interactividad de escritura vía htmx, y la paleta de colores exacta ya definida en el proyecto — ninguna de estas 3 reconciliaciones se reemplaza por lo que sugiera la guía de referencia.
 - **FR-010**: El sistema MUST preservar exactamente las mismas rutas, controladores, modelos, servicios, reglas de validación y comportamiento de negocio ya implementados en las especificaciones 001 a 011; esta reconstrucción es exclusivamente de la capa de presentación.
-- **FR-011**: El sistema MUST mantener, en toda vista reconstruida, los mínimos de accesibilidad Senior-First ya vigentes (tipografía ≥18px, contraste ≥4.5:1, botones/áreas táctiles ≥48x48px, confirmación explícita en acciones destructivas).
+- **FR-011**: El sistema MUST mantener, en toda vista reconstruida, un contraste ≥4.5:1 y confirmación explícita en acciones destructivas.
 
 ### Key Entities
 
@@ -89,7 +89,7 @@ Como Administrador, quiero que la vista de impresión del recibo use las reglas 
 
 - **SC-001**: El 100% de los componentes descritos explícitamente en la guía de referencia para las pantallas de contrato, representantes y recibos (dropzone, modal de solapamiento, timeline, grid de costos, tarjetas de representante, selector de estado) están implementados según su estructura descrita, verificado componente por componente.
 - **SC-002**: El 100% de las pruebas automatizadas existentes (193 al momento de esta especificación) continúan pasando sin modificar ninguna aserción de regla de negocio.
-- **SC-003**: El 100% de las vistas reconstruidas mantienen las 3 reconciliaciones vinculantes (sidebar, htmx, paleta propia) y los 4 mínimos de accesibilidad Senior-First, verificado pantalla por pantalla.
+- **SC-003**: El 100% de las vistas reconstruidas mantienen las 3 reconciliaciones vinculantes (sidebar, htmx, paleta propia) y un contraste ≥4.5:1, verificado pantalla por pantalla.
 - **SC-004**: Un Administrador puede completar los mismos flujos de negocio (registrar contrato con documentos y costos, resolver un solapamiento, gestionar representantes, cambiar estado de un recibo, imprimir un comprobante) sin ninguna pérdida de funcionalidad respecto al estado actual del sistema.
 
 ## Assumptions

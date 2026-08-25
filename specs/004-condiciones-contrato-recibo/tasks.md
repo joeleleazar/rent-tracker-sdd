@@ -98,7 +98,7 @@ Aplicación Laravel monolítica única — rutas relativas a la raíz del reposi
 - [X] T026 [P] [US2] Crear `SolicitudActualizarConfiguracionGeneral` (`correo_notificaciones_vencimiento` `required`/`email`) en `app/Http/Requests/SolicitudActualizarConfiguracionGeneral.php` (depende de T006)
 - [X] T027 [US2] Implementar `ConfiguracionGeneralController@edit`/`@update` en `app/Http/Controllers/ConfiguracionGeneralController.php` (depende de T026)
 - [X] T028 [US2] Registrar rutas `GET`/`PUT /configuracion` en `routes/web.php` (depende de T027)
-- [X] T029 [US2] Crear vista `configuracion/edit.blade.php` (formulario Senior-First del correo administrativo) en `resources/views/configuracion/edit.blade.php` (depende de T028)
+- [X] T029 [US2] Crear vista `configuracion/edit.blade.php` (formulario accesible del correo administrativo) en `resources/views/configuracion/edit.blade.php` (depende de T028)
 - [X] T030 [US2] Implementar el reinicio a `null` de los tres hitos de notificación en `ContratoController@update` cuando `fecha_fin` cambia de valor, en `app/Http/Controllers/ContratoController.php` (depende de T005; ver `research.md` §4)
 
 **Checkpoint**: User Story 1 y 2 funcionan de forma independiente

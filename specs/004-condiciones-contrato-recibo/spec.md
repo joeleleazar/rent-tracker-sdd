@@ -76,7 +76,7 @@ Como Administrador, quiero que al generar un recibo el sistema me proponga autom
 - **FR-006**: El sistema MUST permitir que el administrador edite libremente el monto de renta y cada costo fijo propuestos antes de confirmar la emisión de un recibo, sin exigir que coincidan con los valores de referencia del contrato.
 - **FR-007**: El sistema MUST guardar en cada recibo emitido los montos efectivamente utilizados (editados o no) de forma independiente a los valores de referencia del contrato, de modo que una edición posterior del contrato NO modifique recibos ya emitidos.
 - **FR-008**: El sistema MUST registrar de forma transaccional y atómica (`DB::transaction`) tanto la actualización de costos de referencia del contrato como la creación de recibos con sus montos asociados.
-- **FR-009**: La interfaz de edición de costos del contrato y de generación de recibos MUST cumplir los estándares Senior-First del proyecto (tipografía mínima de 18px, alto contraste, botones de al menos 48x48px y etiquetas explícitas como "Guardar Costos del Contrato" o "Emitir Recibo").
+- **FR-009**: La interfaz de edición de costos del contrato y de generación de recibos MUST usar alto contraste y etiquetas explícitas ("Guardar Costos del Contrato", "Emitir Recibo").
 
 ### Key Entities *(include if feature involves data)*
 
@@ -108,7 +108,7 @@ Como Administrador, quiero que al generar un recibo el sistema me proponga autom
 - **SC-001**: El 100% de los contratos activos que alcanzan alguno de los tres hitos de anticipación (30, 15 o 7 días) generan una notificación de vencimiento por correo a la dirección administrativa configurada, sin duplicados para el mismo hito y el mismo contrato.
 - **SC-002**: Al iniciar la generación de un recibo, el 100% de los campos de montos (renta y costos fijos) se precargan automáticamente con los valores del contrato en menos de 2 segundos, permitiendo su edición inmediata.
 - **SC-003**: Modificar un costo de referencia en un contrato después de emitidos recibos anteriores no altera ningún recibo ya emitido; el 100% de los recibos históricos conservan los montos con los que fueron generados originalmente.
-- **SC-004**: Un administrador puede completar el registro de los costos fijos de un contrato o la edición de montos de un recibo en menos de 2 minutos utilizando la interfaz Senior-First.
+- **SC-004**: Un administrador puede completar el registro de los costos fijos de un contrato o la edición de montos de un recibo en menos de 2 minutos.
 
 ## Assumptions
 

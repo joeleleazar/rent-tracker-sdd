@@ -58,3 +58,17 @@ test('tamano se castea como decimal con dos posiciones', function () {
 
     expect($locacion->fresh()->tamano)->toBe('120.00');
 });
+
+test('etiquetaTipo e iconoTipo devuelven el valor mapeado para un tipo valido', function () {
+    $locacion = Locacion::factory()->make(['tipo' => 'galeria']);
+
+    expect($locacion->etiquetaTipo())->toBe('Galería');
+    expect($locacion->iconoTipo())->toBe('bi-building');
+});
+
+test('etiquetaTipo e iconoTipo devuelven valores neutros cuando no hay tipo asignado', function () {
+    $locacion = Locacion::factory()->make(['tipo' => null]);
+
+    expect($locacion->etiquetaTipo())->toBe('Sin tipo');
+    expect($locacion->iconoTipo())->toBe('bi-question-circle');
+});

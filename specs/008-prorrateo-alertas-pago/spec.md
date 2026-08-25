@@ -72,7 +72,7 @@ Como Administrador, quiero que el sistema calcule y me sugiera automáticamente 
 - **FR-006**: El sistema MUST mostrar la cantidad de días activos calculada como sugerencia visible al administrador al iniciar la generación del recibo del periodo correspondiente a ese contrato.
 - **FR-007**: El sistema MUST calcular y precargar automáticamente, además de mostrar la cantidad de días activos, un monto de renta prorrateado sugerido (`monto_renta` de referencia del contrato ÷ días del mes × días activos) como valor editable en el formulario de generación del recibo de ese periodo, permitiendo que el administrador lo ajuste antes de confirmar.
 - **FR-008**: El sistema MUST calcular la cantidad total de días del mes utilizando la cantidad real de días del mes calendario correspondiente (28, 29, 30 o 31 según el mes) como base para el cálculo de días activos y del monto de renta prorrateado.
-- **FR-009**: La interfaz de configuración de anticipación de alertas y de visualización de días activos sugeridos MUST cumplir los estándares Senior-First del proyecto (tipografía mínima de 18px, alto contraste y etiquetas explícitas).
+- **FR-009**: La interfaz de configuración de anticipación de alertas y de visualización de días activos sugeridos MUST usar alto contraste y etiquetas explícitas.
 
 ### Key Entities *(include if feature involves data)*
 

@@ -1,21 +1,15 @@
-// Bootstrap 5.3 personalizado para los estándares Senior-First del proyecto
-// (Constitución, Principio III), horneados en las variables Sass de Bootstrap
+// Bootstrap 5.3 personalizado para el diseño moderno e intuitivo del proyecto
+// (Constitución, Principio III), horneado en las variables Sass de Bootstrap
 // ANTES de importar su fuente, en vez de sobreescribir clase por clase.
 //
 // Ver specs/010-migracion-interfaz-bootstrap/research.md §1 para el detalle
-// de esta decisión y sus alternativas descartadas.
+// de esta decisión y sus alternativas descartadas. La tipografía, el área de
+// los controles y los bordes usan los tamaños estándar de Bootstrap 5 (sin
+// overrides ampliados); solo se personalizan paleta, sombras y espaciado.
 
 // -----------------------------------------------------------------------
-// 1. Tipografía base: 18px (en vez de los 16px por defecto de Bootstrap).
-//    Al ser $font-size-base (en rem, relativo a la raíz de 16px del
-//    navegador), todos los tamaños relativos (h1-h6, small, lead, etc.)
-//    escalan proporcionalmente sin overrides dispersos.
-// -----------------------------------------------------------------------
-$font-size-base: 1.125rem; // 18px
-
-// -----------------------------------------------------------------------
-// 2. Paleta de alto contraste (mínimo 4.5:1), tomada de los mismos tonos ya
-//    validados en resources/css/app.css (Tailwind blue-800/900,
+// 1. Paleta de alto contraste (mínimo WCAG AA 4.5:1), tomada de los mismos
+//    tonos ya validados en resources/css/app.css (Tailwind blue-800/900,
 //    green-800/900, red-800/900, gray-*, amber-800 para "warning").
 // -----------------------------------------------------------------------
 $primary: #1e40af; // blue-800
@@ -31,54 +25,11 @@ $body-bg: #f9fafb;
 $body-color: #111827;
 $border-color: #d1d5db; // gray-300, mismo tono ya usado en los bordes de tarjetas actuales
 
-// Bordes más gruesos (2px) en toda la librería: el diseño Senior-First actual
-// ya usa `border-2` en tarjetas, botones y campos por su mayor visibilidad.
-$border-width: 2px;
+// Los modales de confirmación (borrado, cambio de estado) usan el `Modal`
+// nativo de Bootstrap con sus estilos por defecto.
 
 // -----------------------------------------------------------------------
-// 3. Área táctil mínima de 48x48px en botones y campos de formulario
-//    (`.btn`, `.btn-lg`, `.form-control`, `.form-control-lg`, `.form-select`).
-//    Con $font-size-base en 18px (line-height 1.5 => 27px de contenido),
-//    estos paddings garantizan una altura total >= 48px incluso en el
-//    tamaño "normal" (no solo `-lg`).
-// -----------------------------------------------------------------------
-$input-btn-padding-y: .75rem;
-$input-btn-padding-x: 1.25rem;
-$input-btn-font-size: $font-size-base;
-
-$input-btn-padding-y-lg: .875rem;
-$input-btn-padding-x-lg: 1.75rem;
-$input-btn-font-size-lg: $font-size-base;
-
-$input-btn-padding-y-sm: .5rem;
-$input-btn-padding-x-sm: 1rem;
-
-// Foco visible y grueso (equivalente al focus-visible:outline-4 actual).
-$focus-ring-width: .25rem;
-$focus-ring-opacity: .5;
-
-// Bootstrap reduce el tamaño de letra de varios elementos secundarios
-// (badges, texto de ayuda de formularios, mensajes de error, `<small>`) a
-// ~0.75-0.875em por defecto. El estándar Senior-First (FR-002) exige NUNCA
-// bajar de 18px en ningún texto visible, así que se igualan estas variables
-// a 1em (= $font-size-base) en vez de dejarlas reducir el tamaño relativo.
-$small-font-size: 1em;
-$badge-font-size: 1em;
-$form-text-font-size: 1em;
-$form-feedback-font-size: 1em;
-$font-size-sm: $font-size-base;
-
-// -----------------------------------------------------------------------
-// 4. Confirmación explícita: los modales de confirmación (borrado, cambio de
-//    estado) usan el `Modal` nativo de Bootstrap; ligero refuerzo visual del
-//    encabezado para separarlo claramente del cuerpo.
-// -----------------------------------------------------------------------
-$modal-content-border-width: 2px;
-$modal-header-border-width: 2px;
-$modal-footer-border-width: 2px;
-
-// -----------------------------------------------------------------------
-// 5. Elevación visual (specs/011): sombras sutiles para dar profundidad a las
+// 2. Elevación visual (specs/011): sombras sutiles para dar profundidad a las
 //    tarjetas sin afectar contraste ni tamaño de texto, y un acento distintivo
 //    del proyecto (independiente de los colores semánticos de arriba).
 // -----------------------------------------------------------------------
@@ -93,10 +44,8 @@ $card-border-color: $border-color;
 $accent-rent-tracker: #0e7490; // teal-700, contraste ≥4.5:1 sobre blanco
 
 // -----------------------------------------------------------------------
-// 6. Escala de espaciado (specs/011): un poco más generosa que el default de
-//    Bootstrap entre secciones ($spacer * 4/5), ya que el espacio en blanco
-//    es la herramienta de jerarquía visual que menos tensiona contra
-//    Senior-First (no reduce texto ni contraste).
+// 3. Escala de espaciado (specs/011): un poco más generosa que el default de
+//    Bootstrap entre secciones, para dar aire visual a la interfaz.
 // -----------------------------------------------------------------------
 $spacer: 1.05rem;
 $spacers: (
@@ -116,7 +65,7 @@ $spacers: (
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 // -----------------------------------------------------------------------
-// 7. Profundidad de tarjetas (specs/011): sombra sutil aplicada globalmente
+// 4. Profundidad de tarjetas (specs/011): sombra sutil aplicada globalmente
 //    a `.card` en vez de agregarla vista por vista, para que toda tarjeta
 //    (actual y futura) la herede de forma consistente. `.card.border-success`
 //    (contrato activo, ver contratos/index.blade.php) conserva su borde de
@@ -129,4 +78,87 @@ $spacers: (
 
 .card:hover {
     box-shadow: $box-shadow;
+}
+
+// -----------------------------------------------------------------------
+// 5. Tabla jerárquica de locaciones (specs/013, revisión 2026-08-23):
+//    reemplaza el diseño original de tarjetas horizontales conectadas por
+//    líneas (ver research.md §3, supersedida) por una tabla indentada —
+//    una fila por locación, columnas Nombre/Locación · Estado · Tipo ·
+//    Acciones, indentada según profundidad — a pedido explícito del
+//    usuario tras ver la primera iteración. Espaciado generoso entre filas
+//    y contenedor con scroll horizontal propio (FR-007), nunca a nivel de
+//    página completa.
+// -----------------------------------------------------------------------
+$arbol-columnas: minmax(16rem, 1fr) 9rem 9rem auto;
+$arbol-indentacion-nivel: 1.5rem; // indentación horizontal por nivel de profundidad
+$arbol-gap-fila: map-get($spacers, 2); // separación vertical entre filas
+
+.tabla-arbol-locaciones {
+    overflow-x: auto;
+    padding-bottom: map-get($spacers, 2);
+}
+
+.tabla-arbol-locaciones__encabezado,
+.fila-arbol {
+    display: grid;
+    grid-template-columns: $arbol-columnas;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    min-width: 40rem;
+}
+
+.tabla-arbol-locaciones__encabezado {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    font-weight: 600;
+    color: $secondary;
+    border-bottom: 2px solid $border-color;
+    margin-bottom: $arbol-gap-fila;
+}
+
+.fila-arbol {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    border: 1px solid $border-color;
+    border-radius: var(--bs-border-radius);
+    background-color: $white;
+    margin-bottom: $arbol-gap-fila;
+}
+
+.fila-arbol:hover {
+    background-color: $light;
+}
+
+.fila-arbol__nombre {
+    display: flex;
+    align-items: center;
+    gap: map-get($spacers, 2);
+}
+
+.fila-arbol__hijos {
+    display: flex;
+    flex-direction: column;
+}
+
+.fila-arbol__toggle {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: $secondary;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.fila-arbol__toggle[aria-expanded="true"] .bi-chevron-right {
+    display: none;
+}
+
+.fila-arbol__toggle[aria-expanded="false"] .bi-chevron-down {
+    display: none;
+}
+
+.fila-arbol__espaciador-toggle {
+    // Alinea el nombre de las filas sin hijas (sin botón toggle) con las que sí lo tienen.
+    display: inline-block;
+    width: 1em;
+    flex-shrink: 0;
 }

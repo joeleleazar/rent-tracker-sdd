@@ -19,7 +19,6 @@ class Contrato extends Model
 
     protected $fillable = [
         'locacion_id',
-        'inquilino_id',
         'fecha_inicio',
         'fecha_fin',
         'monto_renta',
@@ -67,21 +66,34 @@ class Contrato extends Model
         return $this->belongsTo(Locacion::class);
     }
 
-    public function inquilino(): BelongsTo
-    {
-        return $this->belongsTo(Inquilino::class);
-    }
-
     public function documentos(): HasMany
     {
         return $this->hasMany(DocumentoContrato::class);
     }
 
-    public function representantes(): BelongsToMany
+    public function inquilinos(): BelongsToMany
     {
-        return $this->belongsToMany(Representante::class, 'contrato_representante')
+        return $this->belongsToMany(Inquilino::class, 'contrato_inquilino')
             ->withPivot('es_principal')
             ->withTimestamps();
+    }
+
+    /**
+     * El inquilino designado como Principal del contrato (specs/003-representantes-contrato,
+     * corrección 2026-08-23: el inquilino ES el representante del contrato, no
+     * existe una entidad "representante" separada). Usa la colección ya
+     * cargada por `inquilinos` cuando está disponible, para evitar una
+     * consulta adicional en listados con eager loading.
+     */
+    public function inquilinoPrincipal(): ?Inquilino
+    {
+        if ($this->relationLoaded('inquilinos')) {
+            return $this->inquilinos->first(fn (Inquilino $inquilino) => (bool) $inquilino->pivot->es_principal)
+                ?? $this->inquilinos->first();
+        }
+
+        return $this->inquilinos()->wherePivot('es_principal', true)->first()
+            ?? $this->inquilinos()->first();
     }
 
     public function recibos(): HasMany

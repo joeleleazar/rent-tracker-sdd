@@ -6,28 +6,42 @@ use App\Exceptions\LocacionCicloException;
 use App\Exceptions\LocacionConHijasException;
 use App\Http\Requests\SolicitudGuardarLocacion;
 use App\Models\Locacion;
+use App\Services\ServicioConstruccionArbolLocaciones;
 use App\Services\ServicioValidacionJerarquiaLocacion;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LocacionController extends Controller
 {
     public function __construct(
         private readonly ServicioValidacionJerarquiaLocacion $servicioValidacionJerarquia,
+        private readonly ServicioConstruccionArbolLocaciones $servicioArbol,
     ) {
     }
 
+    /**
+     * Vista unificada de árbol jerárquico (specs/013-arbol-jerarquico-locaciones):
+     * muestra todas las locaciones (alquilables y contenedoras), reemplazando el
+     * listado plano filtrado que existía antes y al listado general de /dashboard.
+     */
     public function index(): View
     {
         return view('locaciones.index', [
-            'locaciones' => Locacion::alquilables()->orderBy('nombre')->get(),
+            'raices' => $this->servicioArbol->construir(),
         ]);
     }
 
-    public function create(): View
+    /**
+     * Acepta el query param opcional `locacion_padre_id` (specs/013-arbol-jerarquico-locaciones,
+     * FR-011: acción rápida "Agregar" desde una fila de la tabla jerárquica) para
+     * preseleccionar la locación padre en el formulario.
+     */
+    public function create(Request $solicitud): View
     {
         return view('locaciones.create', [
             'locaciones' => Locacion::orderBy('nombre')->get(),
+            'locacionPadreId' => $solicitud->integer('locacion_padre_id') ?: null,
         ]);
     }
 

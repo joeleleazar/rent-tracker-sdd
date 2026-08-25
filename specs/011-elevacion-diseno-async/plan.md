@@ -8,7 +8,7 @@
 
 ## Summary
 
-Tres mejoras sobre la interfaz Bootstrap 5 ya migrada (spec 010): (1) refinar variables Sass y clases de utilidad para dar más jerarquía visual, profundidad y carácter sin tocar los mínimos Senior-First; (2) cambiar la ruta raíz para que redirija a login o al panel según haya sesión, retirando `welcome.blade.php` del flujo; (3) adoptar **htmx** con `hx-boost` como capa de progressive enhancement para que la navegación y los formularios de escritura se sientan asíncronos, sin exigir ningún cambio en controladores, rutas ni Form Requests existentes, y sin romper el funcionamiento clásico (full-page) si JavaScript no está disponible.
+Tres mejoras sobre la interfaz Bootstrap 5 ya migrada (spec 010): (1) refinar variables Sass y clases de utilidad para dar más jerarquía visual, profundidad y carácter sin sacrificar contraste ni legibilidad; (2) cambiar la ruta raíz para que redirija a login o al panel según haya sesión, retirando `welcome.blade.php` del flujo; (3) adoptar **htmx** con `hx-boost` como capa de progressive enhancement para que la navegación y los formularios de escritura se sientan asíncronos, sin exigir ningún cambio en controladores, rutas ni Form Requests existentes, y sin romper el funcionamiento clásico (full-page) si JavaScript no está disponible.
 
 ## Technical Context
 
@@ -38,7 +38,7 @@ Tres mejoras sobre la interfaz Bootstrap 5 ya migrada (spec 010): (1) refinar va
 |---|---|
 | I. Stack Tecnológico Moderno (PHP/Laravel/PostgreSQL) | ✅ Sin cambios en PHP/Laravel/PostgreSQL; htmx es una librería de cliente que no altera el patrón "Blade Templates o componentes desacoplados" ya permitido explícitamente por la Constitución — el servidor sigue rindiendo HTML server-side, no una API JSON |
 | II. Nomenclatura en Español | ✅ Cualquier JS nuevo (manejo de doble envío, mensajes de error de red) se escribe con nombres de función/variable en español; los atributos `hx-*`/`data-*` son parte de la sintaxis del framework, igual criterio que las clases `btn`/`card` de Bootstrap |
-| III. Accesibilidad Senior-First | ✅ Objetivo explícito (FR-001, FR-008): los mismos mínimos de tipografía/contraste/área táctil se preservan; la degradación sin JS (FR-007) es en sí misma un requisito de accesibilidad para usuarios con tecnología asistiva o navegadores desactualizados (ver spec Edge Case) |
+| III. Diseño Moderno e Intuitivo | ✅ Objetivo explícito (FR-001, FR-008): el contraste se preserva; la degradación sin JS (FR-007) es en sí misma un requisito de accesibilidad para usuarios con tecnología asistiva o navegadores desactualizados (ver spec Edge Case) |
 | IV. Pruebas Automatizadas Exhaustivas | ✅ No se agrega lógica de negocio nueva, pero la suite completa (191 pruebas) actúa como gate de no-regresión tras cada historia; se agregan pruebas Feature puntuales solo para el nuevo comportamiento de enrutamiento de US2 (`/` redirige según sesión) |
 | V. Integridad de Datos y Seguridad Transaccional | ✅ Sin cambios: htmx no altera ninguna transacción de base de datos; las mismas validaciones y `DB::transaction` ya existentes se ejecutan idénticamente sin importar el canal de la petición |
 

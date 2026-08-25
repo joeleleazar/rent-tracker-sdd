@@ -26,27 +26,27 @@
                     <x-ruta-jerarquia-locacion :ruta="$locacion->rutaJerarquiaTruncada()" />
 
                     <dl class="row mb-0">
-                        <dt class="col-sm-4 fs-5 fw-semibold">Tamaño</dt>
-                        <dd class="col-sm-8 fs-5">{{ number_format((float) $locacion->tamano, 2) }} m²</dd>
+                        <dt class="col-sm-4 fw-semibold">Tamaño</dt>
+                        <dd class="col-sm-8">{{ number_format((float) $locacion->tamano, 2) }} m²</dd>
 
-                        <dt class="col-sm-4 fs-5 fw-semibold">Ubicación física</dt>
-                        <dd class="col-sm-8 fs-5">{{ $locacion->ubicacion_fisica }}</dd>
+                        <dt class="col-sm-4 fw-semibold">Ubicación física</dt>
+                        <dd class="col-sm-8">{{ $locacion->ubicacion_fisica }}</dd>
 
-                        <dt class="col-sm-4 fs-5 fw-semibold">Descripción</dt>
-                        <dd class="col-sm-8 fs-5">{{ $locacion->descripcion }}</dd>
+                        <dt class="col-sm-4 fw-semibold">Descripción</dt>
+                        <dd class="col-sm-8">{{ $locacion->descripcion }}</dd>
 
-                        <dt class="col-sm-4 fs-5 fw-semibold">Alquilable</dt>
-                        <dd class="col-sm-8 fs-5">
-                            <span class="badge text-bg-secondary fs-6">
+                        <dt class="col-sm-4 fw-semibold">Alquilable</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge text-bg-secondary">
                                 {{ $locacion->es_alquilable ? 'Sí' : 'No' }}
                             </span>
                         </dd>
                     </dl>
 
                     <div class="d-flex flex-wrap gap-3 pt-2">
-                        <a href="{{ route('locaciones.edit', $locacion) }}" class="btn btn-primary btn-lg"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Locación</a>
+                        <a href="{{ route('locaciones.edit', $locacion) }}" class="btn btn-primary"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Locación</a>
                         @if ($locacion->es_alquilable)
-                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Contratos</a>
+                            <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Contratos</a>
                         @endif
 
                         <x-danger-button
@@ -68,7 +68,7 @@
                             ¿Está seguro de eliminar "{{ $locacion->nombre }}"?
                         </h2>
 
-                        <p class="fs-5 mb-0">
+                        <p class="mb-0">
                             Esta acción no se puede deshacer. Si la locación tiene sub-locaciones asociadas, no podrá eliminarse.
                         </p>
                     </div>

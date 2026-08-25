@@ -19,7 +19,7 @@ Esta especificación no agrega rutas HTTP nuevas: extiende la pantalla de config
 
 `php artisan pagos:alertar-fecha-limite` — ejecutado diariamente por el scheduler (`routes/console.php`: `Schedule::command('pagos:alertar-fecha-limite')->daily()`), junto al ya existente `contratos:verificar-vencimientos` (de `specs/004`); no expone ruta HTTP.
 
-## Errores y mensajes (Senior-First)
+## Errores y mensajes
 
 - El indicador de días activos y el monto prorrateado sugerido MUST mostrarse con tipografía ≥18px y alto contraste, distinguiéndose claramente de un recibo de mes completo (sin esa sección visible).
 - El campo `dias_anticipacion_alerta_pago` MUST validar como entero positivo, con mensaje explícito si se ingresa un valor no numérico o menor a 1.

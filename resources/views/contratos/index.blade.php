@@ -11,12 +11,12 @@
                 <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
             @endif
 
-            <a href="{{ route('contratos.create', $locacion) }}" class="btn btn-primary btn-lg align-self-start">
+            <a href="{{ route('contratos.create', $locacion) }}" class="btn btn-primary align-self-start">
                 Registrar Nuevo Contrato
             </a>
 
             @if ($contratos->isEmpty())
-                <p class="fs-5">Esta locación todavía no tiene contratos registrados.</p>
+                <p>Esta locación todavía no tiene contratos registrados.</p>
             @else
                 {{--
                     Timeline de historial (specs/012, FR-003): indicador de fecha +
@@ -41,17 +41,17 @@
                             ></span>
 
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                <span class="fs-5 text-secondary">
+                                <span class="text-secondary">
                                     <i class="bi bi-calendar-event" aria-hidden="true"></i>
                                     {{ $contrato->fecha_inicio->format('d/m/Y') }} — {{ $contrato->fecha_fin->format('d/m/Y') }}
                                 </span>
-                                <span class="badge text-bg-{{ $colorEstado }} fs-6">{{ ucfirst($contrato->estado) }}</span>
+                                <span class="badge text-bg-{{ $colorEstado }}">{{ ucfirst($contrato->estado) }}</span>
                             </div>
 
-                            <p class="fs-5 fw-bold mb-1">Contrato #{{ $contrato->id }}</p>
-                            <p class="fs-5 mb-2">Inquilino: {{ $contrato->inquilino->nombre }}</p>
+                            <p class="fw-bold mb-1">Contrato #{{ $contrato->id }}</p>
+                            <p class="mb-2">Inquilino: {{ $contrato->inquilinoPrincipal()?->nombreCompleto() ?? '—' }}</p>
 
-                            <a href="{{ route('contratos.show', $contrato) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-eye" aria-hidden="true"></i> Ver Detalle</a>
+                            <a href="{{ route('contratos.show', $contrato) }}" class="btn btn-outline-secondary"><i class="bi bi-eye" aria-hidden="true"></i> Ver Detalle</a>
                         </div>
                     @endforeach
                 </div>

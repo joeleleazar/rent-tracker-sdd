@@ -74,7 +74,7 @@ Como Administrador, quiero consultar el historial de lecturas de medidor y de re
 - **FR-008**: El sistema MUST impedir la generación de un recibo para una locación y periodo que no tenga un contrato activo vigente durante ese periodo, sin bloquear el registro independiente de la lectura del medidor para ese mismo periodo.
 - **FR-009**: El sistema MUST impedir generar un segundo recibo para la misma locación y el mismo periodo, ofreciendo en su lugar la edición del recibo ya existente.
 - **FR-010**: El sistema MUST registrar de forma transaccional y atómica (`DB::transaction`) tanto el guardado de lecturas de medidor como la generación y edición de recibos por periodo.
-- **FR-011**: La interfaz de registro de lecturas y de generación de recibos por periodo MUST cumplir los estándares Senior-First del proyecto (tipografía mínima de 18px, alto contraste, botones de al menos 48x48px y etiquetas explícitas como "Guardar Lectura del Medidor" o "Emitir Recibo del Periodo").
+- **FR-011**: La interfaz de registro de lecturas y de generación de recibos por periodo MUST usar alto contraste y etiquetas explícitas ("Guardar Lectura del Medidor", "Emitir Recibo del Periodo").
 
 ### Key Entities *(include if feature involves data)*
 
@@ -97,7 +97,7 @@ Como Administrador, quiero consultar el historial de lecturas de medidor y de re
 ### Measurable Outcomes
 
 - **SC-001**: El 100% de las lecturas registradas calculan y muestran automáticamente el consumo del periodo (o "sin dato anterior") en menos de 2 segundos tras guardarse.
-- **SC-002**: Un administrador puede generar un recibo de periodo seleccionando los conceptos deseados y ajustando montos en menos de 3 minutos utilizando la interfaz Senior-First.
+- **SC-002**: Un administrador puede generar un recibo de periodo seleccionando los conceptos deseados y ajustando montos en menos de 3 minutos.
 - **SC-003**: El sistema bloquea el 100% de los intentos de crear una segunda lectura o un segundo recibo para la misma locación y el mismo periodo, ofreciendo siempre la edición del registro existente en su lugar.
 - **SC-004**: El 100% de los recibos emitidos muestran únicamente los conceptos que el administrador seleccionó incluir, sin conceptos ocultos ni montos no solicitados.
 - **SC-005**: El monto sugerido de luz se calcula automáticamente (consumo × tarifa vigente) y se muestra al administrador en menos de 2 segundos al iniciar la generación del recibo, sin requerir cálculos manuales previos.

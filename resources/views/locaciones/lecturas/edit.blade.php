@@ -31,7 +31,7 @@
 
                     <input type="hidden" name="periodo" value="{{ $lectura->periodo->format('Y-m-d') }}">
 
-                    <p class="fs-5 mb-0">
+                    <p class="mb-0">
                         Periodo: <strong>{{ $lectura->periodo->translatedFormat('F Y') }}</strong>
                     </p>
 
@@ -50,7 +50,7 @@
                     @if ($errors->has('lectura_actual'))
                         <div class="form-check d-flex align-items-center gap-2">
                             <input type="checkbox" id="confirmar_consumo_negativo" name="confirmar_consumo_negativo" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;">
-                            <label for="confirmar_consumo_negativo" class="form-check-label fs-5">
+                            <label for="confirmar_consumo_negativo" class="form-check-label">
                                 Confirmo que la lectura es correcta aunque resulte en un consumo negativo
                             </label>
                         </div>
@@ -58,7 +58,7 @@
 
                     <div class="d-flex flex-wrap gap-3">
                         <x-primary-button>Guardar Cambios</x-primary-button>
-                        <a href="{{ route('locaciones.lecturas.index', $lectura->locacion) }}" class="btn btn-outline-secondary btn-lg"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
+                        <a href="{{ route('locaciones.lecturas.index', $lectura->locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
                     </div>
                 </div>
             </form>

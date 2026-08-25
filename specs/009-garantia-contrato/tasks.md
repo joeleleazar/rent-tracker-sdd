@@ -103,7 +103,7 @@ Aplicación Laravel monolítica única — rutas relativas a la raíz del reposi
 - [X] T015 [US3] Implementar `ServicioResolucionGarantiaContrato` (`registrar()`: cuadre exacto con `bccomp`, motivo obligatorio, exige `confirmado` si `garantiaResuelta()`, marca `estado_garantia='resuelta'` y `fecha_resolucion_garantia`, `DB::transaction`) en `app/Services/ServicioResolucionGarantiaContrato.php` (depende de T004, T014; ver `research.md` §2-3)
 - [X] T016 [US3] Implementar `ContratoController@registrarResolucionGarantia` en `app/Http/Controllers/ContratoController.php` (depende de T015)
 - [X] T017 [US3] Registrar ruta `POST /contratos/{contrato}/garantia/resolucion` en `routes/web.php` (depende de T016)
-- [X] T018 [US3] Agregar formulario de resolución de garantía (con modal de confirmación Senior-First para corregir una ya "Resuelta") a `resources/views/contratos/show.blade.php`, disponible solo si `tieneGarantia()` (depende de T009, T017)
+- [X] T018 [US3] Agregar formulario de resolución de garantía (con modal de confirmación explícita para corregir una ya "Resuelta") a `resources/views/contratos/show.blade.php`, disponible solo si `tieneGarantia()` (depende de T009, T017)
 
 **Checkpoint**: Las 3 historias de usuario funcionan de forma independiente
 

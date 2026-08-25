@@ -1,8 +1,8 @@
 @props(['ruta'])
 
 {{--
-    Breadcrumb accesible (Senior-First): tipografía >= 18px, alto contraste,
-    sin menús desplegables, truncado a los últimos 3 niveles (FR-004).
+    Breadcrumb accesible: alto contraste, truncado a los últimos 3 niveles
+    (FR-004) para mantener la ruta legible sin abrumar la interfaz.
 
     Dual Tailwind/Bootstrap (ver nota en components/mensaje-alerta.blade.php):
     se agrega la clase `breadcrumb` de Bootstrap al `<ol>` y `breadcrumb-item`
