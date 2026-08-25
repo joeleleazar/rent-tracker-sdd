@@ -15,6 +15,7 @@ use App\Models\Locacion;
 use App\Services\ServicioCalculoConsumoMedidor;
 use App\Services\ServicioConstruccionArbolLocaciones;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -70,6 +71,25 @@ class RegistroMasivoLecturasController extends Controller
         $guardadas = 0;
         $errores = [];
 
+        $idsLocaciones = array_keys($filas);
+
+        // specs/018 (FR-001/FR-002): batch-fetch de locaciones, lecturas del
+        // periodo y lecturas anteriores ANTES del foreach, mismo patrón ya usado
+        // en datosDelPeriodo() (líneas ~297-309), en vez de una consulta por fila.
+        $locaciones = Locacion::whereIn('id', $idsLocaciones)->get()->keyBy('id');
+
+        $lecturasDelPeriodo = LecturaMedidor::whereIn('locacion_id', $idsLocaciones)
+            ->where('periodo', $periodo->format('Y-m-d'))
+            ->get()
+            ->keyBy('locacion_id');
+
+        $lecturasAnteriores = LecturaMedidor::whereIn('locacion_id', $idsLocaciones)
+            ->where('periodo', '<', $periodo->format('Y-m-d'))
+            ->orderByDesc('periodo')
+            ->get()
+            ->unique('locacion_id')
+            ->keyBy('locacion_id');
+
         foreach ($filas as $locacionId => $datosFila) {
             $valorActual = $datosFila['lectura_actual'] ?? null;
 
@@ -83,42 +103,54 @@ class RegistroMasivoLecturasController extends Controller
                 continue;
             }
 
-            $locacion = Locacion::find($locacionId);
+            $locacion = $locaciones->get((int) $locacionId);
 
             if ($locacion === null || ! $locacion->es_alquilable) {
                 continue;
             }
 
             $confirmado = filter_var($datosFila['confirmar_consumo_negativo'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            $lecturaAnterior = $this->servicioConsumo->sugerirLecturaAnterior($locacion, $periodo->format('Y-m-d'));
+            $lecturaAnterior = $lecturasAnteriores->get($locacion->id)?->lectura_actual;
+            $lecturaAnterior = $lecturaAnterior !== null ? (float) $lecturaAnterior : null;
 
             try {
-                DB::transaction(function () use ($locacion, $periodo, $valorActual, $confirmado, $lecturaAnterior) {
-                    $existente = $locacion->lecturasMedidor()->where('periodo', $periodo->format('Y-m-d'))->first();
+                $existente = $lecturasDelPeriodo->get($locacion->id);
 
-                    if ($existente !== null) {
-                        throw new LecturaMedidorDuplicadaException($existente);
-                    }
+                if ($existente !== null) {
+                    throw new LecturaMedidorDuplicadaException($existente);
+                }
 
-                    $consumo = $this->servicioConsumo->calcularConsumo($lecturaAnterior, (float) $valorActual);
+                $consumo = $this->servicioConsumo->calcularConsumo($lecturaAnterior, (float) $valorActual);
 
-                    if ($consumo !== null && $consumo < 0 && ! $confirmado) {
-                        throw new ConsumoNegativoSinConfirmarException();
-                    }
+                if ($consumo !== null && $consumo < 0 && ! $confirmado) {
+                    throw new ConsumoNegativoSinConfirmarException();
+                }
 
-                    LecturaMedidor::create([
-                        'locacion_id' => $locacion->id,
-                        'periodo' => $periodo->format('Y-m-d'),
-                        'lectura_anterior' => $lecturaAnterior,
-                        'lectura_actual' => $valorActual,
-                        'consumo_calculado' => $consumo,
-                        'fecha_registro' => now(),
-                    ]);
-                });
+                // Sin DB::transaction(): el chequeo de duplicado ya se resolvió en
+                // memoria contra el prefetch (specs/018, research.md R4) y el único
+                // efecto en base de datos de esta fila es este único INSERT, que ya
+                // es atómico por sí mismo — envolverlo en una transacción solo
+                // agregaría BEGIN/COMMIT sin ningún beneficio adicional. La unique
+                // (locacion_id, periodo) de la BD sigue siendo la última defensa
+                // ante una condición de carrera entre dos envíos concurrentes.
+                LecturaMedidor::create([
+                    'locacion_id' => $locacion->id,
+                    'periodo' => $periodo->format('Y-m-d'),
+                    'lectura_anterior' => $lecturaAnterior,
+                    'lectura_actual' => $valorActual,
+                    'consumo_calculado' => $consumo,
+                    'fecha_registro' => now(),
+                ]);
 
                 $guardadas++;
             } catch (ConsumoNegativoSinConfirmarException|LecturaMedidorDuplicadaException $excepcion) {
                 $errores["lecturas.{$locacionId}.lectura_actual"] = $excepcion->getMessage();
+            } catch (QueryException $excepcion) {
+                if ($excepcion->getCode() !== '23505') {
+                    throw $excepcion;
+                }
+
+                $errores["lecturas.{$locacionId}.lectura_actual"] = 'Ya existe una lectura registrada para ese periodo en esta locación. Edite la lectura existente en vez de crear un duplicado.';
             }
         }
 

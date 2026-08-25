@@ -4,6 +4,7 @@ use App\Models\Contrato;
 use App\Models\Inquilino;
 use App\Models\Locacion;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
@@ -82,6 +83,28 @@ test('un administrador puede buscar inquilinos existentes por dni', function () 
 
     $respuesta->assertOk();
     $respuesta->assertJsonFragment(['dni' => '12345678']);
+});
+
+// --- specs/018: índice pg_trgm para evitar el escaneo secuencial (FR-008, contrato "busqueda-inquilinos") ---
+
+test('la busqueda de inquilinos por substring usa un indice trigram en vez de un escaneo secuencial', function () {
+    Inquilino::factory()->create(['dni' => '12345678', 'apellidos' => 'Pérez Gómez']);
+
+    // Forzar enable_seqscan=off obliga al planificador a preferir cualquier
+    // índice disponible sobre un Seq Scan; si no existe un índice trigram que
+    // soporte el comodín inicial de ILIKE '%...%', el Seq Scan sigue siendo el
+    // único plan posible y aparece de todas formas (esto es lo que debe
+    // ocurrir ANTES de crear el índice — ver research.md R5).
+    $plan = DB::transaction(function () {
+        DB::statement('SET LOCAL enable_seqscan = off');
+
+        return collect(DB::select("EXPLAIN SELECT * FROM inquilinos WHERE dni ILIKE '%345%' OR apellidos ILIKE '%rez%'"))
+            ->pluck('QUERY PLAN')
+            ->implode("\n");
+    });
+
+    expect($plan)->toContain('Bitmap Index Scan');
+    expect($plan)->not->toContain('Seq Scan');
 });
 
 test('registrar un inquilino duplicado en el directorio global es rechazado', function () {

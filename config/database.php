@@ -97,6 +97,10 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // specs/018 (research.md R1): fija explícitamente la zona horaria de
+            // sesión para que un timestamptz ya correcto nunca se reinterprete con
+            // el offset por defecto del servidor de PostgreSQL.
+            'timezone' => 'UTC',
         ],
 
         'sqlsrv' => [

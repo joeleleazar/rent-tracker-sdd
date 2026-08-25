@@ -5,6 +5,7 @@ use App\Models\ConfiguracionGeneral;
 use App\Models\LecturaMedidor;
 use App\Models\Locacion;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
@@ -244,6 +245,84 @@ test('el borrador se descarta al completar el guardado final exitoso', function 
     ]);
 
     expect(BorradorLecturaMedidor::where('usuario_id', $this->admin->id)->where('periodo', '2026-08-01')->count())->toBe(0);
+});
+
+// --- specs/018: eliminación del patrón N+1 (FR-001/FR-002, contrato "registro-masivo-optimizado") ---
+
+test('el guardado masivo no incrementa las consultas de base de datos de forma lineal con el tamaño del lote', function () {
+    $construirLote = fn (int $cantidad) => Locacion::factory()->count($cantidad)->create(['es_alquilable' => true]);
+
+    $enviarLote = function ($locaciones, string $periodo) {
+        return $locaciones->mapWithKeys(
+            fn ($locacion, $indice) => [$locacion->id => ['lectura_actual' => (string) (100 + $indice)]]
+        )->all();
+    };
+
+    // Los lotes se crean ANTES de habilitar el query log: solo interesa medir las
+    // consultas que dispara store(), no las de los factories de preparación.
+    $loteChico = $construirLote(5);
+    $loteGrande = $construirLote(50);
+
+    DB::enableQueryLog();
+    $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => $enviarLote($loteChico, '2026-08-01'),
+    ]);
+    $consultasLoteChico = count(DB::getQueryLog());
+    DB::flushQueryLog();
+
+    $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-09-01',
+        'lecturas' => $enviarLote($loteGrande, '2026-09-01'),
+    ]);
+    $consultasLoteGrande = count(DB::getQueryLog());
+    DB::disableQueryLog();
+
+    // Antes del fix, cada fila adicional agrega ~4 consultas (lookup de locación,
+    // lectura anterior, chequeo de duplicado, insert). Después del fix, el costo
+    // marginal por fila adicional debe acercarse a 1 (solo el INSERT).
+    $filasAdicionales = $loteGrande->count() - $loteChico->count();
+    expect($consultasLoteGrande - $consultasLoteChico)->toBeLessThan($filasAdicionales * 2);
+});
+
+test('un lote mixto con fila valida duplicada consumo negativo y no numerica preserva el exito parcial', function () {
+    $localValido = Locacion::factory()->create(['es_alquilable' => true]);
+    $localDuplicado = Locacion::factory()->create(['es_alquilable' => true]);
+    $localConsumoNegativo = Locacion::factory()->create(['es_alquilable' => true]);
+    $localNoNumerico = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $localDuplicado->id,
+        'periodo' => '2026-08-01',
+        'lectura_actual' => 1000,
+    ]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $localConsumoNegativo->id,
+        'periodo' => '2026-07-01',
+        'lectura_actual' => 1000,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => [
+            $localValido->id => ['lectura_actual' => '500'],
+            $localDuplicado->id => ['lectura_actual' => '1500'],
+            $localConsumoNegativo->id => ['lectura_actual' => '100'],
+            $localNoNumerico->id => ['lectura_actual' => 'abc'],
+        ],
+    ]);
+
+    $respuesta->assertSessionHasErrors([
+        "lecturas.{$localDuplicado->id}.lectura_actual" => 'Ya existe una lectura registrada para ese periodo en esta locación. Edite la lectura existente en vez de crear un duplicado.',
+        "lecturas.{$localConsumoNegativo->id}.lectura_actual" => 'La lectura ingresada es menor a la del periodo anterior, lo que resultaría en un consumo negativo. Confirme explícitamente para continuar o corrija el valor.',
+        "lecturas.{$localNoNumerico->id}.lectura_actual" => 'La lectura debe ser un número mayor o igual a 0.',
+    ]);
+
+    expect(LecturaMedidor::where('locacion_id', $localValido->id)->where('periodo', '2026-08-01')->exists())->toBeTrue();
+    expect(LecturaMedidor::where('locacion_id', $localDuplicado->id)->where('periodo', '2026-08-01')->count())->toBe(1);
+    expect(LecturaMedidor::where('locacion_id', $localConsumoNegativo->id)->where('periodo', '2026-08-01')->exists())->toBeFalse();
+    expect(LecturaMedidor::where('locacion_id', $localNoNumerico->id)->exists())->toBeFalse();
 });
 
 test('un usuario no autenticado no puede acceder al registro masivo', function () {
