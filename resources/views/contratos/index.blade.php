@@ -16,7 +16,7 @@
             </a>
 
             @if ($contratos->isEmpty())
-                <p>Esta locación todavía no tiene contratos registrados.</p>
+                <x-estado-vacio icono="bi-file-earmark-text">Esta locación todavía no tiene contratos registrados.</x-estado-vacio>
             @else
                 {{--
                     Timeline de historial (specs/012, FR-003): indicador de fecha +

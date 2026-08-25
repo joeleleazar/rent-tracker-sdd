@@ -16,7 +16,7 @@
             </div>
 
             @if ($lecturas->isEmpty())
-                <p>Esta locación todavía no tiene lecturas de medidor registradas.</p>
+                <x-estado-vacio icono="bi-speedometer2">Esta locación todavía no tiene lecturas de medidor registradas.</x-estado-vacio>
             @else
                 @php
                     // Gráfico de consumo histórico (FR-005): mismo dato ya calculado

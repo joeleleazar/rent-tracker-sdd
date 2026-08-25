@@ -49,27 +49,27 @@
 
                         @if ($recibo->incluye_alquiler)
                             <dt class="col-sm-4 fw-semibold">Monto de Renta</dt>
-                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
+                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_agua)
                             <dt class="col-sm-4 fw-semibold">Monto de Agua</dt>
-                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_agua, 2) }}</dd>
+                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_agua, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_luz)
                             <dt class="col-sm-4 fw-semibold">Monto de Luz</dt>
-                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_luz, 2) }}</dd>
+                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_luz, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_pasadizo)
                             <dt class="col-sm-4 fw-semibold">Monto de Luz de Pasadizo</dt>
-                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_pasadizo, 2) }}</dd>
+                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_pasadizo, 2) }}</dd>
                         @endif
                         @if ($recibo->incluye_seguridad)
                             <dt class="col-sm-4 fw-semibold">Monto de Seguridad</dt>
-                            <dd class="col-sm-8">S/ {{ number_format((float) $recibo->monto_seguridad, 2) }}</dd>
+                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_seguridad, 2) }}</dd>
                         @endif
 
                         <dt class="col-sm-4 fw-bold">Total</dt>
-                        <dd class="col-sm-8 fw-bold">S/ {{ number_format($recibo->total(), 2) }}</dd>
+                        <dd class="col-sm-8 fw-bold cifra">S/ {{ number_format($recibo->total(), 2) }}</dd>
                     </dl>
 
                     <div class="d-flex flex-wrap gap-3 pt-2">

@@ -37,10 +37,10 @@
                         <dd class="col-sm-8">{{ $contrato->fecha_fin->format('d/m/Y') }}</dd>
 
                         <dt class="col-sm-4 fw-semibold">Monto de renta</dt>
-                        <dd class="col-sm-8">S/ {{ number_format((float) $contrato->monto_renta, 2) }}</dd>
+                        <dd class="col-sm-8 cifra">S/ {{ number_format((float) $contrato->monto_renta, 2) }}</dd>
 
                         <dt class="col-sm-4 fw-semibold">Garantía Entregada</dt>
-                        <dd class="col-sm-8">
+                        <dd class="col-sm-8 cifra">
                             @if (! $contrato->tieneGarantia())
                                 Sin garantía registrada
                             @else

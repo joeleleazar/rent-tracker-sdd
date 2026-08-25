@@ -162,3 +162,85 @@ $arbol-gap-fila: map-get($spacers, 2); // separación vertical entre filas
     width: 1em;
     flex-shrink: 0;
 }
+
+// -----------------------------------------------------------------------
+// 6. Superficies del navegador (pulido de detalle, ver skill "impeccable"):
+//    la selección de texto y la barra de scroll de los contenedores propios
+//    (tabla-arbol-locaciones, .table-responsive) heredan por defecto el azul
+//    genérico del navegador si no se tematizan explícitamente; se alinean
+//    aquí al acento del proyecto en vez de dejarlas "sin diseñar".
+// -----------------------------------------------------------------------
+::selection {
+    background-color: $accent-rent-tracker;
+    color: $white;
+}
+
+.tabla-arbol-locaciones,
+.table-responsive {
+    scrollbar-color: $secondary $light;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        height: .5rem;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $light;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: $secondary;
+        border-radius: var(--bs-border-radius-pill);
+    }
+}
+
+// -----------------------------------------------------------------------
+// 7. Cifras monetarias y numéricas: numerales tabulares para que montos y
+//    lecturas alineen verticalmente en listas y tablas en vez de "bailar"
+//    con las proporciones variables de la tipografía por defecto.
+// -----------------------------------------------------------------------
+.cifra {
+    font-variant-numeric: tabular-nums;
+}
+
+// -----------------------------------------------------------------------
+// 8. Navegación lateral (sidebar-principal, ver app-bootstrap.blade.php):
+//    el estado hover de los enlaces no activos no tenía ninguna señal visual
+//    propia sobre el fondo oscuro (solo heredaba el color de enlace, poco
+//    perceptible en blanco-sobre-oscuro); se agrega un fondo sutil y una
+//    transición breve, coherente con el resto de los estados interactivos
+//    del proyecto (botones, filas de tabla).
+// -----------------------------------------------------------------------
+.sidebar-principal .nav-link {
+    border-radius: var(--bs-border-radius);
+    transition: background-color .15s ease-in-out;
+}
+
+.sidebar-principal .nav-link:hover,
+.sidebar-principal .nav-link:focus-visible {
+    background-color: rgba(255, 255, 255, .1);
+}
+
+.sidebar-principal .nav-link.active {
+    background-color: $accent-rent-tracker;
+}
+
+// -----------------------------------------------------------------------
+// 9. Estado vacío reutilizable (ver x-estado-vacio): reemplaza los avisos de
+//    "todavía no hay X" que antes eran un <p> plano y sin jerarquía visual
+//    propia por un bloque centrado con ícono de apoyo, sin caer en tarjetas
+//    ni ilustraciones — solo la señal mínima necesaria para distinguir un
+//    estado vacío legítimo de un error de carga.
+// -----------------------------------------------------------------------
+.estado-vacio {
+    text-align: center;
+    color: $secondary;
+    padding: map-get($spacers, 4) map-get($spacers, 3);
+    border: 1px dashed $border-color;
+    border-radius: var(--bs-border-radius);
+}
+
+.estado-vacio__icono {
+    font-size: 1.75rem;
+    color: $secondary;
+}

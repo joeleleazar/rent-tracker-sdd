@@ -1,6 +1,22 @@
 <!--
 Sync Impact Report
-Version change: 1.1.0 → 2.0.0
+Version change: 2.0.0 → 2.1.0
+Modified principles:
+- VI. Sistema de Componentes Visuales (Bootstrap 5) — se agrega el requisito de revisión con
+  el skill `impeccable` (instalado en .claude/skills/impeccable) como paso obligatorio para
+  toda tarea que modifique vistas Blade, adicional al hook determinístico ya configurado en
+  .claude/settings.json.
+Added sections: N/A
+Removed sections: N/A
+Modified sections:
+- Flujo de Trabajo, punto 3 ("Revisión de Cumplimiento de Interfaz"): ahora incluye
+  explícitamente la revisión con el skill `impeccable` exigida por el Principio VI como parte
+  del criterio de tarea completa.
+Follow-up TODOs: N/A
+-->
+
+<!--
+Sync Impact Report (histórico) — Version change: 1.1.0 → 2.0.0
 Modified principles:
 - III. Accesibilidad Extrema y UX para Adultos Mayores (Senior-First) → III. Diseño Moderno
   e Intuitivo — se retira el enfoque "Senior-First" (tipografía mínima 18px, botones/áreas
@@ -73,6 +89,7 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
 - **Checklist de cumplimiento Bootstrap 5** (verificado en cada vista nueva o modificada): tipografía base y componentes usando los tamaños estándar de Bootstrap 5 (`form-control`, `btn`, sin necesidad de forzar variantes `-lg` salvo que el diseño lo pida); contraste ≥4.5:1 verificado con los valores reales de la paleta del proyecto (ver excepción de paleta más abajo); diseño responsive sin scroll horizontal (`container`/`row`/`col-*`); iconografía consistente (ver punto anterior); validación de formularios en tiempo real donde el navegador lo soporte nativamente (`required`, `type="email"`, etc.), sin sustituir la validación de servidor; atributos de accesibilidad (`aria-label`, `aria-hidden` en íconos decorativos, `role="alert"` en mensajes); estilos de impresión (`@media print`) en las vistas que lo requieran (ej. comprobantes de recibo).
 - **Excepción de paleta de colores**: la paleta de colores vinculante del proyecto es la definida en `resources/css/bootstrap.scss` (variables `$primary`/`$secondary`/`$success`/`$danger`/`$warning`/`$info`), no la paleta genérica de cualquier documento de referencia de diseño. Estos valores fueron elegidos deliberadamente más oscuros que los por defecto de Bootstrap (ej. `$warning: #92400e` en vez de `#FFC107`) para satisfacer el contraste mínimo del Principio III; ningún documento de referencia de diseño puede introducir un color que no cumpla ese contraste, sin importar qué tan extendido sea su uso en dicho documento.
 - **Excepción de interactividad asíncrona**: la interactividad de escritura (crear/editar/eliminar) del proyecto se implementa con **htmx** (`hx-boost`), no con Alpine.js, por la decisión técnica documentada en `specs/011-elevacion-diseno-async/research.md` — htmx permite que la interfaz se sienta asíncrona sin exigir cambios en los controladores y con degradación elegante a envío clásico si JavaScript falla, lo que Alpine.js no resuelve de la misma forma. Cualquier sugerencia futura de usar Alpine.js para este propósito queda descartada salvo que se documente una nueva reconciliación explícita.
+- **Revisión de diseño con el skill `impeccable`**: toda tarea que cree o modifique una o más vistas Blade (`resources/views/**`) DEBE pasar, antes de darse por completa, por una revisión con el skill `impeccable` instalado en `.claude/skills/impeccable` (comando `/impeccable polish`, `audit` o `critique`, según corresponda al alcance del cambio). El hook determinístico configurado en `.claude/settings.json` corre automáticamente después de cada edición de una vista y en cada `Stop`, pero solo señala hallazgos mecánicos (contraste, patrones prohibidos); no reemplaza la revisión explícita exigida por este punto. Esta revisión es adicional a — nunca un sustituto de — el resto de este Principio VI, y su resultado se documenta según corresponda en `DESIGN.md` (ver `/impeccable document`).
 - **Documentos de referencia de diseño**: material de consulta no normativo (mockups, wireframes, ejemplos de componentes) vive en `docs/referencias-diseno-bootstrap/`, fuera de este documento. Donde ese material sugiera algo que contradiga una decisión ya implementada y documentada en una spec (ej. navegación con sidebar en vez de navbar plano, definido en `specs/010-migracion-interfaz-bootstrap`), la decisión ya implementada prevalece salvo que una nueva spec la reemplace explícitamente.
 
 ## Restricciones Técnicas y Estándares de Interfaz
@@ -86,7 +103,7 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
 
 1. **Especificación Previa**: Toda funcionalidad DEBE definirse primero mediante especificación técnica funcional y requisitos de usuario aprobados.
 2. **Ciclo de Pruebas**: Redacción de pruebas unitarias y de integración junto con la lógica de negocio; verificación obligatoria en entorno local antes de integración.
-3. **Revisión de Cumplimiento de Interfaz**: Verificación manual y automatizada de contrastes de color (WCAG AA), consistencia de componentes Bootstrap 5 y claridad de textos en cada vista nueva o modificada.
+3. **Revisión de Cumplimiento de Interfaz**: Verificación manual y automatizada de contrastes de color (WCAG AA), consistencia de componentes Bootstrap 5 y claridad de textos en cada vista nueva o modificada, incluyendo la revisión con el skill `impeccable` exigida por el Principio VI antes de marcar la tarea como completa.
 4. **Revisión de Nomenclatura en Español**: Auditoría de código para confirmar que no existan variables, funciones, nombres de tablas o comentarios en otros idiomas.
 
 ## Governance
@@ -99,4 +116,4 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
   - **PATCH**: Ajustes de redacción, correcciones tipográficas o clarificaciones operativas.
 - Todo desarrollo, Pull Request o revisión de código DEBE verificar el estricto cumplimiento de estos artículos antes de ser aprobado.
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-23
+**Version**: 2.1.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-24

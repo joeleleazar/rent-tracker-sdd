@@ -8,6 +8,12 @@ normativos por sí mismos** — la constitución es la fuente de verdad vinculan
 - `ANALISIS_SPECS_PARA_VISTAS_BOOTSTRAP.md` — análisis detallado por spec, wireframes conceptuales.
 - `GUIA_COMPONENTES_BOOTSTRAP.md` — snippets de componentes Bootstrap por spec.
 
+Para el estado **actual** del sistema de diseño ya implementado (paleta real, tipografía,
+elevación, componentes tal como quedaron construidos), ver [`/DESIGN.md`](../../DESIGN.md) en
+la raíz del proyecto — generado con el skill `impeccable` a partir del código y de esta misma
+constitución. Al igual que estos 3 documentos, `DESIGN.md` es material descriptivo, no
+normativo: documenta lo implementado, no lo reemplaza como fuente de verdad.
+
 ## Excepciones conocidas
 
 Donde estos documentos sugieren algo que ya fue reemplazado por una decisión implementada

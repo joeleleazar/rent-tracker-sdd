@@ -7,6 +7,22 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Rent Tracker — Documentación del Proyecto
+
+Este repositorio es **Rent Tracker**, un sistema de gestión de contratos de locación, recibos
+y medidores de consumo. La documentación específica del proyecto (no la del framework Laravel
+de abajo) vive en:
+
+- [`.specify/memory/constitution.md`](.specify/memory/constitution.md) — la constitución: fuente
+  de verdad normativa de arquitectura, nomenclatura, pruebas, integridad de datos y sistema de
+  diseño (Bootstrap 5).
+- [`DESIGN.md`](DESIGN.md) — el sistema de diseño visual tal como está implementado hoy (paleta,
+  tipografía, elevación, componentes), generado con el skill `impeccable`; descriptivo, no
+  normativo — ver la constitución para lo vinculante.
+- [`docs/referencias-diseno-bootstrap/`](docs/referencias-diseno-bootstrap/) — material de
+  consulta histórico que originó el Principio VI de la constitución.
+- [`specs/`](specs/) — especificaciones funcionales por feature (Spec Kit).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

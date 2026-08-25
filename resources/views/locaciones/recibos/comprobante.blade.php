@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Comprobante de Recibo #{{ $recibo->id }}</title>
+    {{ \Illuminate\Support\Facades\Vite::fonts() }}
     @vite(['resources/js/recibo-comprobante.js'])
     <style>
         /*
@@ -99,6 +100,7 @@
             font-size: 1rem;
             color: #111827;
             margin: 0;
+            font-variant-numeric: tabular-nums;
         }
         #comprobante-recibo .fila-total {
             border-top: 1px solid #d1d5db;

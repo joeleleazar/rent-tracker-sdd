@@ -7,8 +7,12 @@
 
         <title>{{ config('app.name', 'Rent Tracker') }}</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,600,700&display=swap" rel="stylesheet" />
+        {{-- Instrument Sans se auto-hospeda vía el plugin de fuentes de Vite
+             (ver vite.config.js); el enlace bunny.net a Figtree que había antes
+             quedó mudo (la hoja `body` nunca pidió esa familia), descargando
+             una fuente que ninguna regla usaba mientras Instrument Sans caía a
+             la fuente del sistema por falta de @font-face. --}}
+        {{ \Illuminate\Support\Facades\Vite::fonts() }}
 
         @vite(['resources/css/bootstrap.scss', 'resources/js/bootstrap.js', 'resources/js/htmx.js'])
         <style>

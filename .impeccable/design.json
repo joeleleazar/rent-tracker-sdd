@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-24T00:00:00Z",
+  "title": "Design System: Rent Tracker",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Deep Cobalt", "canonical": "#1e40af" },
+      "accent": { "role": "secondary", "displayName": "Signature Teal", "canonical": "#0e7490" },
+      "success": { "role": "semantic", "displayName": "Confirmed Green", "canonical": "#166534" },
+      "danger": { "role": "semantic", "displayName": "Alert Red", "canonical": "#991b1b" },
+      "warning": { "role": "semantic", "displayName": "Caution Amber", "canonical": "#92400e" },
+      "info": { "role": "semantic", "displayName": "Informative Sky", "canonical": "#0c4a6e" },
+      "neutral-ink": { "role": "neutral", "displayName": "Ink", "canonical": "#111827" },
+      "neutral-secondary": { "role": "neutral", "displayName": "Slate", "canonical": "#374151" },
+      "neutral-border": { "role": "neutral", "displayName": "Hairline", "canonical": "#d1d5db" },
+      "neutral-surface": { "role": "neutral", "displayName": "Paper", "canonical": "#f9fafb" },
+      "neutral-white": { "role": "neutral", "displayName": "White", "canonical": "#ffffff" }
+    },
+    "typographyMeta": {
+      "body": { "displayName": "Body", "purpose": "Form labels, table cells, dl/dt-dd detail pairs, button labels." },
+      "headline": { "displayName": "Headline", "purpose": "One per page, in the layout header slot." },
+      "title": { "displayName": "Title", "purpose": "Card and modal section headings." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 .125rem .375rem rgba(17,24,39,.08)", "purpose": "Every .card at rest." },
+      { "name": "raised", "value": "0 .375rem 1rem rgba(17,24,39,.1)", "purpose": ".card:hover — signals interactivity." },
+      { "name": "overlay", "value": "0 .75rem 2rem rgba(17,24,39,.12)", "purpose": "Reserved for surfaces that must float above a raised card." }
+    ],
+    "motion": [
+      { "name": "card-shadow-transition", "value": "box-shadow .15s ease-in-out", "purpose": "Resting-to-raised transition on card hover." },
+      { "name": "nav-link-transition", "value": "background-color .15s ease-in-out", "purpose": "Sidebar link hover/active fill." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single highest-priority action on a screen (Guardar, Nueva Locación).",
+      "html": "<button class=\"ds-btn ds-btn-primary\" type=\"submit\">Guardar Contrato</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: .5rem; padding: .375rem .75rem; font-size: 1rem; border-radius: .375rem; border: 1px solid transparent; transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out; } .ds-btn-primary { background-color: #1e40af; border-color: #1e40af; color: #fff; } .ds-btn-primary:hover { background-color: #1a3696; border-color: #18327d; } .ds-btn-primary:focus-visible { outline: 0; box-shadow: 0 0 0 .25rem rgba(30,64,175,.35); }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive action, always paired with an outline-secondary cancel sibling inside a confirmation modal.",
+      "html": "<button class=\"ds-btn ds-btn-danger\" type=\"submit\">Sí, eliminar locación</button>",
+      "css": ".ds-btn-danger { background-color: #991b1b; border-color: #991b1b; color: #fff; } .ds-btn-danger:hover { background-color: #7d1616; border-color: #711414; } .ds-btn-danger:focus-visible { outline: 0; box-shadow: 0 0 0 .25rem rgba(153,27,27,.35); }"
+    },
+    {
+      "name": "Outline Secondary Button",
+      "kind": "button",
+      "refersTo": "button-outline-secondary",
+      "description": "Default for every non-primary, non-destructive action (Editar, Cancelar, Ver Historial).",
+      "html": "<button class=\"ds-btn ds-btn-outline\" type=\"button\">Editar Contrato</button>",
+      "css": ".ds-btn-outline { background-color: transparent; border-color: #374151; color: #374151; } .ds-btn-outline:hover { background-color: #374151; color: #fff; } .ds-btn-outline:focus-visible { outline: 0; box-shadow: 0 0 0 .25rem rgba(55,65,81,.3); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The single elevated surface in the system; resting shadow at rest, raised shadow on hover.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-body\"><p class=\"ds-card-title\">Costos Fijos de Referencia</p><p>Déjelo en blanco si no aplica; se registrará como S/ 0.00.</p></div></div>",
+      "css": ".ds-card { background: #fff; border: 1px solid #d1d5db; border-radius: .375rem; box-shadow: 0 .125rem .375rem rgba(17,24,39,.08); transition: box-shadow .15s ease-in-out; } .ds-card:hover { box-shadow: 0 .375rem 1rem rgba(17,24,39,.1); } .ds-card-body { padding: 1.05rem; display: flex; flex-direction: column; gap: 1.05rem; } .ds-card-title { font-size: 1.5rem; font-weight: 700; margin: 0; }"
+    },
+    {
+      "name": "Semantic Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Status indicator (pagado/pendiente/anulado, alquilable/no alquilable) — always paired with an explicit text label, color is reinforcement not the only signal.",
+      "html": "<span class=\"ds-badge ds-badge-success\">Activo</span>",
+      "css": ".ds-badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; line-height: 1; color: #fff; border-radius: 50rem; } .ds-badge-success { background-color: #166534; } .ds-badge-danger { background-color: #991b1b; } .ds-badge-secondary { background-color: #374151; }"
+    },
+    {
+      "name": "Currency Input",
+      "kind": "input",
+      "refersTo": "input-money",
+      "description": "Every monetary field is prefixed with a literal S/ so the currency is never ambiguous.",
+      "html": "<div class=\"ds-input-group\"><span class=\"ds-input-prefix\">S/</span><input class=\"ds-input\" type=\"number\" step=\"0.01\" min=\"0\" placeholder=\"0.00\"></div>",
+      "css": ".ds-input-group { display: flex; align-items: stretch; } .ds-input-prefix { display: flex; align-items: center; padding: .375rem .75rem; background: #e9ecef; border: 1px solid #d1d5db; border-right: 0; border-radius: .375rem 0 0 .375rem; color: #111827; font-size: 1rem; } .ds-input { flex: 1 1 auto; min-width: 0; padding: .375rem .75rem; border: 1px solid #d1d5db; border-radius: 0 .375rem .375rem 0; font-size: 1rem; font-variant-numeric: tabular-nums; } .ds-input:focus { outline: 0; border-color: #1e40af; box-shadow: 0 0 0 .25rem rgba(30,64,175,.25); }"
+    },
+    {
+      "name": "Estado Vacío",
+      "kind": "custom",
+      "refersTo": "estado-vacio",
+      "description": "Signature empty-state pattern: dashed border, no shadow, no white fill — deliberately reads as 'nothing here yet', not as a card.",
+      "html": "<div class=\"ds-estado-vacio\"><i class=\"ds-estado-vacio-icon\">&#9737;</i><p>Todavía no hay locaciones registradas.</p></div>",
+      "css": ".ds-estado-vacio { text-align: center; color: #374151; padding: 1.8375rem 1.05rem; border: 1px dashed #d1d5db; border-radius: .375rem; } .ds-estado-vacio-icon { font-size: 1.75rem; color: #374151; display: block; margin-bottom: .525rem; font-style: normal; }"
+    },
+    {
+      "name": "Sidebar Nav Link",
+      "kind": "nav",
+      "refersTo": "sidebar-nav-link",
+      "description": "Inactive: white on dark, no fill. Hover: soft 10% white fill. Active: Signature Teal fill — the accent's only home in the system.",
+      "html": "<a class=\"ds-nav-link ds-nav-link-active\" href=\"#\">Gestionar Locaciones</a>",
+      "css": ".ds-nav-link { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border-radius: .375rem; color: #fff; text-decoration: none; transition: background-color .15s ease-in-out; } .ds-nav-link:hover, .ds-nav-link:focus-visible { background-color: rgba(255,255,255,.1); } .ds-nav-link-active { background-color: #0e7490; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Oficina Clara",
+    "overview": "Rent Tracker is the back office for someone who manages rental properties, contracts, tenants, deposits and monthly receipts by hand today and needs a screen that never makes them double-check whether an amount, a date or a contract's status is what it says it is. This is Operate-mode software: the visitor completes a task, so scanability, consistency and native Bootstrap conventions outrank expressive flourish. The system is built on stock Bootstrap 5.3 with a deliberately narrow set of overrides: a higher-contrast semantic palette, a slightly more generous spacing scale, soft card elevation, and one signature accent color reserved for state.",
+    "keyCharacteristics": [
+      "Semantic color first: every status is read from color + icon + text together, never color alone.",
+      "One accent, used rarely: the signature teal marks 'this is the active navigation item,' nothing else.",
+      "Money is typeset, not just formatted: monetary and metered figures use tabular numerals.",
+      "Every destructive action stops for a named confirmation, never a bare 'OK.'"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "The signature teal marks current location, never an action. A second element wanting the accent should be Deep Cobalt (action) or a semantic color (state) instead.", "section": "colors" },
+      { "name": "The No-Decoration Rule", "body": "Hierarchy comes from Bootstrap's stock weight/size steps alone — never letter-spacing tricks, all-caps labels, or a second display face.", "section": "typography" },
+      { "name": "The Response-Not-Rest Rule", "body": "Elevation increases only in response to interaction (hover). A card never ships at its raised shadow by default.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every component a stock Bootstrap primitive per the constitution's Principio VI.",
+      "Do pair every status badge and alert with both a semantic color and an icon.",
+      "Do require a named, two-button confirmation for every destructive action.",
+      "Do apply tabular numerals to monetary and metered figures wherever numbers need to align in a column.",
+      "Do keep the Signature Teal accent to exactly one job: marking current location in the sidebar."
+    ],
+    "donts": [
+      "Don't introduce Alpine.js for write-interactivity — htmx (hx-boost) is the documented, binding choice.",
+      "Don't nest a card inside a card, or box an already-bordered empty state.",
+      "Don't use gradient text, hard offset shadows, or a kicker/eyebrow above a heading.",
+      "Don't substitute an icon for a text label.",
+      "Don't widen Bootstrap's stock control sizing by default."
+    ]
+  }
+}

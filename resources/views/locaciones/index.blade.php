@@ -26,7 +26,7 @@
             </div>
 
             @if (empty($raices))
-                <p>Todavía no hay locaciones registradas.</p>
+                <x-estado-vacio icono="bi-diagram-3">Todavía no hay locaciones registradas.</x-estado-vacio>
             @else
                 <div class="tabla-arbol-locaciones">
                     <div class="tabla-arbol-locaciones__encabezado">

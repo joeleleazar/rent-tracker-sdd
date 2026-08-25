@@ -7,8 +7,7 @@
 
         <title>{{ config('app.name', 'Rent Tracker') }}</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        {{ \Illuminate\Support\Facades\Vite::fonts() }}
 
         @vite(['resources/css/bootstrap.scss', 'resources/js/bootstrap.js'])
         <style>

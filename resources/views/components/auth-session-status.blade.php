@@ -1,8 +1,8 @@
 @props(['status'])
 
-{{-- Dual Tailwind/Bootstrap: ver nota en components/mensaje-alerta.blade.php --}}
 @if ($status)
-    <div {{ $attributes->merge(['class' => 'fw-semibold fs-5 text-success font-medium text-sm text-green-600']) }}>
+    <div {{ $attributes->merge(['class' => 'd-flex align-items-center gap-2 fw-semibold text-success']) }} role="status">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
         {{ $status }}
     </div>
 @endif

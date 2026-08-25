@@ -16,7 +16,7 @@
             </div>
 
             @if ($recibos->isEmpty())
-                <p>Esta locación todavía no tiene recibos emitidos.</p>
+                <x-estado-vacio icono="bi-receipt">Esta locación todavía no tiene recibos emitidos.</x-estado-vacio>
             @else
                 <div class="d-flex flex-column gap-3">
                     @foreach ($recibos as $recibo)

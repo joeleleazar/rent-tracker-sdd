@@ -10,7 +10,7 @@
     cablear `is-invalid` en cada formulario.
 --}}
 @if ($messages)
-    <ul {{ $attributes->merge(['class' => 'invalid-feedback d-block mt-2 space-y-1 text-lg font-semibold text-red-800']) }}>
+    <ul {{ $attributes->merge(['class' => 'invalid-feedback d-block mt-2 mb-0 ps-3']) }}>
         @foreach ((array) $messages as $message)
             <li>{{ $message }}</li>
         @endforeach
