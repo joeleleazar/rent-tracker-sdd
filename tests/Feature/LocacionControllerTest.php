@@ -46,6 +46,23 @@ test('cada fila del arbol ofrece editar y agregar hija con el padre preseleccion
     $respuesta->assertSee(route('locaciones.create', ['locacion_padre_id' => $local->id]), false);
 });
 
+test('la fila de una locacion alquilable expone un menu de acciones con contratos y recibos', function () {
+    $alquilable = Locacion::factory()->create(['nombre' => 'Local A', 'es_alquilable' => true]);
+    $noAlquilable = Locacion::factory()->create(['nombre' => 'Galería El Sol', 'es_alquilable' => false]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('locaciones.index'));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('data-bs-toggle="dropdown"', false);
+    $respuesta->assertSee(route('locaciones.edit', $alquilable), false);
+    $respuesta->assertSee(route('contratos.index', $alquilable), false);
+    $respuesta->assertSee(route('locaciones.recibos.index', $alquilable), false);
+
+    $respuesta->assertSee(route('locaciones.edit', $noAlquilable), false);
+    $respuesta->assertDontSee(route('contratos.index', $noAlquilable), false);
+    $respuesta->assertDontSee(route('locaciones.recibos.index', $noAlquilable), false);
+});
+
 test('el arbol muestra el icono y la etiqueta del tipo de cada locacion', function () {
     Locacion::factory()->create(['nombre' => 'Galería El Sol', 'tipo' => 'galeria']);
     Locacion::factory()->create(['nombre' => 'Local Suelto', 'tipo' => 'local']);
@@ -105,6 +122,34 @@ test('el detalle de una locacion muestra la ruta de jerarquia truncada', functio
     $respuesta->assertSee('Galería El Sol');
     $respuesta->assertSee('Piso 1');
     $respuesta->assertSee('Local A');
+});
+
+test('el detalle de una locacion alquilable muestra el enlace a su historial de recibos', function () {
+    $alquilable = Locacion::factory()->create(['nombre' => 'Local A', 'es_alquilable' => true]);
+    $noAlquilable = Locacion::factory()->create(['nombre' => 'Galería El Sol', 'es_alquilable' => false]);
+
+    $respuestaAlquilable = $this->actingAs($this->admin)->get(route('locaciones.show', $alquilable));
+    $respuestaNoAlquilable = $this->actingAs($this->admin)->get(route('locaciones.show', $noAlquilable));
+
+    $respuestaAlquilable->assertOk();
+    $respuestaAlquilable->assertSee(route('locaciones.recibos.index', $alquilable), false);
+
+    $respuestaNoAlquilable->assertOk();
+    $respuestaNoAlquilable->assertDontSee(route('locaciones.recibos.index', $noAlquilable), false);
+});
+
+test('el detalle de una locacion alquilable muestra el enlace a su historial de contratos', function () {
+    $alquilable = Locacion::factory()->create(['nombre' => 'Local A', 'es_alquilable' => true]);
+    $noAlquilable = Locacion::factory()->create(['nombre' => 'Galería El Sol', 'es_alquilable' => false]);
+
+    $respuestaAlquilable = $this->actingAs($this->admin)->get(route('locaciones.show', $alquilable));
+    $respuestaNoAlquilable = $this->actingAs($this->admin)->get(route('locaciones.show', $noAlquilable));
+
+    $respuestaAlquilable->assertOk();
+    $respuestaAlquilable->assertSee(route('contratos.index', $alquilable), false);
+
+    $respuestaNoAlquilable->assertOk();
+    $respuestaNoAlquilable->assertDontSee(route('contratos.index', $noAlquilable), false);
 });
 
 test('un administrador autenticado puede crear una locacion con padre', function () {

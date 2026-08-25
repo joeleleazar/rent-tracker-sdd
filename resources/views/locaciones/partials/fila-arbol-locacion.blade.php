@@ -47,9 +47,35 @@
             aria-label="Agregar locación hija de {{ $locacion->nombre }}"
         ><i class="bi bi-plus-lg" aria-hidden="true"></i></a>
 
-        <a href="{{ route('locaciones.edit', $locacion) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
-        </a>
+        <div class="dropdown">
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="dropdown"
+                data-bs-strategy="fixed"
+                aria-expanded="false"
+                aria-label="Acciones para {{ $locacion->nombre }}"
+            ><i class="bi bi-three-dots-vertical" aria-hidden="true"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a href="{{ route('locaciones.edit', $locacion) }}" class="dropdown-item">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
+                    </a>
+                </li>
+                @if ($locacion->es_alquilable)
+                    <li>
+                        <a href="{{ route('contratos.index', $locacion) }}" class="dropdown-item">
+                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Contratos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('locaciones.recibos.index', $locacion) }}" class="dropdown-item">
+                            <i class="bi bi-receipt" aria-hidden="true"></i> Ver Recibos
+                        </a>
+                    </li>
+                @endif
+            </ul>
+        </div>
     </div>
 </div>
 

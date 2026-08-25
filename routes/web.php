@@ -7,6 +7,7 @@ use App\Http\Controllers\InquilinoController;
 use App\Http\Controllers\LecturaMedidorController;
 use App\Http\Controllers\LocacionController;
 use App\Http\Controllers\ReciboController;
+use App\Http\Controllers\RegistroMasivoLecturasController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -65,6 +66,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/locaciones/{locacion}/lecturas', [LecturaMedidorController::class, 'store'])->name('locaciones.lecturas.store');
     Route::get('/lecturas/{lectura}/editar', [LecturaMedidorController::class, 'edit'])->name('lecturas.edit');
     Route::put('/lecturas/{lectura}', [LecturaMedidorController::class, 'update'])->name('lecturas.update');
+
+    // Registro masivo de lecturas de luz (specs/015): vía adicional al flujo
+    // individual de arriba, para completar varias locaciones a la vez.
+    Route::get('/lecturas/registro-masivo', [RegistroMasivoLecturasController::class, 'index'])->name('lecturas.registroMasivo.index');
+    Route::post('/lecturas/registro-masivo', [RegistroMasivoLecturasController::class, 'store'])->name('lecturas.registroMasivo.store');
+    Route::post('/lecturas/registro-masivo/borrador', [RegistroMasivoLecturasController::class, 'guardarBorrador'])->name('lecturas.registroMasivo.borrador');
+    Route::patch('/lecturas/registro-masivo/tarifa', [RegistroMasivoLecturasController::class, 'actualizarTarifa'])->name('lecturas.registroMasivo.actualizarTarifa');
+    Route::get('/lecturas/registro-masivo/exportar/excel', [RegistroMasivoLecturasController::class, 'exportarExcel'])->name('lecturas.registroMasivo.exportarExcel');
+    Route::get('/lecturas/registro-masivo/exportar/pdf', [RegistroMasivoLecturasController::class, 'exportarPdf'])->name('lecturas.registroMasivo.exportarPdf');
+    Route::get('/lecturas/registro-masivo/lecturas/{lectura}/editar-inline', [RegistroMasivoLecturasController::class, 'editarInline'])->name('lecturas.registroMasivo.editarInline');
+    Route::patch('/lecturas/registro-masivo/lecturas/{lectura}', [RegistroMasivoLecturasController::class, 'actualizarInline'])->name('lecturas.registroMasivo.actualizarInline');
 
     Route::get('/configuracion', [ConfiguracionGeneralController::class, 'edit'])->name('configuracion.edit');
     Route::put('/configuracion', [ConfiguracionGeneralController::class, 'update'])->name('configuracion.update');

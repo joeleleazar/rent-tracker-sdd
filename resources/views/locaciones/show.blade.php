@@ -47,6 +47,7 @@
                         <a href="{{ route('locaciones.edit', $locacion) }}" class="btn btn-primary"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Locación</a>
                         @if ($locacion->es_alquilable)
                             <a href="{{ route('contratos.index', $locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Contratos</a>
+                            <a href="{{ route('locaciones.recibos.index', $locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-receipt" aria-hidden="true"></i> Ver Recibos</a>
                         @endif
 
                         <x-danger-button

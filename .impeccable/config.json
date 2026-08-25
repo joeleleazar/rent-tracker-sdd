@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font-size",
+        "value": "11px",
+        "files": [
+          "resources/views/lecturas/registro-masivo/exportar-pdf.blade.php"
+        ],
+        "createdAt": "2026-08-25T05:28:15.685Z",
+        "reason": "PDF export table body (exportar-pdf.blade.php) is a dense, fixed-px print document rendered by dompdf, a distinct context from the responsive on-screen rem-based type ramp in DESIGN.md; 11px keeps many table rows readable on one printed page, matching common print-document body sizes."
+      }
+    ]
+  }
+}

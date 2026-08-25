@@ -67,6 +67,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('lecturas.registroMasivo.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('lecturas.registroMasivo.*') ? 'active' : '' }}">
+                                    <i class="bi bi-speedometer2" aria-hidden="true"></i> Registrar Lecturas
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('configuracion.edit') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
                                     <i class="bi bi-gear" aria-hidden="true"></i> Configuración
                                 </a>
