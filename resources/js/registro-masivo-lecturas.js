@@ -35,13 +35,18 @@ function recalcularTotales() {
 
     document.querySelectorAll('.campo-lectura-registro-masivo').forEach((campo) => {
         const locacionId = campo.id.replace('campo-lectura-', '');
+        const consumoCelda = document.getElementById(`consumo-fila-${locacionId}`);
         const total = document.getElementById(`total-fila-${locacionId}`);
+
+        const consumo = calcularConsumoDeCampo(campo);
+
+        if (consumoCelda) {
+            consumoCelda.textContent = consumo === null ? '—' : consumo.toFixed(2);
+        }
 
         if (!total) {
             return;
         }
-
-        const consumo = calcularConsumoDeCampo(campo);
 
         if (consumo === null || tarifa === null) {
             total.textContent = '—';

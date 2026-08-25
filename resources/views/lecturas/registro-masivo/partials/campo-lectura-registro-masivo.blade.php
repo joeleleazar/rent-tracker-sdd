@@ -23,10 +23,9 @@
     data-lectura-anterior="{{ $lecturaAnterior?->lectura_actual }}"
 >
     @if ($lecturaDelPeriodo !== null && ! $modoEdicion)
-        <span class="cifra">{{ $lecturaDelPeriodo->lectura_actual }}</span>
         <button
             type="button"
-            class="btn btn-sm btn-link p-0 ms-2 text-decoration-none"
+            class="btn btn-sm btn-link p-0 me-2 text-decoration-none"
             hx-get="{{ route('lecturas.registroMasivo.editarInline', $lecturaDelPeriodo) }}"
             hx-target="#campo-lectura-{{ $locacion->id }}"
             hx-swap="outerHTML"
@@ -36,6 +35,7 @@
         >
             <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
         </button>
+        <span class="cifra">{{ $lecturaDelPeriodo->lectura_actual }}</span>
     @elseif ($lecturaDelPeriodo !== null && $modoEdicion)
         @php $claveErrorInline = 'lectura_actual'; @endphp
         {{--

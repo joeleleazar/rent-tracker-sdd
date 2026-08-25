@@ -109,6 +109,87 @@ test('la referencia de la lectura anterior se muestra junto al campo o indica qu
     $respuesta->assertSee('Sin lectura previa registrada');
 });
 
+test('el encabezado de la tabla incluye la columna consumo entre lectura actual y total', function () {
+    Locacion::factory()->create(['es_alquilable' => true]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSeeInOrder(['Lectura Actual', 'Consumo', 'Total']);
+});
+
+test('la celda de consumo de una fila completada arranca en el marcador inicial y expone el consumo calculado en su data-consumo', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-07-01',
+        'lectura_actual' => 1000,
+    ]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-08-01',
+        'lectura_anterior' => 1000,
+        'lectura_actual' => 1250,
+        'consumo_calculado' => 250,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('data-consumo="250.00"', false);
+    expect($respuesta->getContent())->toMatch('/<div[^>]*id="consumo-fila-' . $local->id . '"[^>]*>\s*—\s*<\/div>/u');
+});
+
+test('la celda de consumo de una fila pendiente con lectura anterior arranca en el marcador inicial y expone la lectura anterior en data-lectura-anterior', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-07-01',
+        'lectura_actual' => 1000,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('data-lectura-anterior="1000.00"', false);
+    expect($respuesta->getContent())->toMatch('/<div[^>]*id="consumo-fila-' . $local->id . '"[^>]*>\s*—\s*<\/div>/u');
+});
+
+test('las filas no alquilables y la fila de total general agregan la celda vacia adicional de la columna consumo', function () {
+    $galeria = Locacion::factory()->create(['nombre' => 'Galería Consumo Test', 'es_alquilable' => false]);
+    Locacion::factory()->create(['nombre' => 'Local Consumo Test', 'locacion_padre_id' => $galeria->id, 'es_alquilable' => true]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+
+    $contarCeldas = function (DOMElement $nodo): int {
+        $contador = 0;
+        foreach ($nodo->childNodes as $hijo) {
+            if ($hijo->nodeType === XML_ELEMENT_NODE) {
+                $contador++;
+            }
+        }
+
+        return $contador;
+    };
+
+    $dom = new DOMDocument();
+    @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $respuesta->getContent());
+    $xpath = new DOMXPath($dom);
+
+    $filaGaleria = $xpath->query("//div[contains(@class,'fila-registro-masivo')][.//span[contains(text(),'Galería Consumo Test')]]")->item(0);
+    expect($filaGaleria)->not->toBeNull();
+    expect($contarCeldas($filaGaleria))->toBe(5);
+
+    $filaTotalGeneral = $xpath->query("//div[contains(@class,'tabla-registro-masivo__total-general')]")->item(0);
+    expect($filaTotalGeneral)->not->toBeNull();
+    expect($contarCeldas($filaTotalGeneral))->toBe(5);
+});
+
 test('el autoguardado persiste un borrador por usuario periodo y locacion sin aplicar validaciones de negocio', function () {
     $locacion = Locacion::factory()->create(['es_alquilable' => true]);
 
@@ -254,6 +335,21 @@ test('una fila completada muestra un icono accesible en vez del badge de texto c
     $respuesta->assertDontSee('badge text-bg-success', false);
     $respuesta->assertDontSee('>Completada<', false);
     $respuesta->assertSee('bi-check-circle-fill', false);
+});
+
+test('el icono de lectura completada aparece antes del valor de la lectura en el marcado', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-08-01',
+        'lectura_actual' => 1250,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSeeInOrder(['bi-check-circle-fill', '1250.00']);
 });
 
 test('editar inline responde con la parcial de la fila en modo edicion con el valor prellenado', function () {

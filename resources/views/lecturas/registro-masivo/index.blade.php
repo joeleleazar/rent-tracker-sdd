@@ -91,6 +91,7 @@
                                 <div>Nombre / Locación</div>
                                 <div>Lectura Periodo Anterior</div>
                                 <div>Lectura Actual</div>
+                                <div>Consumo</div>
                                 <div>Total</div>
                             </div>
 
@@ -108,6 +109,7 @@
 
                             <div class="tabla-registro-masivo__total-general">
                                 <div>Total general</div>
+                                <div></div>
                                 <div></div>
                                 <div></div>
                                 <div id="total-general-registro-masivo" class="cifra">—</div>

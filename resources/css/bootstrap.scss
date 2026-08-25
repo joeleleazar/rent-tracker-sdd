@@ -247,12 +247,13 @@ $arbol-gap-fila: map-get($spacers, 2); // separación vertical entre filas
 
 // -----------------------------------------------------------------------
 // 10. Tabla de registro masivo de lecturas (specs/015): mismo espíritu que
-//     la sección 5 (tabla-arbol-locaciones) pero con 4 columnas propias
-//     (Nombre/Locación, Lectura Periodo Anterior, Lectura Actual, Total) —
-//     reutiliza .fila-arbol__nombre/__toggle/__espaciador-toggle/__hijos de
-//     la sección 5, que no dependen del número de columnas del grid.
+//     la sección 5 (tabla-arbol-locaciones) pero con 5 columnas propias
+//     (Nombre/Locación, Lectura Periodo Anterior, Lectura Actual, Consumo,
+//     Total) — reutiliza .fila-arbol__nombre/__toggle/__espaciador-toggle/
+//     __hijos de la sección 5, que no dependen del número de columnas del
+//     grid.
 // -----------------------------------------------------------------------
-$registro-masivo-columnas: minmax(16rem, 1fr) 10rem minmax(14rem, 1fr) 8rem;
+$registro-masivo-columnas: minmax(16rem, 1fr) 10rem minmax(14rem, 1fr) 8rem 8rem;
 
 .tabla-registro-masivo {
     overflow-x: auto;
@@ -266,7 +267,7 @@ $registro-masivo-columnas: minmax(16rem, 1fr) 10rem minmax(14rem, 1fr) 8rem;
     grid-template-columns: $registro-masivo-columnas;
     align-items: center;
     gap: map-get($spacers, 3);
-    min-width: 40rem;
+    min-width: 48rem;
 }
 
 .tabla-registro-masivo__encabezado {
@@ -289,6 +290,7 @@ $registro-masivo-columnas: minmax(16rem, 1fr) 10rem minmax(14rem, 1fr) 8rem;
     background-color: $light;
 }
 
+.fila-registro-masivo__consumo,
 .fila-registro-masivo__total {
     text-align: end;
 }

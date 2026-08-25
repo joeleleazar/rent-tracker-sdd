@@ -58,8 +58,10 @@
             'modoEdicion' => false,
         ])
 
+        <div class="cifra fila-registro-masivo__consumo" id="consumo-fila-{{ $locacion->id }}" aria-label="Consumo de {{ $locacion->nombre }}">—</div>
         <div class="cifra fila-registro-masivo__total" id="total-fila-{{ $locacion->id }}" aria-label="Total de {{ $locacion->nombre }}">—</div>
     @else
+        <div></div>
         <div></div>
         <div></div>
         <div></div>
