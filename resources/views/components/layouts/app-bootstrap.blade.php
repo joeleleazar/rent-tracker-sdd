@@ -6,6 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Rent Tracker') }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('images/logo-nicson-plaza.png') }}">
 
         {{-- Instrument Sans se auto-hospeda vía el plugin de fuentes de Vite
              (ver vite.config.js); el enlace bunny.net a Figtree que había antes
@@ -42,8 +43,18 @@
                 aria-label="Navegación principal"
             >
                 <div class="d-flex flex-md-column flex-row flex-wrap align-items-center align-items-md-stretch justify-content-between gap-3">
-                    <a href="{{ url('/') }}" class="d-flex align-items-center text-white text-decoration-none fs-4 fw-bold mb-md-3">
-                        {{ config('app.name', 'Rent Tracker') }}
+                    {{--
+                        specs/030: el logo (PNG con fondo transparente) usa "nicson" en azul oscuro,
+                        con poco contraste directo sobre el fondo casi negro del sidebar ($dark,
+                        #111827) — se enmarca en una tarjeta blanca para que se siga leyendo bien
+                        (Principio III), dimensionada por alto con ancho automático para respetar la
+                        proporción real del archivo (1769×962, no cuadrada) en vez de recortarlo
+                        dentro de una caja cuadrada.
+                    --}}
+                    <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none mb-md-3" aria-label="{{ config('app.name', 'Rent Tracker') }} — ir al inicio">
+                        <span class="bg-white rounded-3 px-2 py-1 d-inline-flex align-items-center justify-content-center">
+                            <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" style="height: 2.25rem; width: auto;">
+                        </span>
                     </a>
 
                     @auth

@@ -113,6 +113,18 @@
             font-weight: 700;
             color: #111827;
         }
+        {{--
+            specs/030: esquina superior derecha, no el centro — la marca de "Anulado" de abajo es
+            una franja diagonal centrada sobre todo el documento (position: absolute; inset: 0);
+            el logo en una esquina evita superponerse con ella (FR-005).
+        --}}
+        #comprobante-recibo .logo-comprobante {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            height: 2.5rem;
+            width: auto;
+        }
         #comprobante-recibo .marca-anulado {
             position: absolute;
             inset: 0;
@@ -166,6 +178,8 @@
     <p id="estado-envio-whatsapp" class="estado-envio no-imprimir oculto" role="status"></p>
 
     <div id="comprobante-recibo" data-recibo-id="{{ $recibo->id }}">
+        <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" class="logo-comprobante">
+
         @if ($recibo->estado === 'anulado')
             <div class="marca-anulado">
                 <span>Anulado</span>

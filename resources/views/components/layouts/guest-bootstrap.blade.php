@@ -6,6 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Rent Tracker') }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('images/logo-nicson-plaza.png') }}">
 
         {{ \Illuminate\Support\Facades\Vite::fonts() }}
 
@@ -17,7 +18,7 @@
     <body class="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light py-4">
         <div>
             <a href="/">
-                <x-application-logo style="width: 5rem; height: 5rem; fill: currentColor; color: #374151;" />
+                <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" style="height: 4rem; width: auto;">
             </a>
         </div>
 
