@@ -72,3 +72,14 @@ test('editar el valor de referencia del contrato despues de emitir un recibo no 
     expect($recibo->fresh()->conceptos->firstWhere('concepto_gasto_fijo_id', $agua->id)->monto)->toBe('50.00');
     expect($contrato->fresh()->valorDeConcepto($agua))->toBe(999.0);
 });
+
+test('el scope vigente excluye los recibos anulados', function () {
+    $pendiente = Recibo::factory()->create(['estado' => 'pendiente']);
+    $pagado = Recibo::factory()->create(['estado' => 'pagado']);
+    $anulado = Recibo::factory()->create(['estado' => 'anulado']);
+
+    $vigentes = Recibo::vigente()->pluck('id');
+
+    expect($vigentes)->toContain($pendiente->id, $pagado->id);
+    expect($vigentes)->not->toContain($anulado->id);
+});

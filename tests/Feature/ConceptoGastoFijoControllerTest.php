@@ -87,6 +87,27 @@ test('no se puede eliminar un concepto ya usado en un contrato o recibo', functi
     expect(ConceptoGastoFijo::find($agua->id))->not->toBeNull();
 });
 
+test('specs/026: un concepto cuyo unico uso esta en recibos anulados ya no cuenta como en uso y puede eliminarse', function () {
+    $agua = ConceptoGastoFijo::firstWhere('nombre', 'Agua');
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+    $inquilino = Inquilino::factory()->create();
+    $contrato = Contrato::factory()->create([
+        'locacion_id' => $locacion->id,
+        'inquilino_id' => $inquilino->id,
+        'estado' => 'activo',
+    ]);
+    $recibo = Recibo::factory()->create(['contrato_id' => $contrato->id, 'locacion_id' => $locacion->id, 'estado' => 'anulado']);
+    $recibo->conceptos()->create(['concepto_gasto_fijo_id' => $agua->id, 'monto' => 50]);
+
+    $indice = $this->actingAs($this->admin)->get(route('conceptosGastoFijo.index'));
+    $indice->assertDontSee('disabled title="No se puede eliminar', false);
+
+    $respuesta = $this->actingAs($this->admin)->delete(route('conceptosGastoFijo.destroy', $agua));
+
+    $respuesta->assertRedirect(route('conceptosGastoFijo.index'));
+    expect(ConceptoGastoFijo::find($agua->id))->toBeNull();
+});
+
 test('se puede eliminar un concepto sin ningun uso', function () {
     $concepto = ConceptoGastoFijo::factory()->create(['nombre' => 'Internet']);
 

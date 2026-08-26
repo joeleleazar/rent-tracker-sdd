@@ -105,6 +105,102 @@ test('los conceptos desmarcados se excluyen del total sin afectar el contrato', 
     expect($recibo->total())->toBe(1500.0 + 50.0 + 0.0 + 30.0);
 });
 
+test('guardar borrador crea o actualiza (upsert) el borrador del usuario autenticado', function () {
+    $periodo = now()->startOfMonth()->format('Y-m-d');
+
+    $respuesta = $this->actingAs($this->admin)->post(route('locaciones.recibos.borrador', $this->locacion), [
+        'periodo' => $periodo,
+        'incluye_alquiler' => '1',
+        'monto_renta' => '1500.00',
+        'fecha_emision' => now()->format('Y-m-d'),
+        'conceptos' => [
+            $this->agua->id => ['incluido' => '1', 'monto' => '50.00'],
+        ],
+    ]);
+
+    $respuesta->assertOk();
+    $borrador = \App\Models\BorradorRecibo::where('usuario_id', $this->admin->id)->where('locacion_id', $this->locacion->id)->first();
+    expect($borrador)->not->toBeNull();
+    expect($borrador->incluye_alquiler)->toBeTrue();
+    expect($borrador->conceptos)->toBe([(string) $this->agua->id => 50]);
+
+    // segundo guardado sobre la misma locacion/periodo/usuario: upsert, no duplica fila.
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.borrador', $this->locacion), [
+        'periodo' => $periodo,
+        'incluye_alquiler' => '0',
+        'conceptos' => [],
+    ]);
+
+    expect(\App\Models\BorradorRecibo::where('usuario_id', $this->admin->id)->where('locacion_id', $this->locacion->id)->count())->toBe(1);
+    expect($borrador->fresh()->incluye_alquiler)->toBeFalse();
+});
+
+test('el formulario de creacion prellena los conceptos y montos desde un borrador existente', function () {
+    \App\Models\BorradorRecibo::create([
+        'usuario_id' => $this->admin->id,
+        'periodo' => now()->startOfMonth()->format('Y-m-d'),
+        'locacion_id' => $this->locacion->id,
+        'incluye_alquiler' => true,
+        'monto_renta' => 1499,
+        'fecha_emision' => now()->format('Y-m-d'),
+        'conceptos' => [$this->agua->id => 999],
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('locaciones.recibos.create', $this->locacion));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('1499');
+    $respuesta->assertSee('999');
+});
+
+test('emitir el recibo exitosamente elimina el borrador correspondiente', function () {
+    \App\Models\BorradorRecibo::create([
+        'usuario_id' => $this->admin->id,
+        'periodo' => now()->startOfMonth()->format('Y-m-d'),
+        'locacion_id' => $this->locacion->id,
+        'conceptos' => [],
+    ]);
+
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), ($this->datosRecibo)());
+
+    expect(\App\Models\BorradorRecibo::where('usuario_id', $this->admin->id)->where('locacion_id', $this->locacion->id)->exists())->toBeFalse();
+});
+
+test('si la emision falla por conceptos ya cubiertos el borrador no se elimina', function () {
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), ($this->datosRecibo)());
+
+    \App\Models\BorradorRecibo::create([
+        'usuario_id' => $this->admin->id,
+        'periodo' => now()->startOfMonth()->format('Y-m-d'),
+        'locacion_id' => $this->locacion->id,
+        'conceptos' => [],
+    ]);
+
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), ($this->datosRecibo)());
+
+    expect(\App\Models\BorradorRecibo::where('usuario_id', $this->admin->id)->where('locacion_id', $this->locacion->id)->exists())->toBeTrue();
+});
+
+test('el borrador es propio de cada usuario: no se pisan entre si', function () {
+    $otroAdmin = User::factory()->create();
+    $periodo = now()->startOfMonth()->format('Y-m-d');
+
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.borrador', $this->locacion), [
+        'periodo' => $periodo,
+        'conceptos' => [$this->agua->id => ['incluido' => '1', 'monto' => '11.00']],
+    ]);
+    $this->actingAs($otroAdmin)->post(route('locaciones.recibos.borrador', $this->locacion), [
+        'periodo' => $periodo,
+        'conceptos' => [$this->agua->id => ['incluido' => '1', 'monto' => '22.00']],
+    ]);
+
+    $borradorAdmin = \App\Models\BorradorRecibo::where('usuario_id', $this->admin->id)->where('locacion_id', $this->locacion->id)->first();
+    $borradorOtro = \App\Models\BorradorRecibo::where('usuario_id', $otroAdmin->id)->where('locacion_id', $this->locacion->id)->first();
+
+    expect($borradorAdmin->conceptos)->toBe([(string) $this->agua->id => 11]);
+    expect($borradorOtro->conceptos)->toBe([(string) $this->agua->id => 22]);
+});
+
 test('bloquea la emision de un recibo si no hay contrato activo en el periodo', function () {
     $respuesta = $this->actingAs($this->admin)->post(
         route('locaciones.recibos.store', $this->locacion),
@@ -161,6 +257,74 @@ test('permite editar un recibo ya emitido', function () {
     $respuesta->assertRedirect(route('recibos.show', $recibo));
     $recibo->refresh();
     expect($recibo->conceptos->firstWhere('concepto_gasto_fijo_id', $this->seguridad->id)->monto)->toBe('999.00');
+});
+
+test('specs/029: el formulario de edicion ofrece el campo de Renta cuando el recibo ya la incluye', function () {
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), ($this->datosRecibo)());
+    $recibo = Recibo::firstWhere('locacion_id', $this->locacion->id);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.edit', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('name="incluye_alquiler"', false);
+    $respuesta->assertSee('name="monto_renta"', false);
+    $respuesta->assertSee('value="1500.00"', false);
+});
+
+test('specs/029: editar el monto de Renta de un recibo ya emitido lo actualiza', function () {
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), ($this->datosRecibo)());
+    $recibo = Recibo::firstWhere('locacion_id', $this->locacion->id);
+
+    $datosActualizacion = ($this->datosRecibo)(['monto_renta' => '1650.00']);
+
+    $respuesta = $this->actingAs($this->admin)->put(route('recibos.update', $recibo), $datosActualizacion);
+
+    $respuesta->assertRedirect(route('recibos.show', $recibo));
+    expect($recibo->fresh()->monto_renta)->toBe('1650.00');
+});
+
+test('specs/029: desmarcar Renta al editar la quita del recibo', function () {
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), ($this->datosRecibo)());
+    $recibo = Recibo::firstWhere('locacion_id', $this->locacion->id);
+
+    $datosActualizacion = ($this->datosRecibo)();
+    $datosActualizacion['incluye_alquiler'] = '0';
+
+    $respuesta = $this->actingAs($this->admin)->put(route('recibos.update', $recibo), $datosActualizacion);
+
+    $respuesta->assertRedirect(route('recibos.show', $recibo));
+    expect($recibo->fresh()->monto_renta)->toBeNull();
+});
+
+test('specs/029: editar un recibo sin Renta la sigue ofreciendo disponible cuando nadie mas la cubre', function () {
+    $sinRenta = ($this->datosRecibo)(['incluye_alquiler' => '0']);
+    unset($sinRenta['monto_renta']);
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), $sinRenta);
+    $recibo = Recibo::firstWhere('locacion_id', $this->locacion->id);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.edit', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('name="incluye_alquiler"', false);
+});
+
+test('specs/029: editar un recibo sin Renta no la ofrece si otro recibo del mismo periodo ya la cubre', function () {
+    $sinRenta = ($this->datosRecibo)(['incluye_alquiler' => '0']);
+    unset($sinRenta['monto_renta']);
+    $this->actingAs($this->admin)->post(route('locaciones.recibos.store', $this->locacion), $sinRenta);
+    $reciboSinRenta = Recibo::firstWhere('locacion_id', $this->locacion->id);
+
+    Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'periodo' => $reciboSinRenta->periodo,
+        'monto_renta' => 1500,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.edit', $reciboSinRenta));
+
+    $respuesta->assertOk();
+    $respuesta->assertDontSee('name="incluye_alquiler"', false);
 });
 
 test('editar los valores de referencia del contrato despues de emitir un recibo no altera el recibo', function () {

@@ -3,7 +3,6 @@
 use App\Models\ConceptoGastoFijo;
 use App\Models\Contrato;
 use App\Models\Inquilino;
-use App\Models\LecturaMedidor;
 use App\Models\Locacion;
 use App\Models\Recibo;
 use App\Models\User;
@@ -43,21 +42,6 @@ function crearContratoActivo(Locacion $locacion, array $extra = []): Contrato
     return $contrato;
 }
 
-function conceptosCompletosPayload(): array
-{
-    $agua = ConceptoGastoFijo::firstWhere('nombre', 'Agua');
-    $luz = ConceptoGastoFijo::firstWhere('clave', 'luz');
-    $pasadizo = ConceptoGastoFijo::firstWhere('nombre', 'Luz de Pasadizo');
-    $seguridad = ConceptoGastoFijo::firstWhere('nombre', 'Seguridad');
-
-    return [
-        $agua->id => ['incluido' => '1', 'monto' => '50.00'],
-        $luz->id => ['incluido' => '1', 'monto' => '0.00'],
-        $pasadizo->id => ['incluido' => '1', 'monto' => '30.00'],
-        $seguridad->id => ['incluido' => '1', 'monto' => '40.00'],
-    ];
-}
-
 test('la pantalla muestra la situacion de cobro de cada locacion del periodo', function () {
     $sinContrato = Locacion::factory()->create(['nombre' => 'Local Sin Contrato', 'es_alquilable' => true]);
     $sinRecibo = Locacion::factory()->create(['nombre' => 'Local Sin Recibo', 'es_alquilable' => true]);
@@ -78,8 +62,36 @@ test('la pantalla muestra la situacion de cobro de cada locacion del periodo', f
     // ServicioConstruccionArbolLocaciones ordena por nombre — no por orden de creación.
     $respuesta->assertSeeInOrder(['Local Con Recibo', 'Local Sin Contrato', 'Local Sin Recibo']);
     $respuesta->assertSee('Sin contrato activo');
-    $respuesta->assertSee(route('recibos.registroMasivo.modal', $sinRecibo), false);
-    $respuesta->assertSee(route('recibos.registroMasivo.modal', $conRecibo), false);
+    $respuesta->assertSee(route('locaciones.recibos.create', $sinRecibo), false);
+    $respuesta->assertSee(route('locaciones.recibos.create', $conRecibo), false);
+});
+
+test('un recibo anulado deja sus conceptos disponibles otra vez en la pantalla (specs/026)', function () {
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+    $contrato = crearContratoActivo($locacion);
+    $periodo = now()->startOfMonth();
+
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $contrato->id,
+        'locacion_id' => $locacion->id,
+        'periodo' => $periodo->format('Y-m-d'),
+        'monto_renta' => 1500,
+    ]);
+    foreach ([$this->agua->id => 50, $this->luz->id => 0, $this->pasadizo->id => 30, $this->seguridad->id => 40] as $conceptoId => $monto) {
+        $recibo->conceptos()->create(['concepto_gasto_fijo_id' => $conceptoId, 'monto' => $monto]);
+    }
+
+    $antesDeAnular = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index'));
+    $antesDeAnular->assertSee('Periodo completo');
+    $antesDeAnular->assertDontSee(route('locaciones.recibos.create', $locacion), false);
+
+    $recibo->update(['estado' => 'anulado']);
+
+    $despuesDeAnular = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index'));
+    $despuesDeAnular->assertDontSee('Periodo completo');
+    $despuesDeAnular->assertSee(route('locaciones.recibos.create', $locacion), false);
+    // specs/024: el conteo/total por locacion ya excluye anulados; sigue siendo asi (regresion).
+    $despuesDeAnular->assertSee('0 recibos');
 });
 
 test('un usuario no autenticado no puede acceder al registro masivo de recibos', function () {
@@ -88,136 +100,24 @@ test('un usuario no autenticado no puede acceder al registro masivo de recibos',
     $respuesta->assertRedirect(route('login'));
 });
 
-test('el modal muestra los conceptos disponibles con su monto sugerido', function () {
-    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
-    crearContratoActivo($locacion, ['monto_renta' => 1500]);
-    LecturaMedidor::factory()->create([
-        'locacion_id' => $locacion->id,
-        'periodo' => now()->startOfMonth()->format('Y-m-d'),
-        'total' => 75,
-    ]);
-
-    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.modal', $locacion));
-
-    $respuesta->assertOk();
-    $respuesta->assertSee('1500.00');
-    $respuesta->assertSee('50.00');
-    $respuesta->assertSee('75.00');
-    $respuesta->assertSee('30.00');
-    $respuesta->assertSee('40.00');
+test('specs/026: las rutas del modal de generacion masiva ya no existen', function () {
+    // La generacion de recibo desde el registro masivo pasa a reutilizar la pagina
+    // individual (locaciones.recibos.create/store, ya probada en ReciboControllerTest) en
+    // vez de un modal propio — research.md Decision 3. Este test confirma que el modal y
+    // su endpoint de guardado quedaron retirados, no solo que dejaron de usarse.
+    expect(fn () => route('recibos.registroMasivo.modal', 1))->toThrow(\Symfony\Component\Routing\Exception\RouteNotFoundException::class);
+    expect(fn () => route('recibos.registroMasivo.store', 1))->toThrow(\Symfony\Component\Routing\Exception\RouteNotFoundException::class);
 });
 
-test('el modal sugiere la renta prorrateada cuando el contrato no cubre el mes completo', function () {
-    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
-    crearContratoActivo($locacion, ['fecha_inicio' => '2026-08-15', 'fecha_fin' => '2027-08-14', 'monto_renta' => 1550]);
-
-    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.modal', $locacion) . '?periodo=2026-08-01');
-
-    $respuesta->assertOk();
-    $respuesta->assertSee('17 días de 31');
-    $respuesta->assertSee('850.00');
-});
-
-test('confirmar el modal genera el recibo y responde con la fila actualizada', function () {
+test('specs/026: "Generar Recibo" es un enlace normal a la pagina individual con el periodo visible', function () {
     $locacion = Locacion::factory()->create(['es_alquilable' => true]);
     crearContratoActivo($locacion, ['monto_renta' => 1500]);
 
-    $respuesta = $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => now()->startOfMonth()->format('Y-m-d'),
-        'incluye_alquiler' => '1',
-        'monto_renta' => '1500.00',
-        'conceptos' => conceptosCompletosPayload(),
-    ]);
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index', ['periodo' => '2026-08']));
 
     $respuesta->assertOk();
-    $respuesta->assertSee('fila-recibo-' . $locacion->id, false);
-    $respuesta->assertSee('Periodo completo');
-
-    $recibo = Recibo::firstWhere('locacion_id', $locacion->id);
-    expect($recibo)->not->toBeNull();
-    expect($recibo->monto_renta)->toBe('1500.00');
-    expect($recibo->conceptos()->count())->toBe(4);
-});
-
-test('rechaza confirmar el modal sin ningun concepto marcado', function () {
-    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
-    crearContratoActivo($locacion);
-
-    $respuesta = $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => now()->startOfMonth()->format('Y-m-d'),
-    ]);
-
-    $respuesta->assertStatus(422);
-    expect(Recibo::count())->toBe(0);
-});
-
-test('rechaza un concepto ya cubierto por otro recibo del mismo periodo y locacion', function () {
-    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
-    $contrato = crearContratoActivo($locacion);
-    $periodo = now()->startOfMonth()->format('Y-m-d');
-
-    $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => $periodo,
-        'incluye_alquiler' => '1',
-        'monto_renta' => '1500.00',
-    ]);
-
-    $respuesta = $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => $periodo,
-        'incluye_alquiler' => '1',
-        'monto_renta' => '1500.00',
-    ]);
-
-    $respuesta->assertStatus(422);
-    $respuesta->assertSee('Renta');
-    expect(Recibo::where('locacion_id', $locacion->id)->count())->toBe(1);
-});
-
-test('reabrir el modal tras un recibo parcial solo ofrece los conceptos restantes', function () {
-    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
-    crearContratoActivo($locacion);
-
-    $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => now()->startOfMonth()->format('Y-m-d'),
-        'incluye_alquiler' => '1',
-        'monto_renta' => '1500.00',
-    ]);
-
-    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.modal', $locacion));
-
-    $respuesta->assertOk();
-    $respuesta->assertDontSee('name="incluye_alquiler"', false);
-    $respuesta->assertSee('name="conceptos[' . $this->agua->id . '][incluido]"', false);
-});
-
-test('genera un segundo recibo independiente cubriendo los conceptos restantes', function () {
-    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
-    crearContratoActivo($locacion, ['monto_renta' => 1500]);
-    $periodo = now()->startOfMonth()->format('Y-m-d');
-
-    $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => $periodo,
-        'incluye_alquiler' => '1',
-        'monto_renta' => '1500.00',
-    ]);
-
-    $respuesta = $this->actingAs($this->admin)->post(route('recibos.registroMasivo.store', $locacion), [
-        'periodo' => $periodo,
-        'conceptos' => conceptosCompletosPayload(),
-    ]);
-
-    $respuesta->assertOk();
-    expect(Recibo::where('locacion_id', $locacion->id)->count())->toBe(2);
-
-    $recibos = Recibo::where('locacion_id', $locacion->id)->with('conceptos')->get();
-    $conceptosCubiertos = $recibos->flatMap(fn (Recibo $r) => $r->conceptos->pluck('concepto_gasto_fijo_id'));
-    $rentaCubierta = $recibos->filter(fn (Recibo $r) => $r->monto_renta !== null)->count();
-
-    expect($rentaCubierta)->toBe(1);
-    expect($conceptosCubiertos->duplicates())->toBeEmpty();
-    expect($conceptosCubiertos->sort()->values()->all())->toBe(
-        collect([$this->agua->id, $this->luz->id, $this->pasadizo->id, $this->seguridad->id])->sort()->values()->all()
-    );
+    $respuesta->assertSee(route('locaciones.recibos.create', ['locacion' => $locacion, 'periodo' => '2026-08']), false);
+    $respuesta->assertDontSee('id="contenido-modal-recibo"', false);
 });
 
 test('el periodo agil expone flechas hx-get al mes anterior y siguiente sin boton de recarga completa', function () {
@@ -230,6 +130,16 @@ test('el periodo agil expone flechas hx-get al mes anterior y siguiente sin boto
     $respuesta->assertSee('hx-select="#contenido-periodo-recibos"', false);
     $respuesta->assertSee('hx-trigger="change"', false);
     $respuesta->assertDontSee('Cambiar Periodo');
+});
+
+test('el selector de periodo no muestra ningun boton de confirmacion junto a las flechas', function () {
+    // specs/028: réplica de specs/027 (lecturas/registro-masivo) — la navegación oficial queda
+    // limitada a las flechas y al autoenvío del campo de fecha, ya cubiertos por el test anterior.
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index'));
+
+    $respuesta->assertOk();
+    preg_match('/<button[^>]*>\s*Ir\s*<\/button>/s', $respuesta->getContent(), $coincidencia);
+    expect($coincidencia)->toBeEmpty();
 });
 
 test('muestra la cantidad de recibos y el total facturado por locacion, excluyendo anulados', function () {
@@ -251,4 +161,93 @@ test('muestra la cantidad de recibos y el total facturado por locacion, excluyen
     $respuesta->assertSee('S/ 1,550.00');
     $respuesta->assertSee('0 recibos');
     $respuesta->assertDontSee('999.00');
+});
+
+test('specs/026 US3: recibosDelPeriodo redirige directo con un solo recibo', function () {
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+    $contrato = crearContratoActivo($locacion);
+    $periodo = now()->startOfMonth()->format('Y-m-d');
+    $recibo = Recibo::factory()->create(['contrato_id' => $contrato->id, 'locacion_id' => $locacion->id, 'periodo' => $periodo, 'monto_renta' => 1500]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.recibosDelPeriodo', ['locacion' => $locacion, 'periodo' => now()->format('Y-m')]));
+
+    $respuesta->assertRedirect(route('recibos.show', $recibo));
+});
+
+test('specs/026 US3: recibosDelPeriodo lista cuando hay varios recibos, incluyendo anulados', function () {
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+    $contrato = crearContratoActivo($locacion);
+    $periodo = now()->startOfMonth()->format('Y-m-d');
+    $recibo1 = Recibo::factory()->create(['contrato_id' => $contrato->id, 'locacion_id' => $locacion->id, 'periodo' => $periodo, 'monto_renta' => 1500]);
+    $recibo2 = Recibo::factory()->create(['contrato_id' => $contrato->id, 'locacion_id' => $locacion->id, 'periodo' => $periodo, 'monto_renta' => null, 'estado' => 'anulado']);
+    $recibo2->conceptos()->create(['concepto_gasto_fijo_id' => $this->agua->id, 'monto' => 50]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.recibosDelPeriodo', ['locacion' => $locacion, 'periodo' => now()->format('Y-m')]));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee(route('recibos.show', $recibo1), false);
+    $respuesta->assertSee(route('recibos.show', $recibo2), false);
+    $respuesta->assertSee('Anulado');
+});
+
+test('specs/026 US3: recibosDelPeriodo sin ningun recibo redirige de vuelta al indice', function () {
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.recibosDelPeriodo', ['locacion' => $locacion, 'periodo' => now()->format('Y-m')]));
+
+    $respuesta->assertRedirect(route('recibos.registroMasivo.index', ['periodo' => now()->format('Y-m')]));
+});
+
+test('specs/026 US3: el indice muestra "Ver Recibos" solo cuando hay al menos un recibo del periodo, de cualquier estado', function () {
+    $conRecibo = Locacion::factory()->create(['es_alquilable' => true]);
+    $contrato = crearContratoActivo($conRecibo);
+    $periodo = now()->startOfMonth()->format('Y-m-d');
+    Recibo::factory()->create(['contrato_id' => $contrato->id, 'locacion_id' => $conRecibo->id, 'periodo' => $periodo, 'estado' => 'anulado', 'monto_renta' => 1500]);
+
+    $sinRecibo = Locacion::factory()->create(['es_alquilable' => true]);
+    crearContratoActivo($sinRecibo);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index', ['periodo' => now()->format('Y-m')]));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee(route('recibos.registroMasivo.recibosDelPeriodo', ['locacion' => $conRecibo, 'periodo' => now()->format('Y-m')]), false);
+    $respuesta->assertDontSee(route('recibos.registroMasivo.recibosDelPeriodo', ['locacion' => $sinRecibo, 'periodo' => now()->format('Y-m')]), false);
+});
+
+test('specs/029: un concepto con valor de referencia configurado pero sin recibo se muestra disponible, no cubierto', function () {
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+    $contrato = crearContratoActivo($locacion, ['monto_renta' => 1500]);
+    $internet = ConceptoGastoFijo::factory()->create(['nombre' => 'Internet Prueba']);
+    ValorConceptoContrato::create(['contrato_id' => $contrato->id, 'concepto_gasto_fijo_id' => $internet->id, 'valor' => 50]);
+    $periodo = now()->startOfMonth();
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index', ['periodo' => $periodo->format('Y-m')]));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('<span class="badge bg-light text-dark border">Internet Prueba</span>', false);
+    $respuesta->assertDontSee('<i class="bi bi-check-lg" aria-hidden="true"></i> Internet Prueba', false);
+
+    $recibo = Recibo::factory()->create(['contrato_id' => $contrato->id, 'locacion_id' => $locacion->id, 'periodo' => $periodo->format('Y-m-d'), 'monto_renta' => null]);
+    $recibo->conceptos()->create(['concepto_gasto_fijo_id' => $internet->id, 'monto' => 50]);
+
+    $conRecibo = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index', ['periodo' => $periodo->format('Y-m')]));
+    $conRecibo->assertSee($internet->nombre);
+    $conRecibo->assertSee(route('recibos.show', $recibo), false);
+    $conRecibo->assertDontSee('<span class="badge bg-light text-dark border">' . $internet->nombre . '</span>', false);
+
+    $recibo->update(['estado' => 'anulado']);
+
+    $anulado = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index', ['periodo' => $periodo->format('Y-m')]));
+    $anulado->assertSee('<span class="badge bg-light text-dark border">Internet Prueba</span>', false);
+});
+
+test('specs/029: Renta sin ningun recibo vigente que la cubra se muestra disponible', function () {
+    $locacion = Locacion::factory()->create(['es_alquilable' => true]);
+    crearContratoActivo($locacion, ['monto_renta' => 1500]);
+    $periodo = now()->startOfMonth()->format('Y-m');
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.registroMasivo.index', ['periodo' => $periodo]));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('<span class="badge bg-light text-dark border">Renta</span>', false);
 });

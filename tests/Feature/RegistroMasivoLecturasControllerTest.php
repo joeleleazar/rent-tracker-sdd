@@ -479,16 +479,16 @@ test('actualizar la tarifa con un valor invalido no modifica la configuracion ge
     expect(ConfiguracionGeneral::actual()->fresh()->tarifa_luz_por_unidad)->toBe($tarifaOriginal);
 });
 
-test('el boton de confirmar periodo declara type submit para el envio sin JavaScript', function () {
-    // specs/024: el botón "Cambiar Periodo" se reemplazó por flechas + autoenvío (hx-trigger="change");
-    // este botón "Ir" es el fallback de degradación elegante si JavaScript falla (Principio VI), y
-    // debe seguir siendo type="submit" para que el formulario clásico funcione sin htmx.
+test('el selector de periodo no muestra ningun boton de confirmacion junto a las flechas', function () {
+    // specs/027: el botón "Ir" (fallback de degradación elegante sin JavaScript, specs/024) se
+    // retiró deliberadamente — la navegación oficial queda limitada a las flechas y al autoenvío
+    // del campo de fecha vía htmx (hx-trigger="change"), ambos ya cubiertos por otros tests de
+    // este archivo (ver los que verifican `hx-get`/`hx-select` de las flechas y del input).
     $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index'));
 
     $respuesta->assertOk();
     preg_match('/<button[^>]*>\s*Ir\s*<\/button>/s', $respuesta->getContent(), $coincidencia);
-    expect($coincidencia)->not->toBeEmpty();
-    expect($coincidencia[0])->toContain('type="submit"');
+    expect($coincidencia)->toBeEmpty();
 });
 
 test('los enlaces de exportar declaran hx-boost false para no ser interceptados por el boost global', function () {

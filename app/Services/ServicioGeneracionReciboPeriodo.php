@@ -104,6 +104,7 @@ class ServicioGeneracionReciboPeriodo
     {
         $recibos = Recibo::where('locacion_id', $locacion->id)
             ->where('periodo', $periodo->format('Y-m-d'))
+            ->vigente()
             ->with('conceptos')
             ->get();
 
@@ -143,6 +144,7 @@ class ServicioGeneracionReciboPeriodo
         $recibos = Recibo::where('locacion_id', $locacion->id)
             ->where('periodo', $periodo->format('Y-m-d'))
             ->when($excluirReciboId !== null, fn ($q) => $q->where('id', '!=', $excluirReciboId))
+            ->vigente()
             ->with('conceptos')
             ->get();
 
@@ -186,6 +188,7 @@ class ServicioGeneracionReciboPeriodo
         $recibos = Recibo::where('locacion_id', $locacion->id)
             ->where('periodo', $periodo->format('Y-m-d'))
             ->when($reciboIdActual !== null, fn ($q) => $q->where('id', '!=', $reciboIdActual))
+            ->vigente()
             ->lockForUpdate()
             ->with('conceptos')
             ->get();

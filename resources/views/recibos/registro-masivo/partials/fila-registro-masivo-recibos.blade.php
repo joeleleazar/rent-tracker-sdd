@@ -13,6 +13,7 @@
     - $reciboQueCubrePorLocacion (array<int, Illuminate\Support\Collection>) por locacion_id
     - $cantidadRecibosPorLocacion (array<int, int>) por locacion_id
     - $totalFacturadoPorLocacion (array<int, float>) por locacion_id
+    - $tieneRecibosPorLocacion (array<int, bool>) por locacion_id
 --}}
 <div class="fila-registro-masivo-recibos">
     <div class="fila-arbol__nombre" style="padding-left: calc({{ $profundidad }} * 1.5rem);">
@@ -47,6 +48,7 @@
             'reciboQueCubre' => $reciboQueCubrePorLocacion[$locacion->id] ?? collect(),
             'cantidadRecibos' => $cantidadRecibosPorLocacion[$locacion->id] ?? 0,
             'totalFacturado' => $totalFacturadoPorLocacion[$locacion->id] ?? 0.0,
+            'tieneRecibos' => $tieneRecibosPorLocacion[$locacion->id] ?? false,
         ])
     @else
         <div></div>
@@ -71,6 +73,7 @@
                     'reciboQueCubrePorLocacion' => $reciboQueCubrePorLocacion,
                     'cantidadRecibosPorLocacion' => $cantidadRecibosPorLocacion,
                     'totalFacturadoPorLocacion' => $totalFacturadoPorLocacion,
+                    'tieneRecibosPorLocacion' => $tieneRecibosPorLocacion,
                 ])
             @endforeach
         </div>

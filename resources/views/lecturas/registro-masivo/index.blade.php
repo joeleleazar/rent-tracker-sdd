@@ -23,54 +23,60 @@
                 Periodo" ni recarga completa — hx-select re-extrae este mismo contenedor de la
                 respuesta completa de la ruta (misma vista de siempre), así el controlador no
                 necesita distinguir entre una petición htmx y una navegación normal.
+                specs/026 US4: tarifa, navegación de periodo y exportar comparten una misma fila
+                de controles (antes eran dos `card` separadas) — el `<form>` de periodo sigue
+                siendo su propio elemento, para que el autoenvío del campo de fecha (`hx-trigger
+                ="change"`) nunca incluya los campos de tarifa/exportar de los `<div>` hermanos,
+                pero ya no lleva su propio marco de `card`; el marco único es el `div.card` que
+                envuelve los tres grupos.
+                specs/027: se retiró el botón "Ir" (fallback de degradación elegante sin
+                JavaScript, specs/024) — la navegación oficial queda limitada a las flechas y al
+                autoenvío del campo de fecha, ambos ya funcionales por sí solos.
             --}}
-            <form method="GET" action="{{ route('lecturas.registroMasivo.index') }}" class="card">
+            <div class="card">
                 <div class="card-body d-flex flex-wrap align-items-end gap-3">
-                    <div class="d-flex align-items-end gap-2">
-                        <a
-                            href="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->subMonth()->format('Y-m')]) }}"
-                            hx-get="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->subMonth()->format('Y-m')]) }}"
-                            hx-select="#contenido-periodo-lecturas"
-                            hx-target="#contenido-periodo-lecturas"
-                            hx-swap="outerHTML"
-                            class="btn btn-outline-secondary"
-                            aria-label="Periodo anterior"
-                        >
-                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                        </a>
-                        <div>
-                            <x-input-label for="periodo_selector" value="Periodo (mes)" />
-                            <input
-                                id="periodo_selector"
-                                name="periodo"
-                                type="month"
-                                class="form-control"
-                                value="{{ $periodo->format('Y-m') }}"
-                                hx-get="{{ route('lecturas.registroMasivo.index') }}"
-                                hx-trigger="change"
+                    <form method="GET" action="{{ route('lecturas.registroMasivo.index') }}" class="d-flex flex-wrap align-items-end gap-2">
+                        <div class="d-flex align-items-end gap-2">
+                            <a
+                                href="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->subMonth()->format('Y-m')]) }}"
+                                hx-get="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->subMonth()->format('Y-m')]) }}"
                                 hx-select="#contenido-periodo-lecturas"
                                 hx-target="#contenido-periodo-lecturas"
                                 hx-swap="outerHTML"
+                                class="btn btn-outline-secondary"
+                                aria-label="Periodo anterior"
                             >
+                                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                            </a>
+                            <div>
+                                <x-input-label for="periodo_selector" value="Periodo (mes)" />
+                                <input
+                                    id="periodo_selector"
+                                    name="periodo"
+                                    type="month"
+                                    class="form-control"
+                                    value="{{ $periodo->format('Y-m') }}"
+                                    hx-get="{{ route('lecturas.registroMasivo.index') }}"
+                                    hx-trigger="change"
+                                    hx-select="#contenido-periodo-lecturas"
+                                    hx-target="#contenido-periodo-lecturas"
+                                    hx-swap="outerHTML"
+                                >
+                            </div>
+                            <a
+                                href="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->addMonth()->format('Y-m')]) }}"
+                                hx-get="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->addMonth()->format('Y-m')]) }}"
+                                hx-select="#contenido-periodo-lecturas"
+                                hx-target="#contenido-periodo-lecturas"
+                                hx-swap="outerHTML"
+                                class="btn btn-outline-secondary"
+                                aria-label="Periodo siguiente"
+                            >
+                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                            </a>
                         </div>
-                        <a
-                            href="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->addMonth()->format('Y-m')]) }}"
-                            hx-get="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->addMonth()->format('Y-m')]) }}"
-                            hx-select="#contenido-periodo-lecturas"
-                            hx-target="#contenido-periodo-lecturas"
-                            hx-swap="outerHTML"
-                            class="btn btn-outline-secondary"
-                            aria-label="Periodo siguiente"
-                        >
-                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                    <x-secondary-button type="submit">Ir</x-secondary-button>
-                </div>
-            </form>
+                    </form>
 
-            <div class="card">
-                <div class="card-body d-flex flex-wrap align-items-end gap-3">
                     <div>
                         <x-input-label for="tarifa_kwh" value="Tarifa por kWh" />
                         <div class="input-group input-group-sm" style="max-width: 12rem;">

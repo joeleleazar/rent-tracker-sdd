@@ -20,7 +20,12 @@ class ConceptoGastoFijoController extends Controller
     public function index(): View
     {
         $conceptos = ConceptoGastoFijo::ordenados()
-            ->withCount(['valoresConcepto as contratos_en_uso', 'reciboConceptos as recibos_en_uso'])
+            ->withCount([
+                'valoresConcepto as contratos_en_uso',
+                // specs/026: un recibo anulado no cuenta como uso activo del concepto (research.md
+                // Decisión 2) — mismo criterio que ServicioGeneracionReciboPeriodo.
+                'reciboConceptos as recibos_en_uso' => fn ($query) => $query->whereHas('recibo', fn ($q) => $q->vigente()),
+            ])
             ->get();
 
         return view('conceptos-gasto-fijo.index', [
@@ -79,7 +84,8 @@ class ConceptoGastoFijoController extends Controller
             ]);
         }
 
-        $enUso = $conceptosGastoFijo->valoresConcepto()->count() + $conceptosGastoFijo->reciboConceptos()->count();
+        $enUso = $conceptosGastoFijo->valoresConcepto()->count()
+            + $conceptosGastoFijo->reciboConceptos()->whereHas('recibo', fn ($q) => $q->vigente())->count();
 
         if ($enUso > 0) {
             return back()->withErrors([

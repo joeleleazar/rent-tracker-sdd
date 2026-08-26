@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -73,5 +74,15 @@ class Recibo extends Model
     public function total(): float
     {
         return (float) ($this->monto_renta ?? 0) + (float) $this->conceptos->sum('monto');
+    }
+
+    /**
+     * specs/026: un recibo anulado no representa cobertura vigente de sus
+     * conceptos — se excluye de todo cálculo de disponibilidad, superposición
+     * y "en uso" de un concepto del catálogo (research.md Decisión 1).
+     */
+    public function scopeVigente(Builder $query): Builder
+    {
+        return $query->where('estado', '!=', 'anulado');
     }
 }

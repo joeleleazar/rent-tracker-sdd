@@ -64,7 +64,13 @@
                     </x-mensaje-alerta>
                 @endif
 
-                <form method="POST" action="{{ route('locaciones.recibos.store', $locacion) }}" class="card">
+                @if ($borrador !== null)
+                    <x-mensaje-alerta tipo="exito">
+                        Se recuperó un borrador guardado para esta locación y periodo — revise los conceptos marcados antes de emitir.
+                    </x-mensaje-alerta>
+                @endif
+
+                <form id="formulario-generar-recibo" method="POST" action="{{ route('locaciones.recibos.store', $locacion) }}" class="card">
                     <div class="card-body d-flex flex-column gap-3">
                         @csrf
 
@@ -76,12 +82,18 @@
 
                         @foreach ($conceptosDisponibles as $concepto)
                             @php
+                                $valorBorrador = $borrador?->conceptos[$concepto->id] ?? null;
                                 if ($concepto->esRenta()) {
-                                    $montoSugerido = $prorrateo['monto_renta_sugerido'] ?? $contratoActivo->monto_renta;
+                                    $incluidoPorDefecto = $borrador !== null ? $borrador->incluye_alquiler : true;
+                                    $montoSugerido = ($borrador?->incluye_alquiler && $borrador->monto_renta !== null)
+                                        ? (float) $borrador->monto_renta
+                                        : ($prorrateo['monto_renta_sugerido'] ?? $contratoActivo->monto_renta);
                                 } elseif ($concepto->esLuz()) {
-                                    $montoSugerido = $montoLuzSugerido;
+                                    $incluidoPorDefecto = $borrador !== null ? $valorBorrador !== null : true;
+                                    $montoSugerido = $valorBorrador ?? $montoLuzSugerido;
                                 } else {
-                                    $montoSugerido = $contratoActivo->valorDeConcepto($concepto) ?? 0;
+                                    $incluidoPorDefecto = $borrador !== null ? $valorBorrador !== null : true;
+                                    $montoSugerido = $valorBorrador ?? ($contratoActivo->valorDeConcepto($concepto) ?? 0);
                                 }
                                 $nombreCheckbox = $concepto->esRenta() ? 'incluye_alquiler' : "conceptos[{$concepto->id}][incluido]";
                                 $nombreMonto = $concepto->esRenta() ? 'monto_renta' : "conceptos[{$concepto->id}][monto]";
@@ -89,7 +101,7 @@
                             @endphp
                             <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
                                 <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                                    <input type="checkbox" id="incluir_{{ $idCampo }}" name="{{ $nombreCheckbox }}" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
+                                    <input type="checkbox" id="incluir_{{ $idCampo }}" name="{{ $nombreCheckbox }}" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked($incluidoPorDefecto)>
                                     <label for="incluir_{{ $idCampo }}" class="form-check-label fw-semibold">
                                         Incluir {{ $concepto->nombre }}{{ $concepto->esLuz() ? ' (calculado por consumo)' : '' }}
                                     </label>
@@ -103,14 +115,40 @@
 
                         <div>
                             <x-input-label for="fecha_emision" value="Fecha de Emisión" />
-                            <x-text-input id="fecha_emision" name="fecha_emision" type="date" :value="old('fecha_emision', now()->format('Y-m-d'))" required />
+                            <x-text-input id="fecha_emision" name="fecha_emision" type="date" :value="old('fecha_emision', $borrador?->fecha_emision?->format('Y-m-d') ?? now()->format('Y-m-d'))" required />
                             <x-input-error :messages="$errors->get('fecha_emision')" class="mt-2" />
                         </div>
 
-                        <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
                             <x-primary-button>Emitir Recibo del Periodo</x-primary-button>
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                hx-post="{{ route('locaciones.recibos.borrador', $locacion) }}"
+                                hx-include="closest form"
+                                hx-target="#estado-borrador-recibo"
+                                hx-swap="innerHTML"
+                            >
+                                <i class="bi bi-save" aria-hidden="true"></i> Guardar Borrador
+                            </button>
                             <a href="{{ route('locaciones.recibos.index', $locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg" aria-hidden="true"></i> Cancelar</a>
                         </div>
+                        <p id="estado-borrador-recibo" class="text-secondary small mb-0" aria-live="polite"></p>
+
+                        {{--
+                            Autoguardado pasivo de borrador (specs/026, mismo mecanismo que
+                            resources/views/lecturas/registro-masivo/index.blade.php, specs/015):
+                            un elemento no-<form> para que resources/js/htmx.js no le aplique el
+                            tratamiento visual de "Guardando…" reservado al envío manual.
+                        --}}
+                        <div
+                            id="autoguardado-borrador-recibo"
+                            hx-post="{{ route('locaciones.recibos.borrador', $locacion) }}"
+                            hx-trigger="every 120s"
+                            hx-include="closest form"
+                            hx-target="#estado-borrador-recibo"
+                            hx-swap="innerHTML"
+                        ></div>
                     </div>
                 </form>
             @endif

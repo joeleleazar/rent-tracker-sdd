@@ -2,10 +2,10 @@
     Columnas 2-5 (Contrato, Conceptos, Total del Periodo, Acción) de una locación en el
     registro masivo de recibos (specs/023; specs/024 US4 agrega la columna de total).
     `display: contents` en el wrapper deja que estas divs participen como items directos
-    del grid de `.fila-registro-masivo-recibos`, sin que el wrapper mismo genere una caja
-    — así el servidor puede reemplazar solo este fragmento (por su id) tras generar un
-    recibo, sin tocar la columna de nombre/jerarquía ni la indentación de árbol, que no
-    dependen de esta información.
+    del grid de `.fila-registro-masivo-recibos`, sin que el wrapper mismo genere una caja.
+    specs/026: "Generar Recibo" navega a la página individual de generación (ya no un
+    modal) — este parcial ya no se re-renderiza vía htmx tras generar un recibo, solo al
+    cargar la pantalla completa.
 
     Props esperadas:
     - $locacion (App\Models\Locacion)
@@ -17,6 +17,8 @@
     - $reciboQueCubre (Illuminate\Support\Collection<int, App\Models\Recibo>) keyBy concepto_gasto_fijo_id
     - $cantidadRecibos (int)
     - $totalFacturado (float)
+    - $tieneRecibos (bool) — específicamente distinto de $cantidadRecibos > 0: incluye recibos
+      anulados (specs/026 US3), para no esconder el acceso a auditar un recibo ya anulado
 --}}
 <div id="fila-recibo-{{ $locacion->id }}" style="display: contents;">
     <div>
@@ -51,20 +53,27 @@
         <span class="cifra">S/ {{ number_format($totalFacturado, 2) }}</span>
     </div>
 
-    <div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
         @if ($contratoActivo !== null && $conceptosDisponibles->isNotEmpty())
-            <button
-                type="button"
+            <a
+                href="{{ route('locaciones.recibos.create', ['locacion' => $locacion->id, 'periodo' => $periodo->format('Y-m')]) }}"
                 class="btn btn-outline-primary btn-sm"
-                hx-get="{{ route('recibos.registroMasivo.modal', ['locacion' => $locacion->id, 'periodo' => $periodo->format('Y-m-d')]) }}"
-                hx-target="#contenido-modal-recibo"
-                hx-swap="innerHTML"
                 aria-label="Generar recibo de {{ $locacion->nombre }}"
             >
                 <i class="bi bi-plus-lg" aria-hidden="true"></i> Generar Recibo
-            </button>
+            </a>
         @elseif ($contratoActivo !== null)
             <span class="badge bg-success"><i class="bi bi-check2-all" aria-hidden="true"></i> Periodo completo</span>
+        @endif
+
+        @if ($tieneRecibos)
+            <a
+                href="{{ route('recibos.registroMasivo.recibosDelPeriodo', ['locacion' => $locacion->id, 'periodo' => $periodo->format('Y-m')]) }}"
+                class="btn btn-outline-secondary btn-sm"
+                aria-label="Ver recibos de {{ $locacion->nombre }}"
+            >
+                <i class="bi bi-eye" aria-hidden="true"></i> Ver Recibos
+            </a>
         @endif
     </div>
 </div>

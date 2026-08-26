@@ -56,14 +56,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/locaciones/{locacion}/recibos', [ReciboController::class, 'index'])->name('locaciones.recibos.index');
     Route::get('/locaciones/{locacion}/recibos/crear', [ReciboController::class, 'create'])->name('locaciones.recibos.create');
     Route::post('/locaciones/{locacion}/recibos', [ReciboController::class, 'store'])->name('locaciones.recibos.store');
+    Route::post('/locaciones/{locacion}/recibos/borrador', [ReciboController::class, 'guardarBorrador'])->name('locaciones.recibos.borrador');
 
     // Registro masivo de recibos (specs/023): DEBE registrarse antes de
     // /recibos/{recibo} (más abajo) — de lo contrario Laravel intenta bindear
     // "registro-masivo" como {recibo} y falla con un error de tipo en la BD
     // antes de llegar siquiera a este controlador.
     Route::get('/recibos/registro-masivo', [RegistroMasivoRecibosController::class, 'index'])->name('recibos.registroMasivo.index');
-    Route::get('/recibos/registro-masivo/{locacion}/modal', [RegistroMasivoRecibosController::class, 'modal'])->name('recibos.registroMasivo.modal');
-    Route::post('/recibos/registro-masivo/{locacion}', [RegistroMasivoRecibosController::class, 'store'])->name('recibos.registroMasivo.store');
+    Route::get('/recibos/registro-masivo/{locacion}/recibos', [RegistroMasivoRecibosController::class, 'recibosDelPeriodo'])->name('recibos.registroMasivo.recibosDelPeriodo');
 
     Route::get('/recibos/{recibo}', [ReciboController::class, 'show'])->name('recibos.show');
     Route::get('/recibos/{recibo}/editar', [ReciboController::class, 'edit'])->name('recibos.edit');

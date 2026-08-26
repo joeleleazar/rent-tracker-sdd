@@ -99,6 +99,35 @@ test('conceptosDisponibles excluye renta cuando ya esta cubierta y los conceptos
     expect($disponibles->pluck('nombre')->all())->toBe(['Agua', 'Luz', 'Luz de Pasadizo', 'Seguridad']);
 });
 
+test('un recibo anulado no cubre sus conceptos: conceptosDisponibles, reciboQueCubre y generar (specs/026)', function () {
+    Contrato::factory()->create([
+        'locacion_id' => $this->locacion->id,
+        'inquilino_id' => $this->inquilino->id,
+        'estado' => 'activo',
+        'fecha_inicio' => now()->subMonth()->format('Y-m-d'),
+        'fecha_fin' => now()->addYear()->format('Y-m-d'),
+    ]);
+
+    $periodo = now()->startOfMonth();
+    $datos = array_merge(datosBaseRecibo(), [
+        'conceptos' => [$this->agua->id => 50, $this->luz->id => 0, $this->pasadizo->id => 30, $this->seguridad->id => 40],
+    ]);
+    $recibo = $this->servicio->generar($this->locacion, $periodo, $datos);
+    $recibo->update(['estado' => 'anulado']);
+
+    $disponibles = $this->servicio->conceptosDisponibles($this->locacion, $periodo);
+    expect($disponibles->pluck('nombre')->all())->toBe(['Renta', 'Agua', 'Luz', 'Luz de Pasadizo', 'Seguridad']);
+
+    $reciboQueCubre = $this->servicio->reciboQueCubre($this->locacion, $periodo);
+    expect($reciboQueCubre)->toBeEmpty();
+
+    // generar() no debe lanzar ConceptosReciboYaCubiertosException: el unico recibo que
+    // cubria estos conceptos esta anulado.
+    $nuevo = $this->servicio->generar($this->locacion, $periodo, $datos);
+    expect($nuevo->id)->not->toBe($recibo->id);
+    expect(Recibo::where('locacion_id', $this->locacion->id)->count())->toBe(2);
+});
+
 test('FR-008: la segunda de dos confirmaciones casi simultaneas con el mismo concepto es rechazada', function () {
     // Simula la condicion de carrera de FR-008 con dos llamadas secuenciales dentro de un
     // unico proceso Pest: no reproduce una concurrencia real de dos procesos (para eso haria

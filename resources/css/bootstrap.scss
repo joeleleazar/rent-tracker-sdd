@@ -324,7 +324,7 @@ $registro-masivo-columnas: minmax(16rem, 1fr) 10rem minmax(14rem, 1fr) 8rem 8rem
 //     Acción) — reutiliza .fila-arbol__nombre/__toggle/__espaciador-toggle/
 //     __hijos de la sección 5.
 // -----------------------------------------------------------------------
-$registro-masivo-recibos-columnas: minmax(16rem, 1fr) 10rem minmax(20rem, 2fr) 11rem 10rem;
+$registro-masivo-recibos-columnas: minmax(16rem, 1fr) 10rem minmax(20rem, 2fr) 11rem 13rem;
 
 .tabla-registro-masivo-recibos {
     overflow-x: auto;

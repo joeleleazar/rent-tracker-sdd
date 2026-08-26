@@ -2,18 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ConceptosReciboYaCubiertosException;
-use App\Exceptions\SinContratoActivoEnPeriodoException;
-use App\Http\Requests\SolicitudGuardarReciboRegistroMasivo;
 use App\Models\ConceptoGastoFijo;
 use App\Models\Contrato;
 use App\Models\Locacion;
 use App\Models\Recibo;
-use App\Services\ServicioCalculoProrrateoContrato;
 use App\Services\ServicioConstruccionArbolLocaciones;
 use App\Services\ServicioGeneracionReciboPeriodo;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -22,16 +18,16 @@ use Illuminate\View\View;
  * Registro masivo de recibos (specs/023): pantalla análoga a
  * RegistroMasivoLecturasController — un árbol de locaciones para un periodo,
  * donde cada locación con contrato activo muestra sus conceptos todavía no
- * cubiertos y permite generar un recibo desde un modal, sin salir de la
- * pantalla. specs/024: los conceptos ya no son un array fijo de 5 claves —
- * se leen del catálogo dinámico (`ConceptoGastoFijo`).
+ * cubiertos. specs/024: los conceptos ya no son un array fijo de 5 claves —
+ * se leen del catálogo dinámico (`ConceptoGastoFijo`). specs/026: "Generar
+ * Recibo" navega a la página individual de generación (locaciones.recibos.*)
+ * en vez de abrir un modal propio de esta pantalla.
  */
 class RegistroMasivoRecibosController extends Controller
 {
     public function __construct(
         private readonly ServicioConstruccionArbolLocaciones $servicioArbol,
         private readonly ServicioGeneracionReciboPeriodo $servicioGeneracion,
-        private readonly ServicioCalculoProrrateoContrato $servicioProrrateo,
     ) {
     }
 
@@ -49,89 +45,38 @@ class RegistroMasivoRecibosController extends Controller
             'reciboQueCubrePorLocacion' => $datos['reciboQueCubrePorLocacion'],
             'cantidadRecibosPorLocacion' => $datos['cantidadRecibosPorLocacion'],
             'totalFacturadoPorLocacion' => $datos['totalFacturadoPorLocacion'],
+            'tieneRecibosPorLocacion' => $datos['tieneRecibosPorLocacion'],
         ]);
     }
 
     /**
-     * FR-004/FR-005: contenido del modal de una locación — solo sus conceptos
-     * todavía no cubiertos, con su monto sugerido (misma lógica que
-     * `ReciboController::create()`, research.md Decisión 6).
+     * specs/026 US3: acceso directo a lo ya emitido para una locación y periodo, sin pasar
+     * por los badges de concepto uno por uno. A diferencia del resto de esta pantalla, cuenta
+     * y lista TODOS los recibos (incluidos los anulados) — es una vista de auditoría, no de
+     * disponibilidad (contracts/ver-recibos-del-periodo.md).
      */
-    public function modal(Request $solicitud, Locacion $locacion): View
+    public function recibosDelPeriodo(Request $solicitud, Locacion $locacion): RedirectResponse|View
     {
         $periodo = $this->resolverPeriodo($solicitud->query('periodo'));
-        $contratoActivo = $locacion->contratoActivoEnPeriodo($periodo);
-        $conceptosDisponibles = $contratoActivo !== null
-            ? $this->servicioGeneracion->conceptosDisponibles($locacion, $periodo)
-            : collect();
-        $prorrateo = $contratoActivo !== null ? $this->servicioProrrateo->calcular($contratoActivo, $periodo) : null;
-        $lectura = $this->servicioGeneracion->lecturaDelPeriodo($locacion, $periodo);
 
-        $montosSugeridos = collect();
-        foreach ($conceptosDisponibles as $concepto) {
-            if ($concepto->esRenta()) {
-                $montosSugeridos->put($concepto->id, $prorrateo['monto_renta_sugerido'] ?? (float) $contratoActivo->monto_renta);
-            } elseif ($concepto->esLuz()) {
-                $montosSugeridos->put($concepto->id, $this->servicioGeneracion->calcularMontoLuzSugerido($lectura));
-            } else {
-                $montosSugeridos->put($concepto->id, $contratoActivo->valorDeConcepto($concepto) ?? 0.0);
-            }
-        }
-
-        return view('recibos.registro-masivo.partials.modal-recibo', [
-            'locacion' => $locacion,
-            'periodo' => $periodo,
-            'contratoActivo' => $contratoActivo,
-            'conceptosDisponibles' => $conceptosDisponibles,
-            'montosSugeridos' => $montosSugeridos,
-            'prorrateo' => $prorrateo,
-        ]);
-    }
-
-    /**
-     * FR-007/FR-008: genera el recibo de inmediato (research.md Decisión 5) y
-     * responde con la parcial de estado de la fila ya actualizada — nunca con
-     * un redirect, porque siempre se llama por htmx desde el modal.
-     */
-    public function store(SolicitudGuardarReciboRegistroMasivo $solicitud, Locacion $locacion): View|Response
-    {
-        $datos = $solicitud->validated();
-        $datos['incluye_alquiler'] = $solicitud->boolean('incluye_alquiler');
-
-        $conceptos = [];
-        foreach ($solicitud->validated('conceptos', []) as $conceptoId => $campos) {
-            if (filter_var($campos['incluido'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
-                $conceptos[(int) $conceptoId] = $campos['monto'];
-            }
-        }
-        $datos['conceptos'] = $conceptos;
-
-        $periodo = Carbon::parse($datos['periodo'])->startOfMonth();
-
-        try {
-            $this->servicioGeneracion->generar($locacion, $periodo, $datos);
-        } catch (SinContratoActivoEnPeriodoException|ConceptosReciboYaCubiertosException $excepcion) {
-            return response()->view('recibos.registro-masivo.partials.error-modal-recibo', [
-                'mensaje' => $excepcion->getMessage(),
-            ], 422);
-        }
-
-        $contratoActivo = $locacion->contratoActivoEnPeriodo($periodo);
-        $conceptosActivos = ConceptoGastoFijo::activos()->ordenados()->get();
-        $recibosDeLaLocacion = Recibo::where('locacion_id', $locacion->id)
+        $recibos = Recibo::where('locacion_id', $locacion->id)
             ->where('periodo', $periodo->format('Y-m-d'))
-            ->with('conceptos')
+            ->with('conceptos.conceptoGastoFijo')
+            ->orderBy('created_at')
             ->get();
 
-        return view('recibos.registro-masivo.partials.estado-recibo-locacion', [
+        if ($recibos->isEmpty()) {
+            return redirect()->route('recibos.registroMasivo.index', ['periodo' => $periodo->format('Y-m')]);
+        }
+
+        if ($recibos->count() === 1) {
+            return redirect()->route('recibos.show', $recibos->first());
+        }
+
+        return view('recibos.registro-masivo.recibos-del-periodo', [
             'locacion' => $locacion,
             'periodo' => $periodo,
-            'contratoActivo' => $contratoActivo,
-            'conceptosActivos' => $conceptosActivos,
-            'conceptosDisponibles' => $this->servicioGeneracion->conceptosDisponiblesDesde($conceptosActivos, $recibosDeLaLocacion),
-            'reciboQueCubre' => $this->servicioGeneracion->reciboQueCubreDesde($conceptosActivos, $recibosDeLaLocacion),
-            'cantidadRecibos' => $recibosDeLaLocacion->where('estado', '!=', 'anulado')->count(),
-            'totalFacturado' => $recibosDeLaLocacion->where('estado', '!=', 'anulado')->sum(fn (Recibo $r) => $r->total()),
+            'recibos' => $recibos,
         ]);
     }
 
@@ -172,15 +117,23 @@ class RegistroMasivoRecibosController extends Controller
         $reciboQueCubrePorLocacion = [];
         $cantidadRecibosPorLocacion = [];
         $totalFacturadoPorLocacion = [];
+        $tieneRecibosPorLocacion = [];
 
         foreach ($idsAlquilables as $id) {
             $recibosDeLaLocacion = $recibosPorLocacion->get($id, collect());
-            $conceptosDisponiblesPorLocacion[$id] = $this->servicioGeneracion->conceptosDisponiblesDesde($conceptosActivos, $recibosDeLaLocacion);
-            $reciboQueCubrePorLocacion[$id] = $this->servicioGeneracion->reciboQueCubreDesde($conceptosActivos, $recibosDeLaLocacion);
-
+            // specs/026: un recibo anulado no cuenta como cobertura vigente — se filtra ANTES de
+            // calcular disponibilidad/cobertura, no solo al totalizar (causa raíz del defecto
+            // reportado con Local 101, ver research.md Decisión 1).
             $recibosVigentes = $recibosDeLaLocacion->where('estado', '!=', 'anulado');
+            $conceptosDisponiblesPorLocacion[$id] = $this->servicioGeneracion->conceptosDisponiblesDesde($conceptosActivos, $recibosVigentes);
+            $reciboQueCubrePorLocacion[$id] = $this->servicioGeneracion->reciboQueCubreDesde($conceptosActivos, $recibosVigentes);
+
             $cantidadRecibosPorLocacion[$id] = $recibosVigentes->count();
             $totalFacturadoPorLocacion[$id] = $recibosVigentes->sum(fn (Recibo $r) => $r->total());
+            // specs/026 US3: a diferencia de lo anterior, "Ver Recibos" debe seguir ofreciéndose
+            // aunque el único recibo del periodo esté anulado (auditoría, no disponibilidad) —
+            // ver research.md Decisión 5.
+            $tieneRecibosPorLocacion[$id] = $recibosDeLaLocacion->isNotEmpty();
         }
 
         return [
@@ -191,6 +144,7 @@ class RegistroMasivoRecibosController extends Controller
             'reciboQueCubrePorLocacion' => $reciboQueCubrePorLocacion,
             'cantidadRecibosPorLocacion' => $cantidadRecibosPorLocacion,
             'totalFacturadoPorLocacion' => $totalFacturadoPorLocacion,
+            'tieneRecibosPorLocacion' => $tieneRecibosPorLocacion,
         ];
     }
 

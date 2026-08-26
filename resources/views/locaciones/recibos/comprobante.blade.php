@@ -204,7 +204,7 @@
             @endif
             @foreach ($recibo->conceptos->sortBy('conceptoGastoFijo.orden') as $reciboConcepto)
                 <div class="fila">
-                    <dt>{{ $reciboConcepto->conceptoGastoFijo->nombre }}</dt>
+                    <dt>{{ $reciboConcepto->conceptoGastoFijo?->nombre ?? 'Concepto eliminado' }}</dt>
                     <dd>S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</dd>
                 </div>
             @endforeach

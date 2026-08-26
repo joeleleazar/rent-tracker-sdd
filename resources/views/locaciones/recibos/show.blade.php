@@ -52,7 +52,7 @@
                             <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
                         @endif
                         @foreach ($recibo->conceptos->sortBy('conceptoGastoFijo.orden') as $reciboConcepto)
-                            <dt class="col-sm-4 fw-semibold">Monto de {{ $reciboConcepto->conceptoGastoFijo->nombre }}</dt>
+                            <dt class="col-sm-4 fw-semibold">Monto de {{ $reciboConcepto->conceptoGastoFijo?->nombre ?? 'concepto eliminado' }}</dt>
                             <dd class="col-sm-8 cifra">S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</dd>
                         @endforeach
 

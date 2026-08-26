@@ -12,7 +12,9 @@
             @endif
 
             <div id="contenido-periodo-recibos">
-            {{-- specs/024 (periodo ágil): ver el mismo patrón ya explicado en lecturas/registro-masivo/index.blade.php --}}
+            {{-- specs/024 (periodo ágil): ver el mismo patrón ya explicado en lecturas/registro-masivo/index.blade.php.
+                 specs/028: se retiró el botón "Ir" (fallback de degradación elegante sin JavaScript) —
+                 la navegación oficial queda limitada a las flechas y al autoenvío del campo de fecha. --}}
             <form method="GET" action="{{ route('recibos.registroMasivo.index') }}" class="card">
                 <div class="card-body d-flex flex-wrap align-items-end gap-3">
                     <div class="d-flex align-items-end gap-2">
@@ -54,7 +56,6 @@
                             <i class="bi bi-chevron-right" aria-hidden="true"></i>
                         </a>
                     </div>
-                    <x-secondary-button type="submit">Ir</x-secondary-button>
                 </div>
             </form>
 
@@ -82,6 +83,7 @@
                             'reciboQueCubrePorLocacion' => $reciboQueCubrePorLocacion,
                             'cantidadRecibosPorLocacion' => $cantidadRecibosPorLocacion,
                             'totalFacturadoPorLocacion' => $totalFacturadoPorLocacion,
+                            'tieneRecibosPorLocacion' => $tieneRecibosPorLocacion,
                         ])
                     @endforeach
                 </div>
@@ -89,10 +91,4 @@
             </div>
         </div>
     </div>
-
-    <x-modal-bootstrap name="modal-recibo-registro-masivo" maxWidth="lg" focusable>
-        <div id="contenido-modal-recibo"></div>
-    </x-modal-bootstrap>
-
-    @vite(['resources/js/registro-masivo-recibos.js'])
 </x-layouts.app-bootstrap>
