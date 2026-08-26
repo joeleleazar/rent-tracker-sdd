@@ -15,13 +15,16 @@ use App\Http\Requests\SolicitudGuardarContrato;
 use App\Http\Requests\SolicitudGuardarCostosContrato;
 use App\Http\Requests\SolicitudQuitarInquilino;
 use App\Http\Requests\SolicitudRegistrarResolucionGarantia;
+use App\Models\ConceptoGastoFijo;
 use App\Models\Contrato;
 use App\Models\Inquilino;
 use App\Models\Locacion;
+use App\Models\ValorConceptoContrato;
 use App\Services\ServicioAsociacionInquilinosContrato;
 use App\Services\ServicioResolucionGarantiaContrato;
 use App\Services\ServicioValidacionSolapamientoContrato;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class ContratoController extends Controller
@@ -45,6 +48,7 @@ class ContratoController extends Controller
     {
         return view('contratos.create', [
             'locacion' => $locacion,
+            'conceptosConfigurables' => $this->conceptosConfigurables(),
         ]);
     }
 
@@ -53,7 +57,8 @@ class ContratoController extends Controller
         $datos = $solicitud->validated();
         $inquilinosInput = $datos['inquilinos'] ?? [];
         $principalIndex = $datos['principal_index'] ?? null;
-        unset($datos['inquilinos'], $datos['principal_index']);
+        $valores = $datos['valores'] ?? [];
+        unset($datos['inquilinos'], $datos['principal_index'], $datos['valores']);
 
         $inquilinosData = $this->prepararInquilinos($inquilinosInput, $principalIndex);
         $datos = $this->conEstadoGarantia($datos);
@@ -64,9 +69,10 @@ class ContratoController extends Controller
                 $datos['fecha_inicio'],
                 $datos['fecha_fin'],
                 null,
-                function () use ($locacion, $datos, $inquilinosData) {
+                function () use ($locacion, $datos, $inquilinosData, $valores) {
                     $contrato = $locacion->contratos()->create($datos);
                     $this->servicioInquilinos->sincronizar($contrato, $inquilinosData);
+                    $this->guardarValoresConceptos($contrato, $valores);
 
                     return $contrato;
                 },
@@ -89,23 +95,35 @@ class ContratoController extends Controller
 
     public function show(Contrato $contrato): View
     {
-        $contrato->load(['locacion', 'inquilinos', 'documentos']);
+        $contrato->load(['locacion', 'inquilinos', 'documentos', 'valoresConceptos']);
+
+        $conceptosConfigurables = ConceptoGastoFijo::activos()
+            ->ordenados()
+            ->get()
+            ->reject(fn (ConceptoGastoFijo $c) => $c->esProtegido())
+            ->values();
 
         return view('contratos.show', [
             'contrato' => $contrato,
+            'conceptosConfigurables' => $conceptosConfigurables,
         ]);
     }
 
     public function edit(Contrato $contrato): View
     {
+        $contrato->load('valoresConceptos');
+
         return view('contratos.edit', [
             'contrato' => $contrato,
+            'conceptosConfigurables' => $this->conceptosConfigurables(),
         ]);
     }
 
     public function update(SolicitudGuardarContrato $solicitud, Contrato $contrato): RedirectResponse
     {
         $datos = $solicitud->validated();
+        $valores = $datos['valores'] ?? [];
+        unset($datos['valores']);
 
         // Reinicio de hitos de notificación de vencimiento si cambia fecha_fin
         // (specs/004-condiciones-contrato-recibo, Edge Case "Corrección de fecha de
@@ -124,7 +142,10 @@ class ContratoController extends Controller
                 $datos['fecha_inicio'],
                 $datos['fecha_fin'],
                 $contrato->id,
-                fn () => $contrato->update($datos),
+                function () use ($contrato, $datos, $valores) {
+                    $contrato->update($datos);
+                    $this->guardarValoresConceptos($contrato, $valores);
+                },
             );
         } catch (ContratoSolapadoException $excepcion) {
             return back()->withInput()->withErrors(['solapamiento' => $excepcion->getMessage()])
@@ -136,15 +157,51 @@ class ContratoController extends Controller
     }
 
     /**
-     * Edición rápida de los 4 costos fijos desde la vista de detalle del contrato,
-     * sin tocar fechas/monto_renta/estado (specs/004, US1).
+     * Edición rápida de los valores de referencia por concepto desde la vista de
+     * detalle del contrato, sin tocar fechas/monto_renta/estado (specs/004, US1;
+     * specs/024, conceptos dinámicos).
      */
     public function actualizarCostos(SolicitudGuardarCostosContrato $solicitud, Contrato $contrato): RedirectResponse
     {
-        $contrato->update($solicitud->validated());
+        $this->guardarValoresConceptos($contrato, $solicitud->validated('valores', []));
 
         return redirect()->route('contratos.show', $contrato)
             ->with('mensaje', 'Costos del contrato actualizados correctamente.');
+    }
+
+    /**
+     * specs/024: conceptos activos y no protegidos (Renta/Luz nunca se configuran a
+     * mano) — la lista que ofrecen los 3 formularios que tocan `valores[]`
+     * (crear/editar contrato, edición rápida de costos).
+     *
+     * @return Collection<int, ConceptoGastoFijo>
+     */
+    private function conceptosConfigurables(): Collection
+    {
+        return ConceptoGastoFijo::activos()
+            ->ordenados()
+            ->get()
+            ->reject(fn (ConceptoGastoFijo $c) => $c->esProtegido())
+            ->values();
+    }
+
+    /**
+     * @param array<int, mixed> $valores concepto_gasto_fijo_id => valor
+     */
+    private function guardarValoresConceptos(Contrato $contrato, array $valores): void
+    {
+        $idsConfigurables = $this->conceptosConfigurables()->pluck('id');
+
+        foreach ($valores as $conceptoId => $valor) {
+            if ($valor === null || ! $idsConfigurables->contains((int) $conceptoId)) {
+                continue;
+            }
+
+            ValorConceptoContrato::updateOrCreate(
+                ['contrato_id' => $contrato->id, 'concepto_gasto_fijo_id' => $conceptoId],
+                ['valor' => $valor],
+            );
+        }
     }
 
     /**

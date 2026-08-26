@@ -24,7 +24,15 @@ class SolicitudGuardarLocacion extends FormRequest
      */
     public function rules(): array
     {
-        $locacionActualId = $this->route('locacion')?->id;
+        $locacion = $this->route('locacion');
+
+        // specs/025 (FR-001/FR-002): "tipo" se agregó como nullable para no
+        // romper locaciones ya existentes (2026_08_23_020000_add_tipo_to_locaciones_table.php),
+        // pero la validación nunca reflejó esa intención — bloqueaba guardar
+        // CUALQUIER edición de una locación sin tipo previo. Solo se permite
+        // dejarlo vacío si la locación editada ya tenía tipo null antes de
+        // este request; crear una locación nueva sigue exigiéndolo siempre.
+        $permitirTipoVacio = $locacion !== null && $locacion->tipo === null;
 
         return [
             'nombre' => ['required', 'string', 'max:255'],
@@ -35,10 +43,10 @@ class SolicitudGuardarLocacion extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('locaciones', 'id'),
-                Rule::notIn(array_filter([$locacionActualId])),
+                Rule::notIn(array_filter([$locacion?->id])),
             ],
             'es_alquilable' => ['boolean'],
-            'tipo' => ['required', Rule::in(array_keys(Locacion::TIPOS))],
+            'tipo' => [$permitirTipoVacio ? 'nullable' : 'required', Rule::in(array_keys(Locacion::TIPOS))],
         ];
     }
 

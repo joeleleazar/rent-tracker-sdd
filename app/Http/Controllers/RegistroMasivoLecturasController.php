@@ -90,6 +90,8 @@ class RegistroMasivoLecturasController extends Controller
             ->unique('locacion_id')
             ->keyBy('locacion_id');
 
+        $tarifa = (float) ConfiguracionGeneral::actual()->tarifa_luz_por_unidad;
+
         foreach ($filas as $locacionId => $datosFila) {
             $valorActual = $datosFila['lectura_actual'] ?? null;
 
@@ -110,8 +112,15 @@ class RegistroMasivoLecturasController extends Controller
             }
 
             $confirmado = filter_var($datosFila['confirmar_consumo_negativo'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            $lecturaAnterior = $lecturasAnteriores->get($locacion->id)?->lectura_actual;
-            $lecturaAnterior = $lecturaAnterior !== null ? (float) $lecturaAnterior : null;
+            $lecturaAnteriorRegistrada = $lecturasAnteriores->get($locacion->id)?->lectura_actual;
+            $lecturaAnterior = $lecturaAnteriorRegistrada !== null ? (float) $lecturaAnteriorRegistrada : null;
+            // specs/019 FR-001: exclusivo del registro masivo — sin lectura anterior *registrada*,
+            // el CONSUMO se calcula usando 0 en vez de quedar sin dato. `lectura_anterior` se sigue
+            // persistiendo como null en ese caso (no se fabrica un "0" histórico que no existió,
+            // ver research.md) — eso preservaría el comportamiento ya esperado de
+            // `discrepanciaConSiguiente()` y de la columna "Lectura Periodo Anterior", que ya
+            // resuelven "sin dato" consultando la lectura previa real, no esta columna.
+            $lecturaAnteriorParaConsumo = $lecturaAnterior ?? 0.0;
 
             try {
                 $existente = $lecturasDelPeriodo->get($locacion->id);
@@ -120,11 +129,19 @@ class RegistroMasivoLecturasController extends Controller
                     throw new LecturaMedidorDuplicadaException($existente);
                 }
 
-                $consumo = $this->servicioConsumo->calcularConsumo($lecturaAnterior, (float) $valorActual);
+                $consumo = $this->servicioConsumo->calcularConsumo($lecturaAnteriorParaConsumo, (float) $valorActual);
 
                 if ($consumo !== null && $consumo < 0 && ! $confirmado) {
                     throw new ConsumoNegativoSinConfirmarException();
                 }
+
+                // specs/019 FR-003/FR-004 (research.md Decisión 2): el total ya llega calculado
+                // por el navegador (editado o no); si no llega numérico (JS deshabilitado), se
+                // recalcula el mismo sugerido que el navegador habría mostrado. Ningún chequeo de
+                // signo adicional (research.md Decisión 7): un total negativo es válido cuando el
+                // consumo negativo ya fue confirmado arriba.
+                $totalEnviado = $datosFila['total'] ?? null;
+                $total = is_numeric($totalEnviado) ? (float) $totalEnviado : round($consumo * $tarifa, 2);
 
                 // Sin DB::transaction(): el chequeo de duplicado ya se resolvió en
                 // memoria contra el prefetch (specs/018, research.md R4) y el único
@@ -138,7 +155,7 @@ class RegistroMasivoLecturasController extends Controller
                     'periodo' => $periodo->format('Y-m-d'),
                     'lectura_anterior' => $lecturaAnterior,
                     'lectura_actual' => $valorActual,
-                    'consumo_calculado' => $consumo,
+                    'total' => $total,
                     'fecha_registro' => now(),
                 ]);
 
@@ -180,6 +197,9 @@ class RegistroMasivoLecturasController extends Controller
                 'periodo' => $periodo->format('Y-m-d'),
                 'locacion_id' => (int) $locacionId,
                 'lectura_actual' => $datosFila['lectura_actual'],
+                // specs/019 research.md Decisión 4: protege un total editado a mano igual que ya
+                // protege lectura_actual — llega en cada ciclo vía hx-include sin cambios de marcado.
+                'total' => is_numeric($datosFila['total'] ?? null) ? $datosFila['total'] : null,
                 'created_at' => $ahora,
                 'updated_at' => $ahora,
             ])
@@ -187,7 +207,7 @@ class RegistroMasivoLecturasController extends Controller
             ->all();
 
         if (! empty($registros)) {
-            BorradorLecturaMedidor::upsert($registros, ['usuario_id', 'periodo', 'locacion_id'], ['lectura_actual', 'updated_at']);
+            BorradorLecturaMedidor::upsert($registros, ['usuario_id', 'periodo', 'locacion_id'], ['lectura_actual', 'total', 'updated_at']);
         }
 
         return response('Borrador guardado a las ' . $ahora->format('H:i') . '.');
@@ -283,7 +303,6 @@ class RegistroMasivoLecturasController extends Controller
 
                 $lectura->update([
                     'lectura_actual' => $datos['lectura_actual'],
-                    'consumo_calculado' => $consumo,
                 ]);
             });
         } catch (ConsumoNegativoSinConfirmarException $excepcion) {

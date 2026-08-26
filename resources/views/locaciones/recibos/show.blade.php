@@ -47,26 +47,14 @@
                         <dt class="col-sm-4 fw-semibold">Fecha de emisión</dt>
                         <dd class="col-sm-8">{{ $recibo->fecha_emision->format('d/m/Y') }}</dd>
 
-                        @if ($recibo->incluye_alquiler)
+                        @if ($recibo->monto_renta !== null)
                             <dt class="col-sm-4 fw-semibold">Monto de Renta</dt>
                             <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
                         @endif
-                        @if ($recibo->incluye_agua)
-                            <dt class="col-sm-4 fw-semibold">Monto de Agua</dt>
-                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_agua, 2) }}</dd>
-                        @endif
-                        @if ($recibo->incluye_luz)
-                            <dt class="col-sm-4 fw-semibold">Monto de Luz</dt>
-                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_luz, 2) }}</dd>
-                        @endif
-                        @if ($recibo->incluye_pasadizo)
-                            <dt class="col-sm-4 fw-semibold">Monto de Luz de Pasadizo</dt>
-                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_pasadizo, 2) }}</dd>
-                        @endif
-                        @if ($recibo->incluye_seguridad)
-                            <dt class="col-sm-4 fw-semibold">Monto de Seguridad</dt>
-                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_seguridad, 2) }}</dd>
-                        @endif
+                        @foreach ($recibo->conceptos->sortBy('conceptoGastoFijo.orden') as $reciboConcepto)
+                            <dt class="col-sm-4 fw-semibold">Monto de {{ $reciboConcepto->conceptoGastoFijo->nombre }}</dt>
+                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</dd>
+                        @endforeach
 
                         <dt class="col-sm-4 fw-bold">Total</dt>
                         <dd class="col-sm-8 fw-bold cifra">S/ {{ number_format($recibo->total(), 2) }}</dd>

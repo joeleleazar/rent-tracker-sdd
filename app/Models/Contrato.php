@@ -23,10 +23,6 @@ class Contrato extends Model
         'fecha_fin',
         'monto_renta',
         'estado',
-        'costo_agua',
-        'costo_luz',
-        'costo_pasadizo',
-        'costo_seguridad',
         'notificado_30_dias_en',
         'notificado_15_dias_en',
         'notificado_7_dias_en',
@@ -46,10 +42,6 @@ class Contrato extends Model
             'fecha_inicio' => 'date',
             'fecha_fin' => 'date',
             'monto_renta' => 'decimal:2',
-            'costo_agua' => 'decimal:2',
-            'costo_luz' => 'decimal:2',
-            'costo_pasadizo' => 'decimal:2',
-            'costo_seguridad' => 'decimal:2',
             'notificado_30_dias_en' => 'datetime',
             'notificado_15_dias_en' => 'datetime',
             'notificado_7_dias_en' => 'datetime',
@@ -99,6 +91,28 @@ class Contrato extends Model
     public function recibos(): HasMany
     {
         return $this->hasMany(Recibo::class);
+    }
+
+    public function valoresConceptos(): HasMany
+    {
+        return $this->hasMany(ValorConceptoContrato::class);
+    }
+
+    /**
+     * specs/024: valor de referencia configurado para un concepto de gasto
+     * fijo en este contrato (nunca para "Renta" ni "Luz", que no se
+     * configuran aquí — ver ConceptoGastoFijo::esProtegido()). `null` si el
+     * contrato todavía no tiene un valor configurado para ese concepto.
+     */
+    public function valorDeConcepto(ConceptoGastoFijo $concepto): ?float
+    {
+        if ($this->relationLoaded('valoresConceptos')) {
+            $valor = $this->valoresConceptos->firstWhere('concepto_gasto_fijo_id', $concepto->id);
+        } else {
+            $valor = $this->valoresConceptos()->where('concepto_gasto_fijo_id', $concepto->id)->first();
+        }
+
+        return $valor !== null ? (float) $valor->valor : null;
     }
 
     public function scopeHistorialCronologico(Builder $consulta): Builder

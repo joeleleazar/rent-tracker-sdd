@@ -8,6 +8,21 @@
 
 **Input**: User description: "La lectura de luz tiene lectura anterior y lectura actual, la lectura actual en el proximo periodo debe aparecer como lectura anterior y editable, se debe mantener un historial del mismo."
 
+## Actualización (2026-08-25)
+
+El criterio original de esta spec (User Story 1, Escenario 2 más abajo) exigía el texto explícito
+`"Sin lectura previa registrada"` cuando no existe periodo previo. specs/019-total-editable-recibos
+(Q1) y specs/021-derivar-consumo-calculado (Q1:A) establecieron después, como decisión deliberada, que
+la ausencia de lectura anterior se trata como `0` en todo cálculo de consumo del sistema — y esa misma
+convención se extendió a la interfaz de registro masivo (`resources/views/lecturas/registro-masivo/`),
+donde la columna "Lectura Periodo Anterior" ahora muestra el número `0` en vez de esa etiqueta de
+texto. El Escenario 2 y el Edge Case correspondientes de esta spec se actualizan más abajo para
+reflejar ese criterio vigente; el texto original queda tachado como referencia histórica. Este cambio
+de comportamiento se detectó ya implementado (no documentado) durante specs/021, y se enmienda aquí a
+pedido explícito del usuario para mantener las specs alineadas con el código real (ver también
+`specs/016-correccion-registro-masivo-lecturas/contracts/lectura-anterior-y-autoguardado.md`, enmendado
+en paralelo).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Traslado Automático de Lectura Actual a Lectura Anterior del Siguiente Periodo (Priority: P1)
@@ -21,7 +36,8 @@ Como Administrador, quiero que al registrar la lectura de un nuevo periodo el si
 **Acceptance Scenarios**:
 
 1. **Given** que la locación "Local A" tiene registrada una lectura actual de "1250" para el periodo "Julio 2026", **When** el administrador inicia el registro de la lectura del periodo "Agosto 2026" para "Local A", **Then** el sistema precarga el campo "lectura anterior" con el valor "1250".
-2. **Given** que una locación no tiene ningún periodo registrado previamente, **When** el administrador inicia el registro de su primera lectura, **Then** el campo "lectura anterior" aparece vacío y editable, indicando claramente "Sin lectura previa registrada", sin bloquear el ingreso de la "lectura actual".
+2. ~~**Given** que una locación no tiene ningún periodo registrado previamente, **When** el administrador inicia el registro de su primera lectura, **Then** el campo "lectura anterior" aparece vacío y editable, indicando claramente "Sin lectura previa registrada", sin bloquear el ingreso de la "lectura actual".~~ (texto original, superado — ver "Actualización 2026-08-25")
+2. **Given** que una locación no tiene ningún periodo registrado previamente, **When** el administrador inicia el registro de su primera lectura, **Then** el campo "lectura anterior" muestra "0" y permanece editable, sin bloquear el ingreso de la "lectura actual".
 
 ---
 
@@ -55,7 +71,7 @@ Como Administrador, quiero consultar el historial completo de lecturas anteriore
 ### Edge Cases
 
 - **Corrección posterior de una lectura actual ya trasladada**: Si el administrador corrige la "lectura actual" de un periodo cuyo valor ya fue trasladado como "lectura anterior" de un periodo posterior, el sistema NO actualiza automáticamente el periodo posterior; muestra una advertencia indicando que existe un periodo posterior que usó el valor anterior y que puede requerir revisión manual.
-- **Primer periodo de una locación nueva**: Como no existe periodo previo, el campo "lectura anterior" inicia vacío/en cero y editable, permitiendo que el administrador registre un valor inicial si el medidor ya tenía consumo acumulado al momento de dar de alta la locación.
+- **Primer periodo de una locación nueva**: Como no existe periodo previo, el campo "lectura anterior" inicia en `0` y editable (ver "Actualización 2026-08-25"), permitiendo que el administrador registre un valor inicial si el medidor ya tenía consumo acumulado al momento de dar de alta la locación.
 - **Registro de periodos fuera de orden**: Si el administrador registra un periodo salteando meses (por ejemplo, registra "Agosto 2026" sin haber registrado "Julio 2026"), el sistema traslada como "lectura anterior" la "lectura actual" del último periodo registrado disponible (el más reciente cronológicamente antes del nuevo periodo), indicando claramente de qué periodo proviene ese valor.
 
 ## Requirements *(mandatory)*

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Recibo extends Model
 {
@@ -19,15 +20,6 @@ class Recibo extends Model
         'locacion_id',
         'lectura_medidor_id',
         'monto_renta',
-        'monto_agua',
-        'monto_luz',
-        'monto_pasadizo',
-        'monto_seguridad',
-        'incluye_alquiler',
-        'incluye_luz',
-        'incluye_agua',
-        'incluye_seguridad',
-        'incluye_pasadizo',
         'periodo',
         'fecha_emision',
         'estado',
@@ -41,15 +33,6 @@ class Recibo extends Model
     {
         return [
             'monto_renta' => 'decimal:2',
-            'monto_agua' => 'decimal:2',
-            'monto_luz' => 'decimal:2',
-            'monto_pasadizo' => 'decimal:2',
-            'monto_seguridad' => 'decimal:2',
-            'incluye_alquiler' => 'boolean',
-            'incluye_luz' => 'boolean',
-            'incluye_agua' => 'boolean',
-            'incluye_seguridad' => 'boolean',
-            'incluye_pasadizo' => 'boolean',
             'periodo' => 'date',
             'fecha_emision' => 'date',
             'fecha_pago' => 'datetime',
@@ -74,31 +57,21 @@ class Recibo extends Model
         return $this->belongsTo(LecturaMedidor::class);
     }
 
+    public function conceptos(): HasMany
+    {
+        return $this->hasMany(ReciboConcepto::class);
+    }
+
     /**
-     * Suma únicamente los conceptos incluidos (FR-005 de
-     * specs/005-lecturas-medidor-recibo-periodo): un concepto excluido no aporta al
-     * total, aunque su monto siga guardado en la fila (por si se vuelve a incluir).
+     * specs/024: "Renta" ya no es un concepto más de `conceptos()` — sigue
+     * siendo `monto_renta`, con su prorrateo ya calculado (specs/008/019).
+     * El resto de los conceptos incluidos en este recibo viven en
+     * `recibo_conceptos`; a diferencia del modelo anterior (specs/005), un
+     * concepto no incluido simplemente no tiene fila aquí — no hay ningún
+     * monto "recordado pero excluido" que sumar condicionalmente.
      */
     public function total(): float
     {
-        $total = 0.0;
-
-        if ($this->incluye_alquiler) {
-            $total += (float) $this->monto_renta;
-        }
-        if ($this->incluye_agua) {
-            $total += (float) $this->monto_agua;
-        }
-        if ($this->incluye_luz) {
-            $total += (float) $this->monto_luz;
-        }
-        if ($this->incluye_pasadizo) {
-            $total += (float) $this->monto_pasadizo;
-        }
-        if ($this->incluye_seguridad) {
-            $total += (float) $this->monto_seguridad;
-        }
-
-        return $total;
+        return (float) ($this->monto_renta ?? 0) + (float) $this->conceptos->sum('monto');
     }
 }

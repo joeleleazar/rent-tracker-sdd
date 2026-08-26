@@ -21,7 +21,8 @@ test('un administrador puede registrar la lectura del medidor de un periodo', fu
     expect($lectura)->not->toBeNull();
     expect($lectura->lectura_actual)->toBe('1250.00');
     expect($lectura->lectura_anterior)->toBeNull();
-    expect($lectura->consumo_calculado)->toBeNull();
+    // specs/021 Q1:A: sin lectura anterior, el consumo se calcula usando 0 (no queda sin dato).
+    expect($lectura->consumo_calculado)->toBe('1250.00');
 });
 
 test('el formulario de creacion precarga lectura_anterior con la lectura_actual del periodo previo', function () {
@@ -105,9 +106,9 @@ test('permite guardar una lectura menor a la anterior si se confirma explicitame
 });
 
 test('el historial de lecturas se muestra en orden cronologico con lectura anterior actual y consumo', function () {
-    LecturaMedidor::factory()->create(['locacion_id' => $this->locacion->id, 'periodo' => '2026-06-01', 'lectura_anterior' => null, 'lectura_actual' => 1000, 'consumo_calculado' => null]);
-    LecturaMedidor::factory()->create(['locacion_id' => $this->locacion->id, 'periodo' => '2026-07-01', 'lectura_anterior' => 1000, 'lectura_actual' => 1100, 'consumo_calculado' => 100]);
-    LecturaMedidor::factory()->create(['locacion_id' => $this->locacion->id, 'periodo' => '2026-08-01', 'lectura_anterior' => 1100, 'lectura_actual' => 1250, 'consumo_calculado' => 150]);
+    LecturaMedidor::factory()->create(['locacion_id' => $this->locacion->id, 'periodo' => '2026-06-01', 'lectura_anterior' => null, 'lectura_actual' => 1000]);
+    LecturaMedidor::factory()->create(['locacion_id' => $this->locacion->id, 'periodo' => '2026-07-01', 'lectura_anterior' => 1000, 'lectura_actual' => 1100]);
+    LecturaMedidor::factory()->create(['locacion_id' => $this->locacion->id, 'periodo' => '2026-08-01', 'lectura_anterior' => 1100, 'lectura_actual' => 1250]);
 
     $respuesta = $this->actingAs($this->admin)->get(route('locaciones.lecturas.index', $this->locacion));
 

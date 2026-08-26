@@ -16,10 +16,13 @@ function calcularConsumoDeCampo(campo) {
         return consumoGuardado;
     }
 
-    const lecturaAnterior = leerNumero(campo.dataset.lecturaAnterior);
+    // specs/019 FR-001: sin lectura anterior registrada, se usa 0 (no "sin dato") — mismo
+    // criterio que ya aplica el servidor en RegistroMasivoLecturasController::store(), para que
+    // el total sugerido en vivo no quede vacío justo en el caso que motivó ese cambio.
+    const lecturaAnterior = leerNumero(campo.dataset.lecturaAnterior) ?? 0;
     const inputLectura = campo.querySelector('input[type="number"]');
 
-    if (lecturaAnterior === null || !inputLectura) {
+    if (!inputLectura) {
         return null;
     }
 
@@ -48,15 +51,30 @@ function recalcularTotales() {
             return;
         }
 
-        if (consumo === null || tarifa === null) {
-            total.textContent = '—';
-            return;
+        // specs/019 Decisión 3: una vez que el usuario editó a mano el total de una fila
+        // pendiente, dejar de sobrescribir ese input cada vez que tipea en otra fila — su
+        // valor ya dejó de ser "sugerido" para pasar a ser el que se va a guardar. El total
+        // general sigue sumando lo que esté efectivamente mostrado en cada fila.
+        const esInputEditable = total.tagName === 'INPUT';
+        const yaEditadoManualmente = esInputEditable && total.dataset.editadoManualmente === 'true';
+        const sugerido = consumo === null || tarifa === null ? null : consumo * tarifa;
+
+        if (!yaEditadoManualmente) {
+            const texto = sugerido === null ? '' : sugerido.toFixed(2);
+
+            if (esInputEditable) {
+                total.value = texto;
+            } else {
+                total.textContent = sugerido === null ? '—' : texto;
+            }
         }
 
-        const valor = consumo * tarifa;
-        total.textContent = valor.toFixed(2);
-        totalGeneral += valor;
-        huboTotal = true;
+        const valorMostrado = esInputEditable ? leerNumero(total.value) : sugerido;
+
+        if (valorMostrado !== null) {
+            totalGeneral += valorMostrado;
+            huboTotal = true;
+        }
     });
 
     const totalGeneralElemento = document.getElementById('total-general-registro-masivo');
@@ -71,6 +89,32 @@ function inicializarTooltips() {
     });
 }
 
+/**
+ * specs/020 FR-006: Bootstrap adjunta el popup de un tooltip como un elemento flotante
+ * separado (vía Popper), no como hijo del propio disparador — si htmx reemplaza ese
+ * disparador (hx-swap="outerHTML", ej. al entrar en modo edición) sin destruir antes la
+ * instancia, el tooltip queda huérfano y visible en pantalla. htmx:beforeCleanupElement es
+ * el punto que la propia documentación de htmx recomienda para liberar este tipo de recursos
+ * de terceros justo antes de que el elemento se remueva del DOM.
+ */
+function disponerTooltips(elemento) {
+    if (!elemento?.querySelectorAll) {
+        return;
+    }
+
+    const candidatos = elemento.matches?.('[data-bs-toggle="tooltip"]')
+        ? [elemento, ...elemento.querySelectorAll('[data-bs-toggle="tooltip"]')]
+        : elemento.querySelectorAll('[data-bs-toggle="tooltip"]');
+
+    candidatos.forEach((el) => {
+        window.bootstrap?.Tooltip.getInstance(el)?.dispose();
+    });
+}
+
+document.addEventListener('htmx:beforeCleanupElement', (evento) => {
+    disponerTooltips(evento.target);
+});
+
 function enganchar() {
     recalcularTotales();
     inicializarTooltips();
@@ -82,6 +126,12 @@ function enganchar() {
 
     document.querySelectorAll('.campo-lectura-registro-masivo input[type="number"]').forEach((input) => {
         input.addEventListener('input', recalcularTotales);
+    });
+
+    document.querySelectorAll('.fila-registro-masivo__total-input').forEach((input) => {
+        input.addEventListener('input', () => {
+            input.dataset.editadoManualmente = 'true';
+        });
     });
 }
 

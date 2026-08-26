@@ -15,20 +15,12 @@
         {{ \Illuminate\Support\Facades\Vite::fonts() }}
 
         @vite(['resources/css/bootstrap.scss', 'resources/js/bootstrap.js', 'resources/js/htmx.js'])
+        {{-- specs/025: el color y las dimensiones base de .sidebar-principal se
+             consolidaron en resources/css/bootstrap.scss (token $dark), junto a
+             sus reglas hermanas (.nav-link:hover/.active) — ya no viven aquí
+             duplicadas como hex literal. --}}
         <style>
             body { font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif; }
-
-            .sidebar-principal {
-                background-color: #111827;
-                width: 100%;
-            }
-
-            @media (min-width: 768px) {
-                .sidebar-principal {
-                    width: 280px;
-                    min-height: 100vh;
-                }
-            }
         </style>
     </head>
     <body>
@@ -69,6 +61,16 @@
                             <li class="nav-item">
                                 <a href="{{ route('lecturas.registroMasivo.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('lecturas.registroMasivo.*') ? 'active' : '' }}">
                                     <i class="bi bi-speedometer2" aria-hidden="true"></i> Registrar Lecturas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('recibos.registroMasivo.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('recibos.registroMasivo.*') ? 'active' : '' }}">
+                                    <i class="bi bi-receipt" aria-hidden="true"></i> Emitir Recibos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('conceptosGastoFijo.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('conceptosGastoFijo.*') ? 'active' : '' }}">
+                                    <i class="bi bi-tags" aria-hidden="true"></i> Conceptos de Gasto Fijo
                                 </a>
                             </li>
                             <li class="nav-item">

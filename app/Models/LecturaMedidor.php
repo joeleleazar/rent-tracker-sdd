@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ class LecturaMedidor extends Model
         'periodo',
         'lectura_anterior',
         'lectura_actual',
-        'consumo_calculado',
+        'total',
         'fecha_registro',
     ];
 
@@ -27,9 +28,28 @@ class LecturaMedidor extends Model
             'periodo' => 'date',
             'lectura_anterior' => 'decimal:2',
             'lectura_actual' => 'decimal:2',
-            'consumo_calculado' => 'decimal:2',
+            'total' => 'decimal:2',
             'fecha_registro' => 'datetime',
         ];
+    }
+
+    /**
+     * specs/021: consumo derivado en el momento a partir de lectura_actual y
+     * lectura_anterior — ya no es una columna propia, para que no pueda volver a
+     * desincronizarse de esos dos valores como ya ocurrió (specs/016, specs/019).
+     * Sin lectura anterior, se usa 0 (FR-005/Q1:A: mismo criterio en todo el
+     * sistema, no solo en el registro masivo).
+     */
+    protected function consumoCalculado(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => number_format(
+                (float) $this->lectura_actual - (float) ($this->lectura_anterior ?? 0),
+                2,
+                '.',
+                '',
+            ),
+        );
     }
 
     public function locacion(): BelongsTo

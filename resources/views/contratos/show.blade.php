@@ -86,41 +86,27 @@
                         @method('PATCH')
 
                         <div class="row g-4">
-                            <div class="col-md-6">
-                                <x-input-label for="costo_agua" value="Costo de Agua" />
-                                <div class="input-group">
-                                    <span class="input-group-text">S/</span>
-                                    <x-text-input id="costo_agua" name="costo_agua" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_agua', $contrato->costo_agua)" />
+                            @foreach ($conceptosConfigurables as $concepto)
+                                @php
+                                    $valorActual = $contrato->valorDeConcepto($concepto);
+                                @endphp
+                                <div class="col-md-6">
+                                    <x-input-label for="valor_concepto_{{ $concepto->id }}" value="Costo de {{ $concepto->nombre }}" />
+                                    <div class="input-group">
+                                        <span class="input-group-text">S/</span>
+                                        <x-text-input
+                                            id="valor_concepto_{{ $concepto->id }}"
+                                            name="valores[{{ $concepto->id }}]"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            class="costo-fijo-campo"
+                                            :value="old('valores.' . $concepto->id, $valorActual)"
+                                        />
+                                    </div>
+                                    <x-input-error :messages="$errors->get('valores.' . $concepto->id)" class="mt-2" />
                                 </div>
-                                <x-input-error :messages="$errors->get('costo_agua')" class="mt-2" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <x-input-label for="costo_luz" value="Costo de Luz" />
-                                <div class="input-group">
-                                    <span class="input-group-text">S/</span>
-                                    <x-text-input id="costo_luz" name="costo_luz" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_luz', $contrato->costo_luz)" />
-                                </div>
-                                <x-input-error :messages="$errors->get('costo_luz')" class="mt-2" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <x-input-label for="costo_pasadizo" value="Costo de Pasadizo" />
-                                <div class="input-group">
-                                    <span class="input-group-text">S/</span>
-                                    <x-text-input id="costo_pasadizo" name="costo_pasadizo" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_pasadizo', $contrato->costo_pasadizo)" />
-                                </div>
-                                <x-input-error :messages="$errors->get('costo_pasadizo')" class="mt-2" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <x-input-label for="costo_seguridad" value="Costo de Seguridad" />
-                                <div class="input-group">
-                                    <span class="input-group-text">S/</span>
-                                    <x-text-input id="costo_seguridad" name="costo_seguridad" type="number" step="0.01" min="0" class="costo-fijo-campo" :value="old('costo_seguridad', $contrato->costo_seguridad)" />
-                                </div>
-                                <x-input-error :messages="$errors->get('costo_seguridad')" class="mt-2" />
-                            </div>
+                            @endforeach
 
                             <div class="col-md-6">
                                 <x-input-label for="costo_total_referencia_show" value="Total de Referencia" />
@@ -128,7 +114,7 @@
                                     <span class="input-group-text">S/</span>
                                     <input id="costo_total_referencia_show" type="text" class="form-control costo-fijo-total" readonly value="0.00">
                                 </div>
-                                <small class="text-secondary d-block mt-2">Suma de los 4 costos de arriba</small>
+                                <small class="text-secondary d-block mt-2">Suma de los costos de arriba</small>
                             </div>
                         </div>
 

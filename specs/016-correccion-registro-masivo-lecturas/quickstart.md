@@ -23,7 +23,7 @@ protocolo de reproducción que debe correrse **antes** de escribir el fix (paso 
 1. Abrir `/lecturas/registro-masivo?periodo=2026-08` y comparar, fila por fila:
    - Locación A debe mostrar `julio` (su periodo anterior más reciente, no mayo).
    - Locación B debe mostrar `junio`.
-   - Locación C debe mostrar "Sin lectura previa registrada".
+   - Locación C debe mostrar "0" (criterio enmendado 2026-08-25, ver contracts/lectura-anterior-y-autoguardado.md).
 2. Cambiar el periodo a `2026-01` (cruce de año) y confirmar que cada locación recalcula su
    referencia contra diciembre de 2025 hacia atrás, sin quedarse con el valor de agosto.
 3. Completar un par de filas sin guardar, abrir la pestaña de Red del navegador y esperar ~120s:

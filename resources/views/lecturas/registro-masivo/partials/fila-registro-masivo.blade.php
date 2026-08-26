@@ -44,7 +44,7 @@
 
         <div>
             @if ($lecturaAnterior === null)
-                Sin lectura previa registrada
+                0
             @else
                 {{ $lecturaAnterior->lectura_actual }}
             @endif
@@ -59,7 +59,30 @@
         ])
 
         <div class="cifra fila-registro-masivo__consumo" id="consumo-fila-{{ $locacion->id }}" aria-label="Consumo de {{ $locacion->nombre }}">—</div>
-        <div class="cifra fila-registro-masivo__total" id="total-fila-{{ $locacion->id }}" aria-label="Total de {{ $locacion->nombre }}">—</div>
+
+        @if ($lecturaDelPeriodo !== null)
+            {{--
+                specs/019 FR-005/Q2: el total ya persistido de una fila completada se muestra tal
+                cual, de solo lectura — su edición después de guardado queda fuera de alcance.
+            --}}
+            <div class="cifra fila-registro-masivo__total" id="total-fila-{{ $locacion->id }}" aria-label="Total de {{ $locacion->nombre }}">
+                {{ $lecturaDelPeriodo->total }}
+            </div>
+        @else
+            @php $claveErrorTotal = 'lecturas.' . $locacion->id . '.total'; @endphp
+            <div>
+                <x-text-input
+                    id="total-fila-{{ $locacion->id }}"
+                    name="lecturas[{{ $locacion->id }}][total]"
+                    type="number"
+                    step="0.01"
+                    class="form-control-sm fila-registro-masivo__total-input"
+                    :value="old($claveErrorTotal, $borrador?->total)"
+                    aria-label="Total de {{ $locacion->nombre }}, editable"
+                />
+                <x-input-error :messages="$errors->get($claveErrorTotal)" class="mt-1" />
+            </div>
+        @endif
     @else
         <div></div>
         <div></div>

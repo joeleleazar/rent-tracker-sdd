@@ -14,7 +14,7 @@ class LecturaMedidorFactory extends Factory
             'periodo' => now()->startOfMonth()->format('Y-m-d'),
             'lectura_anterior' => null,
             'lectura_actual' => fake()->randomFloat(2, 100, 5000),
-            'consumo_calculado' => null,
+            'total' => 0,
             'fecha_registro' => now(),
         ];
     }

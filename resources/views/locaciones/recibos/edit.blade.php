@@ -28,65 +28,31 @@
 
                     <input type="hidden" name="periodo" value="{{ $recibo->periodo->format('Y-m-d') }}">
 
-                    <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                        <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                            <input type="checkbox" id="incluye_alquiler" name="incluye_alquiler" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('incluye_alquiler', $recibo->incluye_alquiler))>
-                            <label for="incluye_alquiler" class="form-check-label fw-semibold">Incluir Alquiler</label>
+                    @foreach ($conceptosDisponibles as $concepto)
+                        @php
+                            $yaIncluido = $concepto->esRenta()
+                                ? $recibo->monto_renta !== null
+                                : $recibo->conceptos->contains('concepto_gasto_fijo_id', $concepto->id);
+                            $montoActual = $concepto->esRenta()
+                                ? $recibo->monto_renta
+                                : $recibo->conceptos->firstWhere('concepto_gasto_fijo_id', $concepto->id)?->monto;
+                            $nombreCheckbox = $concepto->esRenta() ? 'incluye_alquiler' : "conceptos[{$concepto->id}][incluido]";
+                            $nombreMonto = $concepto->esRenta() ? 'monto_renta' : "conceptos[{$concepto->id}][monto]";
+                            $idCampo = $concepto->esRenta() ? 'monto_renta' : "concepto_{$concepto->id}";
+                        @endphp
+                        <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
+                            <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
+                                <input type="checkbox" id="incluir_{{ $idCampo }}" name="{{ $nombreCheckbox }}" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old(str_replace(['[', ']'], ['.', ''], $nombreCheckbox), $yaIncluido))>
+                                <label for="incluir_{{ $idCampo }}" class="form-check-label fw-semibold">
+                                    Incluir {{ $concepto->nombre }}
+                                </label>
+                            </div>
+                            <div class="input-group" style="max-width: 16rem;">
+                                <span class="input-group-text">S/</span>
+                                <x-text-input :id="$idCampo" :name="$nombreMonto" type="number" step="0.01" min="0" :value="old(str_replace(['[', ']'], ['.', ''], $nombreMonto), $montoActual)" />
+                            </div>
                         </div>
-                        <div class="input-group" style="max-width: 16rem;">
-                            <span class="input-group-text">S/</span>
-                            <x-text-input id="monto_renta" name="monto_renta" type="number" step="0.01" min="0" :value="old('monto_renta', $recibo->monto_renta)" required />
-                        </div>
-                        <x-input-error :messages="$errors->get('monto_renta')" />
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                        <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                            <input type="checkbox" id="incluye_luz" name="incluye_luz" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('incluye_luz', $recibo->incluye_luz))>
-                            <label for="incluye_luz" class="form-check-label fw-semibold">Incluir Luz</label>
-                        </div>
-                        <div class="input-group" style="max-width: 16rem;">
-                            <span class="input-group-text">S/</span>
-                            <x-text-input id="monto_luz" name="monto_luz" type="number" step="0.01" min="0" :value="old('monto_luz', $recibo->monto_luz)" />
-                        </div>
-                        <x-input-error :messages="$errors->get('monto_luz')" />
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                        <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                            <input type="checkbox" id="incluye_agua" name="incluye_agua" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('incluye_agua', $recibo->incluye_agua))>
-                            <label for="incluye_agua" class="form-check-label fw-semibold">Incluir Agua</label>
-                        </div>
-                        <div class="input-group" style="max-width: 16rem;">
-                            <span class="input-group-text">S/</span>
-                            <x-text-input id="monto_agua" name="monto_agua" type="number" step="0.01" min="0" :value="old('monto_agua', $recibo->monto_agua)" />
-                        </div>
-                        <x-input-error :messages="$errors->get('monto_agua')" />
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                        <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                            <input type="checkbox" id="incluye_pasadizo" name="incluye_pasadizo" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('incluye_pasadizo', $recibo->incluye_pasadizo))>
-                            <label for="incluye_pasadizo" class="form-check-label fw-semibold">Incluir Luz de Pasadizo</label>
-                        </div>
-                        <div class="input-group" style="max-width: 16rem;">
-                            <span class="input-group-text">S/</span>
-                            <x-text-input id="monto_pasadizo" name="monto_pasadizo" type="number" step="0.01" min="0" :value="old('monto_pasadizo', $recibo->monto_pasadizo)" />
-                        </div>
-                        <x-input-error :messages="$errors->get('monto_pasadizo')" />
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                        <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                            <input type="checkbox" id="incluye_seguridad" name="incluye_seguridad" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" @checked(old('incluye_seguridad', $recibo->incluye_seguridad))>
-                            <label for="incluye_seguridad" class="form-check-label fw-semibold">Incluir Seguridad</label>
-                        </div>
-                        <div class="input-group" style="max-width: 16rem;">
-                            <span class="input-group-text">S/</span>
-                            <x-text-input id="monto_seguridad" name="monto_seguridad" type="number" step="0.01" min="0" :value="old('monto_seguridad', $recibo->monto_seguridad)" />
-                        </div>
-                        <x-input-error :messages="$errors->get('monto_seguridad')" />
-                    </div>
+                    @endforeach
 
                     <div>
                         <x-input-label for="fecha_emision" value="Fecha de Emisión" />

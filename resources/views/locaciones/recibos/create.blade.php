@@ -27,18 +27,31 @@
                 </div>
             </form>
 
-            @if ($reciboExistente !== null)
-                <x-mensaje-alerta tipo="error">
-                    Ya existe un recibo emitido para {{ $periodo->translatedFormat('F Y') }} en esta locación.
-                    <a href="{{ route('recibos.edit', $reciboExistente) }}" class="fw-bold">Editar el recibo existente</a>.
-                </x-mensaje-alerta>
-            @elseif ($contratoActivo === null)
+            @if ($contratoActivo === null)
                 <x-mensaje-alerta tipo="error">
                     No hay un contrato activo vigente para {{ $periodo->translatedFormat('F Y') }} en esta locación. No se puede emitir un recibo para este periodo, pero puede registrar la lectura del medidor de forma independiente.
                 </x-mensaje-alerta>
+            @elseif ($conceptosDisponibles->isEmpty())
+                <x-mensaje-alerta tipo="exito">
+                    Todos los conceptos de {{ $periodo->translatedFormat('F Y') }} ya están cubiertos por uno o más recibos de esta locación. No queda ningún concepto disponible para un recibo nuevo.
+                    <a href="{{ route('locaciones.recibos.index', $locacion) }}" class="fw-bold">Ver los recibos de esta locación</a>.
+                </x-mensaje-alerta>
             @else
+                @if ($reciboQueCubre->isNotEmpty())
+                    <x-mensaje-alerta tipo="exito">
+                        Algunos conceptos de {{ $periodo->translatedFormat('F Y') }} ya están cubiertos:
+                        <ul class="mb-0 ps-3">
+                            @foreach ($reciboQueCubre as $conceptoId => $recibo)
+                                <li>
+                                    {{ \App\Models\ConceptoGastoFijo::find($conceptoId)?->nombre }} —
+                                    ya está cubierto por <a href="{{ route('recibos.show', $recibo) }}" class="fw-bold">este recibo</a>.
+                                </li>
+                            @endforeach
+                        </ul>
+                    </x-mensaje-alerta>
+                @endif
                 <p>
-                    @if ($lectura !== null && $lectura->consumo_calculado !== null)
+                    @if ($lectura !== null)
                         Consumo del periodo: <strong>{{ number_format((float) $lectura->consumo_calculado, 2) }}</strong> unidades.
                     @else
                         Sin lectura de medidor registrada para este periodo (monto de luz sugerido: S/ 0.00).
@@ -61,65 +74,32 @@
                             Contrato vigente: inquilino <strong>{{ $contratoActivo->inquilinoPrincipal()?->nombreCompleto() ?? '—' }}</strong>. Marque los conceptos a incluir y edite los montos antes de emitir.
                         </p>
 
-                        <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                            <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                                <input type="checkbox" id="incluye_alquiler" name="incluye_alquiler" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
-                                <label for="incluye_alquiler" class="form-check-label fw-semibold">Incluir Alquiler</label>
+                        @foreach ($conceptosDisponibles as $concepto)
+                            @php
+                                if ($concepto->esRenta()) {
+                                    $montoSugerido = $prorrateo['monto_renta_sugerido'] ?? $contratoActivo->monto_renta;
+                                } elseif ($concepto->esLuz()) {
+                                    $montoSugerido = $montoLuzSugerido;
+                                } else {
+                                    $montoSugerido = $contratoActivo->valorDeConcepto($concepto) ?? 0;
+                                }
+                                $nombreCheckbox = $concepto->esRenta() ? 'incluye_alquiler' : "conceptos[{$concepto->id}][incluido]";
+                                $nombreMonto = $concepto->esRenta() ? 'monto_renta' : "conceptos[{$concepto->id}][monto]";
+                                $idCampo = $concepto->esRenta() ? 'monto_renta' : "concepto_{$concepto->id}";
+                            @endphp
+                            <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
+                                <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
+                                    <input type="checkbox" id="incluir_{{ $idCampo }}" name="{{ $nombreCheckbox }}" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
+                                    <label for="incluir_{{ $idCampo }}" class="form-check-label fw-semibold">
+                                        Incluir {{ $concepto->nombre }}{{ $concepto->esLuz() ? ' (calculado por consumo)' : '' }}
+                                    </label>
+                                </div>
+                                <div class="input-group" style="max-width: 16rem;">
+                                    <span class="input-group-text">S/</span>
+                                    <x-text-input :id="$idCampo" :name="$nombreMonto" type="number" step="0.01" min="0" :value="old(str_replace(['[', ']'], ['.', ''], $nombreMonto), $montoSugerido)" :required="$concepto->esRenta()" />
+                                </div>
                             </div>
-                            <div class="input-group" style="max-width: 16rem;">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="monto_renta" name="monto_renta" type="number" step="0.01" min="0" :value="old('monto_renta', $prorrateo['monto_renta_sugerido'] ?? $contratoActivo->monto_renta)" required />
-                            </div>
-                            <x-input-error :messages="$errors->get('monto_renta')" />
-                        </div>
-
-                        <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                            <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                                <input type="checkbox" id="incluye_luz" name="incluye_luz" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
-                                <label for="incluye_luz" class="form-check-label fw-semibold">Incluir Luz (calculado por consumo)</label>
-                            </div>
-                            <div class="input-group" style="max-width: 16rem;">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="monto_luz" name="monto_luz" type="number" step="0.01" min="0" :value="old('monto_luz', $montoLuzSugerido)" />
-                            </div>
-                            <x-input-error :messages="$errors->get('monto_luz')" />
-                        </div>
-
-                        <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                            <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                                <input type="checkbox" id="incluye_agua" name="incluye_agua" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
-                                <label for="incluye_agua" class="form-check-label fw-semibold">Incluir Agua</label>
-                            </div>
-                            <div class="input-group" style="max-width: 16rem;">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="monto_agua" name="monto_agua" type="number" step="0.01" min="0" :value="old('monto_agua', $contratoActivo->costo_agua)" />
-                            </div>
-                            <x-input-error :messages="$errors->get('monto_agua')" />
-                        </div>
-
-                        <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                            <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                                <input type="checkbox" id="incluye_pasadizo" name="incluye_pasadizo" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
-                                <label for="incluye_pasadizo" class="form-check-label fw-semibold">Incluir Luz de Pasadizo</label>
-                            </div>
-                            <div class="input-group" style="max-width: 16rem;">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="monto_pasadizo" name="monto_pasadizo" type="number" step="0.01" min="0" :value="old('monto_pasadizo', $contratoActivo->costo_pasadizo)" />
-                            </div>
-                            <x-input-error :messages="$errors->get('monto_pasadizo')" />
-                        </div>
-
-                        <div class="d-flex flex-wrap align-items-center gap-3 border rounded p-3">
-                            <div class="form-check d-flex align-items-center gap-2 flex-shrink-0">
-                                <input type="checkbox" id="incluye_seguridad" name="incluye_seguridad" value="1" class="form-check-input m-0" style="width: 1.5em; height: 1.5em;" checked>
-                                <label for="incluye_seguridad" class="form-check-label fw-semibold">Incluir Seguridad</label>
-                            </div>
-                            <div class="input-group" style="max-width: 16rem;">
-                                <span class="input-group-text">S/</span>
-                                <x-text-input id="monto_seguridad" name="monto_seguridad" type="number" step="0.01" min="0" :value="old('monto_seguridad', $contratoActivo->costo_seguridad)" />
-                            </div>
-                            <x-input-error :messages="$errors->get('monto_seguridad')" />
-                        </div>
+                        @endforeach
 
                         <div>
                             <x-input-label for="fecha_emision" value="Fecha de Emisión" />

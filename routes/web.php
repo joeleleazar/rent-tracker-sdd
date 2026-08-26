@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConceptoGastoFijoController;
 use App\Http\Controllers\ConfiguracionGeneralController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\DocumentoContratoController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\LecturaMedidorController;
 use App\Http\Controllers\LocacionController;
 use App\Http\Controllers\ReciboController;
 use App\Http\Controllers\RegistroMasivoLecturasController;
+use App\Http\Controllers\RegistroMasivoRecibosController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -54,6 +56,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/locaciones/{locacion}/recibos', [ReciboController::class, 'index'])->name('locaciones.recibos.index');
     Route::get('/locaciones/{locacion}/recibos/crear', [ReciboController::class, 'create'])->name('locaciones.recibos.create');
     Route::post('/locaciones/{locacion}/recibos', [ReciboController::class, 'store'])->name('locaciones.recibos.store');
+
+    // Registro masivo de recibos (specs/023): DEBE registrarse antes de
+    // /recibos/{recibo} (más abajo) — de lo contrario Laravel intenta bindear
+    // "registro-masivo" como {recibo} y falla con un error de tipo en la BD
+    // antes de llegar siquiera a este controlador.
+    Route::get('/recibos/registro-masivo', [RegistroMasivoRecibosController::class, 'index'])->name('recibos.registroMasivo.index');
+    Route::get('/recibos/registro-masivo/{locacion}/modal', [RegistroMasivoRecibosController::class, 'modal'])->name('recibos.registroMasivo.modal');
+    Route::post('/recibos/registro-masivo/{locacion}', [RegistroMasivoRecibosController::class, 'store'])->name('recibos.registroMasivo.store');
+
     Route::get('/recibos/{recibo}', [ReciboController::class, 'show'])->name('recibos.show');
     Route::get('/recibos/{recibo}/editar', [ReciboController::class, 'edit'])->name('recibos.edit');
     Route::put('/recibos/{recibo}', [ReciboController::class, 'update'])->name('recibos.update');
@@ -77,6 +88,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/lecturas/registro-masivo/exportar/pdf', [RegistroMasivoLecturasController::class, 'exportarPdf'])->name('lecturas.registroMasivo.exportarPdf');
     Route::get('/lecturas/registro-masivo/lecturas/{lectura}/editar-inline', [RegistroMasivoLecturasController::class, 'editarInline'])->name('lecturas.registroMasivo.editarInline');
     Route::patch('/lecturas/registro-masivo/lecturas/{lectura}', [RegistroMasivoLecturasController::class, 'actualizarInline'])->name('lecturas.registroMasivo.actualizarInline');
+
+    // Catálogo de conceptos de gasto fijo (specs/024)
+    Route::get('/conceptos-gasto-fijo', [ConceptoGastoFijoController::class, 'index'])->name('conceptosGastoFijo.index');
+    Route::get('/conceptos-gasto-fijo/crear', [ConceptoGastoFijoController::class, 'create'])->name('conceptosGastoFijo.create');
+    Route::post('/conceptos-gasto-fijo', [ConceptoGastoFijoController::class, 'store'])->name('conceptosGastoFijo.store');
+    Route::get('/conceptos-gasto-fijo/{conceptosGastoFijo}/editar', [ConceptoGastoFijoController::class, 'edit'])->name('conceptosGastoFijo.edit');
+    Route::put('/conceptos-gasto-fijo/{conceptosGastoFijo}', [ConceptoGastoFijoController::class, 'update'])->name('conceptosGastoFijo.update');
+    Route::delete('/conceptos-gasto-fijo/{conceptosGastoFijo}', [ConceptoGastoFijoController::class, 'destroy'])->name('conceptosGastoFijo.destroy');
 
     Route::get('/configuracion', [ConfiguracionGeneralController::class, 'edit'])->name('configuracion.edit');
     Route::put('/configuracion', [ConfiguracionGeneralController::class, 'update'])->name('configuracion.update');

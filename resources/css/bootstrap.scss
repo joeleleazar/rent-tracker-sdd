@@ -211,6 +211,18 @@ $arbol-gap-fila: map-get($spacers, 2); // separación vertical entre filas
 //    transición breve, coherente con el resto de los estados interactivos
 //    del proyecto (botones, filas de tabla).
 // -----------------------------------------------------------------------
+.sidebar-principal {
+    background-color: $dark;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .sidebar-principal {
+        width: 280px;
+        min-height: 100vh;
+    }
+}
+
 .sidebar-principal .nav-link {
     border-radius: var(--bs-border-radius);
     transition: background-color .15s ease-in-out;
@@ -304,4 +316,52 @@ $registro-masivo-columnas: minmax(16rem, 1fr) 10rem minmax(14rem, 1fr) 8rem 8rem
 
 .tabla-registro-masivo__total-general > :last-child {
     text-align: end;
+}
+
+// -----------------------------------------------------------------------
+// 11. Tabla de registro masivo de recibos (specs/023): mismo espíritu que la
+//     sección 10, con 4 columnas propias (Nombre/Locación, Contrato, Conceptos,
+//     Acción) — reutiliza .fila-arbol__nombre/__toggle/__espaciador-toggle/
+//     __hijos de la sección 5.
+// -----------------------------------------------------------------------
+$registro-masivo-recibos-columnas: minmax(16rem, 1fr) 10rem minmax(20rem, 2fr) 11rem 10rem;
+
+.tabla-registro-masivo-recibos {
+    overflow-x: auto;
+    padding-bottom: map-get($spacers, 2);
+}
+
+.tabla-registro-masivo-recibos__encabezado,
+.fila-registro-masivo-recibos {
+    display: grid;
+    grid-template-columns: $registro-masivo-recibos-columnas;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    min-width: 52rem;
+}
+
+.tabla-registro-masivo-recibos__encabezado {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    font-weight: 600;
+    color: $secondary;
+    border-bottom: 2px solid $border-color;
+    margin-bottom: map-get($spacers, 2);
+}
+
+.fila-registro-masivo-recibos {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    border: 1px solid $border-color;
+    border-radius: var(--bs-border-radius);
+    background-color: $white;
+    margin-bottom: map-get($spacers, 2);
+}
+
+.fila-registro-masivo-recibos:hover {
+    background-color: $light;
+}
+
+.fila-registro-masivo-recibos__conceptos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map-get($spacers, 1);
 }

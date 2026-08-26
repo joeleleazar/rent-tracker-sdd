@@ -19,6 +19,7 @@ class BorradorLecturaMedidor extends Model
         'periodo',
         'locacion_id',
         'lectura_actual',
+        'total',
     ];
 
     protected function casts(): array
@@ -26,6 +27,7 @@ class BorradorLecturaMedidor extends Model
         return [
             'periodo' => 'date',
             'lectura_actual' => 'decimal:2',
+            'total' => 'decimal:2',
         ];
     }
 

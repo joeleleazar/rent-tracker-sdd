@@ -196,36 +196,18 @@
                 <dd>{{ ucfirst($recibo->estado) }}</dd>
             </div>
 
-            @if ($recibo->incluye_alquiler)
+            @if ($recibo->monto_renta !== null)
                 <div class="fila">
                     <dt>Alquiler</dt>
                     <dd>S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
                 </div>
             @endif
-            @if ($recibo->incluye_agua)
+            @foreach ($recibo->conceptos->sortBy('conceptoGastoFijo.orden') as $reciboConcepto)
                 <div class="fila">
-                    <dt>Agua</dt>
-                    <dd>S/ {{ number_format((float) $recibo->monto_agua, 2) }}</dd>
+                    <dt>{{ $reciboConcepto->conceptoGastoFijo->nombre }}</dt>
+                    <dd>S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</dd>
                 </div>
-            @endif
-            @if ($recibo->incluye_luz)
-                <div class="fila">
-                    <dt>Luz</dt>
-                    <dd>S/ {{ number_format((float) $recibo->monto_luz, 2) }}</dd>
-                </div>
-            @endif
-            @if ($recibo->incluye_pasadizo)
-                <div class="fila">
-                    <dt>Luz de Pasadizo</dt>
-                    <dd>S/ {{ number_format((float) $recibo->monto_pasadizo, 2) }}</dd>
-                </div>
-            @endif
-            @if ($recibo->incluye_seguridad)
-                <div class="fila">
-                    <dt>Seguridad</dt>
-                    <dd>S/ {{ number_format((float) $recibo->monto_seguridad, 2) }}</dd>
-                </div>
-            @endif
+            @endforeach
 
             <div class="fila fila-total">
                 <dt>Total</dt>

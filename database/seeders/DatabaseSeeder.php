@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ConceptoGastoFijo;
 use App\Models\ConfiguracionGeneral;
 use App\Models\Contrato;
 use App\Models\Inquilino;
@@ -9,6 +10,7 @@ use App\Models\LecturaMedidor;
 use App\Models\Locacion;
 use App\Models\Recibo;
 use App\Models\User;
+use App\Models\ValorConceptoContrato;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -72,6 +74,14 @@ class DatabaseSeeder extends Seeder
         $local201 = Locacion::create(['nombre' => 'Local 201', 'tamano' => 28, 'ubicacion_fisica' => 'Piso 2, frente a escaleras', 'descripcion' => 'Local con balcón interior', 'locacion_padre_id' => $piso2->id, 'es_alquilable' => true]);
         $local202 = Locacion::create(['nombre' => 'Local 202', 'tamano' => 22, 'ubicacion_fisica' => 'Piso 2, pasillo central', 'descripcion' => 'Local con buena iluminación natural', 'locacion_padre_id' => $piso2->id, 'es_alquilable' => true]);
 
+        // specs/024: los 5 conceptos fijos de siempre ya existen sembrados desde la
+        // migración `create_conceptos_gasto_fijo_table` — se reutilizan sus ids en
+        // vez de columnas fijas de Contrato/Recibo.
+        $conceptoAgua = ConceptoGastoFijo::firstWhere('nombre', 'Agua');
+        $conceptoLuz = ConceptoGastoFijo::firstWhere('clave', 'luz');
+        $conceptoPasadizo = ConceptoGastoFijo::firstWhere('nombre', 'Luz de Pasadizo');
+        $conceptoSeguridad = ConceptoGastoFijo::firstWhere('nombre', 'Seguridad');
+
         $rufina = Inquilino::create(['apellidos' => 'Canahuire Pinto', 'nombres' => 'Rufina', 'dni' => '41234567', 'fecha_nacimiento' => '1968-03-12']);
         $walter = Inquilino::create(['apellidos' => 'Salluca Canahuire', 'nombres' => 'Walter', 'dni' => '42345678', 'fecha_nacimiento' => '1975-07-22']);
         $mario = Inquilino::create(['apellidos' => 'Gomez Valdez', 'nombres' => 'Mario', 'dni' => '43456789', 'fecha_nacimiento' => '1980-11-05']);
@@ -85,10 +95,6 @@ class DatabaseSeeder extends Seeder
             'fecha_fin' => now()->addMonths(6)->endOfMonth(),
             'monto_renta' => 800,
             'estado' => 'activo',
-            'costo_agua' => 40,
-            'costo_luz' => 60,
-            'costo_pasadizo' => 12,
-            'costo_seguridad' => 20,
             'monto_garantia' => 800,
             'fecha_entrega_garantia' => now()->subMonths(6)->startOfMonth(),
             'medio_entrega_garantia' => 'transferencia',
@@ -99,34 +105,37 @@ class DatabaseSeeder extends Seeder
             'fecha_resolucion_garantia' => now()->subMonth(),
         ]);
         $contrato101->inquilinos()->attach($rufina->id, ['es_principal' => true]);
+        foreach ([$conceptoAgua->id => 40, $conceptoPasadizo->id => 12, $conceptoSeguridad->id => 20] as $conceptoId => $valor) {
+            ValorConceptoContrato::create(['contrato_id' => $contrato101->id, 'concepto_gasto_fijo_id' => $conceptoId, 'valor' => $valor]);
+        }
 
         $lecturaAnterior = null;
         foreach ([1900, 1965, 2040] as $indice => $lectura) {
             $periodo = now()->subMonths(3 - $indice)->startOfMonth();
+            $consumo = round($lectura - ($lecturaAnterior ?? 0), 2);
             LecturaMedidor::create([
                 'locacion_id' => $local101->id,
                 'periodo' => $periodo,
                 'lectura_anterior' => $lecturaAnterior,
                 'lectura_actual' => $lectura,
-                'consumo_calculado' => $lecturaAnterior === null ? null : $lectura - $lecturaAnterior,
+                'total' => round($consumo * 0.85, 2),
                 'fecha_registro' => $periodo,
             ]);
             $lecturaAnterior = $lectura;
         }
 
-        Recibo::create([
+        $recibo101 = Recibo::create([
             'contrato_id' => $contrato101->id,
             'locacion_id' => $local101->id,
             'monto_renta' => 800,
-            'monto_agua' => 40,
-            'monto_luz' => 63.75,
-            'monto_pasadizo' => 12,
-            'monto_seguridad' => 20,
             'periodo' => now()->startOfMonth(),
             'fecha_emision' => now()->startOfMonth()->addDays(2),
             'estado' => 'pagado',
             'fecha_pago' => now()->startOfMonth()->addDays(5),
         ]);
+        foreach ([$conceptoAgua->id => 40, $conceptoLuz->id => 63.75, $conceptoPasadizo->id => 12, $conceptoSeguridad->id => 20] as $conceptoId => $monto) {
+            $recibo101->conceptos()->create(['concepto_gasto_fijo_id' => $conceptoId, 'monto' => $monto]);
+        }
 
         // Local 102: contrato activo, garantía entregada sin resolver, recibo pendiente.
         $contrato102 = Contrato::create([
@@ -135,29 +144,27 @@ class DatabaseSeeder extends Seeder
             'fecha_fin' => now()->addMonths(9)->endOfMonth(),
             'monto_renta' => 950,
             'estado' => 'activo',
-            'costo_agua' => 45,
-            'costo_luz' => 70,
-            'costo_pasadizo' => 12,
-            'costo_seguridad' => 20,
             'monto_garantia' => 950,
             'fecha_entrega_garantia' => now()->subMonths(3)->startOfMonth(),
             'medio_entrega_garantia' => 'efectivo',
             'estado_garantia' => 'entregada',
         ]);
         $contrato102->inquilinos()->attach($walter->id, ['es_principal' => true]);
+        foreach ([$conceptoAgua->id => 45, $conceptoPasadizo->id => 12, $conceptoSeguridad->id => 20] as $conceptoId => $valor) {
+            ValorConceptoContrato::create(['contrato_id' => $contrato102->id, 'concepto_gasto_fijo_id' => $conceptoId, 'valor' => $valor]);
+        }
 
-        Recibo::create([
+        $recibo102 = Recibo::create([
             'contrato_id' => $contrato102->id,
             'locacion_id' => $local102->id,
             'monto_renta' => 950,
-            'monto_agua' => 45,
-            'monto_luz' => 70,
-            'monto_pasadizo' => 12,
-            'monto_seguridad' => 20,
             'periodo' => now()->startOfMonth(),
             'fecha_emision' => now()->startOfMonth()->addDays(1),
             'estado' => 'pendiente',
         ]);
+        foreach ([$conceptoAgua->id => 45, $conceptoLuz->id => 70, $conceptoPasadizo->id => 12, $conceptoSeguridad->id => 20] as $conceptoId => $monto) {
+            $recibo102->conceptos()->create(['concepto_gasto_fijo_id' => $conceptoId, 'monto' => $monto]);
+        }
 
         // Local 103: contrato vencido, sin garantía, con un recibo anulado (para ver esa marca).
         $contrato103 = Contrato::create([
@@ -173,14 +180,8 @@ class DatabaseSeeder extends Seeder
             'contrato_id' => $contrato103->id,
             'locacion_id' => $local103->id,
             'monto_renta' => 650,
-            'monto_agua' => 0,
-            'monto_luz' => 0,
-            'monto_pasadizo' => 0,
-            'monto_seguridad' => 0,
-            'incluye_agua' => false,
-            'incluye_luz' => false,
-            'incluye_pasadizo' => false,
-            'incluye_seguridad' => false,
+            // specs/024: sin conceptos adicionales (equivalente a los 4
+            // incluye_*=false de antes) — este recibo solo cubre "Renta".
             'periodo' => now()->subMonths(3)->startOfMonth(),
             'fecha_emision' => now()->subMonths(3)->startOfMonth()->addDays(2),
             'estado' => 'anulado',

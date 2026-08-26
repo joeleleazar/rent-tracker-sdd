@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ConfiguracionGeneral;
 use App\Models\Inquilino;
 use App\Models\LecturaMedidor;
 use App\Models\Locacion;
@@ -72,6 +73,11 @@ class ImportarLecturasMedidorHistoricas extends Command
 
             $barra = $this->output->createProgressBar($registros->count());
 
+            // specs/019/021: total NOT NULL — no hay tarifa historica guardada (misma
+            // limitacion ya documentada en el backfill de specs/019), asi que se usa la
+            // tarifa vigente al momento de correr esta importacion para las ~1000 filas.
+            $tarifa = (float) ConfiguracionGeneral::actual()->tarifa_luz_por_unidad;
+
             foreach ($registros as $r) {
                 $codigo = $r['codigo'];
                 $zona = str_starts_with($codigo, 'B-') ? 'B' : 'A';
@@ -99,14 +105,14 @@ class ImportarLecturasMedidorHistoricas extends Command
                 $locacionId = $locacionesPorCodigo[$codigo]->id;
                 $lecturaActual = round((float) $r['lectura_actual'], 2);
                 $lecturaAnterior = $ultimaLecturaPorLocacion[$codigo] ?? null;
-                $consumoCalculado = $lecturaAnterior === null ? null : round($lecturaActual - $lecturaAnterior, 2);
+                $consumo = round($lecturaActual - ($lecturaAnterior ?? 0.0), 2);
 
                 LecturaMedidor::create([
                     'locacion_id' => $locacionId,
                     'periodo' => $r['periodo'],
                     'lectura_actual' => $lecturaActual,
                     'lectura_anterior' => $lecturaAnterior,
-                    'consumo_calculado' => $consumoCalculado,
+                    'total' => round($consumo * $tarifa, 2),
                     'fecha_registro' => $r['periodo'],
                 ]);
 

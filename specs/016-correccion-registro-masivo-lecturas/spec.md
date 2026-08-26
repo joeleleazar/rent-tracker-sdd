@@ -4,9 +4,34 @@
 
 **Created**: 2026-08-25
 
-**Status**: Draft
+**Status**: Superseded parcialmente por specs/020-correccion-exportar-periodo-icono (ver nota debajo)
 
 **Input**: User description: "Corregir dos funciones defectuosas en la pantalla de registro masivo de lecturas de luz (specs/015-registro-masivo-lecturas, ya implementada): (1) la función que obtiene y muestra la lectura del periodo anterior de cada locación no está funcionando correctamente; (2) el guardado automático del borrador cada 2 minutos no está funcionando correctamente. Ambos comportamientos ya están definidos como requisitos en el spec existente (FR-006 para la lectura anterior, FR-010/FR-011 para el autoguardado y su restauración) — el pedido es que esa funcionalidad ya especificada vuelva a comportarse como se especificó, no un cambio de alcance ni de comportamiento esperado."
+
+## Nota de Estado (2026-08-25)
+
+Esta spec llegó hasta `/speckit-plan` (spec.md + plan.md + research.md + contracts/ + quickstart.md)
+pero nunca tuvo su propio `tasks.md` ni implementación bajo el nombre `016`. Se retoma y se cierra
+aquí retroactivamente para no dejarla colgando sin resolución documentada:
+
+- **User Story 1** (lectura del periodo anterior incorrecta al cambiar de periodo): el defecto era
+  real. Se identificó y corrigió más tarde bajo `specs/020-correccion-exportar-periodo-icono` (su
+  User Story 1, que cita explícitamente esta historia) — causa raíz: el botón "Cambiar Periodo" no
+  declaraba `type="submit"`, por lo que el formulario nunca se reenviaba con el nuevo periodo y la
+  columna "Lectura Periodo Anterior" seguía calculada contra el periodo viejo. Ver
+  `specs/020-correccion-exportar-periodo-icono/tasks.md`. **Resuelta.**
+- **User Story 2** (autoguardado cada 120s no confiable): la investigación de esta misma spec
+  (`research.md`, Hallazgo H2) concluyó que el código de producción (`hx-trigger="every 120s"`,
+  `hx-include`) ya coincidía exactamente con lo especificado en specs/015 — no se encontró ninguna
+  discrepancia real, solo que ningún test de servidor podía detectar una regresión futura en esos
+  atributos (Pest no ejecuta htmx/JS de navegador). La prueba de "contrato HTML" propuesta como
+  mitigación (H2) **no llegó a implementarse bajo ninguna spec** — sigue siendo un hueco de
+  cobertura de test legítimo, no un defecto de comportamiento confirmado. Ver `tasks.md` de esta
+  misma spec para el detalle.
+
+Esta spec se enmendó también (ver `contracts/lectura-anterior-y-autoguardado.md` y `quickstart.md`)
+para reflejar el criterio "0" en vez de "Sin lectura previa registrada" adoptado después por
+specs/019/021 — ver `specs/006-historial-lectura-medidor/spec.md`, "Actualización (2026-08-25)".
 
 ## User Scenarios & Testing *(mandatory)*
 

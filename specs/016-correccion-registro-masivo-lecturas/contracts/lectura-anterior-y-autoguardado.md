@@ -17,8 +17,12 @@ Para cada fila de locación alquilable renderizada por
   periodo mostrado: el texto de la columna es exactamente `lectura_actual` de la fila con el
   `periodo` más reciente entre esas (FR-001, FR-003) — nunca el de otra `locacion_id`, nunca el de
   un periodo posterior al seleccionado.
-- **Si no existe** ninguna: el texto es literalmente `"Sin lectura previa registrada"` — nunca una
-  celda vacía ni un `0`/`null` sin etiqueta (FR-002).
+- **Si no existe** ninguna: el texto es literalmente `"0"` — nunca una celda vacía sin ningún valor
+  (FR-002). **Enmendado 2026-08-25**: el criterio original de este contrato exigía el texto
+  `"Sin lectura previa registrada"`; se reemplazó por `"0"` para ser consistente con la convención
+  "lectura anterior ausente = 0" adoptada después por specs/019 (Q1) y specs/021 (Q1:A) para todo
+  cálculo de consumo del sistema — ver la misma enmienda en
+  `specs/006-historial-lectura-medidor/spec.md`.
 - El mismo dato se expone en `data-lectura-anterior` del `<div id="campo-lectura-{locacion_id}">`
   correspondiente (usado por `resources/js/registro-masivo-lecturas.js` para el total en vivo) —
   ambos lugares DEBEN coincidir para la misma locación.

@@ -22,12 +22,23 @@ test('no permite dos lecturas para la misma locacion y periodo', function () {
         ->toThrow(QueryException::class);
 });
 
-test('lectura_anterior, lectura_actual y consumo_calculado se castean como decimal', function () {
-    $lectura = LecturaMedidor::factory()->create(['lectura_anterior' => 1100, 'lectura_actual' => 1250, 'consumo_calculado' => 150]);
+test('lectura_anterior y lectura_actual se castean como decimal', function () {
+    $lectura = LecturaMedidor::factory()->create(['lectura_anterior' => 1100, 'lectura_actual' => 1250]);
 
     expect($lectura->fresh()->lectura_anterior)->toBe('1100.00');
     expect($lectura->fresh()->lectura_actual)->toBe('1250.00');
+});
+
+test('el consumo se calcula a partir de lectura_actual y lectura_anterior, no se almacena', function () {
+    $lectura = LecturaMedidor::factory()->create(['lectura_anterior' => 1100, 'lectura_actual' => 1250]);
+
     expect($lectura->fresh()->consumo_calculado)->toBe('150.00');
+});
+
+test('el consumo usa 0 como lectura anterior cuando no hay ninguna registrada', function () {
+    $lectura = LecturaMedidor::factory()->create(['lectura_anterior' => null, 'lectura_actual' => 500]);
+
+    expect($lectura->fresh()->consumo_calculado)->toBe('500.00');
 });
 
 test('editar la lectura anterior autocompletada no modifica el periodo previo del cual se traslado', function () {
@@ -37,7 +48,6 @@ test('editar la lectura anterior autocompletada no modifica el periodo previo de
         'periodo' => now()->subMonth()->startOfMonth()->format('Y-m-d'),
         'lectura_anterior' => null,
         'lectura_actual' => 1250,
-        'consumo_calculado' => null,
     ]);
 
     LecturaMedidor::factory()->create([
@@ -45,7 +55,6 @@ test('editar la lectura anterior autocompletada no modifica el periodo previo de
         'periodo' => now()->startOfMonth()->format('Y-m-d'),
         'lectura_anterior' => 1245, // editado manualmente, no coincide con 1250
         'lectura_actual' => 1400,
-        'consumo_calculado' => 155,
     ]);
 
     expect($periodoPrevio->fresh()->lectura_actual)->toBe('1250.00');

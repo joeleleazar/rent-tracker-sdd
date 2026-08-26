@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\ConceptoGastoFijo;
 use App\Models\Contrato;
 use App\Models\Inquilino;
 use App\Models\Locacion;
+use App\Models\ValorConceptoContrato;
 
 test('un contrato pertenece a una locacion y tiene un inquilino principal', function () {
     $locacion = Locacion::factory()->create();
@@ -48,22 +50,26 @@ test('rechaza un valor de estado invalido a nivel de base de datos', function ()
     expect(fn () => $contrato->saveQuietly())->toThrow(\Illuminate\Database\QueryException::class);
 });
 
-test('los costos fijos tienen por defecto 0.00 y se castean como decimal', function () {
-    $locacion = Locacion::factory()->create();
+test('valorDeConcepto es nulo por defecto y refleja el valor configurado una vez guardado', function () {
+    $agua = ConceptoGastoFijo::firstWhere('nombre', 'Agua');
+    $contrato = Contrato::factory()->create();
 
-    $contrato = new Contrato([
-        'locacion_id' => $locacion->id,
-        'fecha_inicio' => '2026-01-01',
-        'fecha_fin' => '2026-12-31',
-        'monto_renta' => 1000,
-    ]);
-    $contrato->save();
+    expect($contrato->valorDeConcepto($agua))->toBeNull();
 
-    $contrato->refresh();
-    expect($contrato->costo_agua)->toBe('0.00');
-    expect($contrato->costo_luz)->toBe('0.00');
-    expect($contrato->costo_pasadizo)->toBe('0.00');
-    expect($contrato->costo_seguridad)->toBe('0.00');
+    ValorConceptoContrato::create(['contrato_id' => $contrato->id, 'concepto_gasto_fijo_id' => $agua->id, 'valor' => 55]);
+
+    expect($contrato->fresh()->valorDeConcepto($agua))->toBe(55.0);
+});
+
+test('valorDeConcepto nunca aplica a renta ni a luz, que se manejan aparte', function () {
+    $renta = ConceptoGastoFijo::firstWhere('clave', 'renta');
+    $luz = ConceptoGastoFijo::firstWhere('clave', 'luz');
+    $contrato = Contrato::factory()->create();
+
+    expect($renta->esProtegido())->toBeTrue();
+    expect($luz->esProtegido())->toBeTrue();
+    expect($contrato->valorDeConcepto($renta))->toBeNull();
+    expect($contrato->valorDeConcepto($luz))->toBeNull();
 });
 
 test('los hitos de notificacion de vencimiento se castean como datetime nulo por defecto', function () {

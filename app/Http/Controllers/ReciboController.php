@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\CambioEstadoReciboRequiereConfirmacionException;
-use App\Exceptions\ReciboDuplicadoPeriodoException;
+use App\Exceptions\ConceptosReciboYaCubiertosException;
 use App\Exceptions\SinContratoActivoEnPeriodoException;
 use App\Http\Requests\SolicitudActualizarEstadoRecibo;
 use App\Http\Requests\SolicitudGuardarRecibo;
@@ -45,9 +45,8 @@ class ReciboController extends Controller
         $periodo = $this->resolverPeriodo(request()->query('periodo'));
         $contratoActivo = $locacion->contratoActivoEnPeriodo($periodo);
         $lectura = $this->servicioGeneracion->lecturaDelPeriodo($locacion, $periodo);
-        $reciboExistente = Recibo::where('locacion_id', $locacion->id)
-            ->where('periodo', $periodo->format('Y-m-d'))
-            ->first();
+        $conceptosDisponibles = $this->servicioGeneracion->conceptosDisponibles($locacion, $periodo);
+        $reciboQueCubre = $this->servicioGeneracion->reciboQueCubre($locacion, $periodo);
         $prorrateo = $contratoActivo !== null ? $this->servicioProrrateo->calcular($contratoActivo, $periodo) : null;
 
         return view('locaciones.recibos.create', [
@@ -56,7 +55,8 @@ class ReciboController extends Controller
             'contratoActivo' => $contratoActivo,
             'lectura' => $lectura,
             'montoLuzSugerido' => $this->servicioGeneracion->calcularMontoLuzSugerido($lectura),
-            'reciboExistente' => $reciboExistente,
+            'conceptosDisponibles' => $conceptosDisponibles,
+            'reciboQueCubre' => $reciboQueCubre,
             'prorrateo' => $prorrateo,
         ]);
     }
@@ -68,11 +68,8 @@ class ReciboController extends Controller
 
         try {
             $recibo = $this->servicioGeneracion->generar($locacion, $periodo, $datos);
-        } catch (SinContratoActivoEnPeriodoException $excepcion) {
+        } catch (SinContratoActivoEnPeriodoException|ConceptosReciboYaCubiertosException $excepcion) {
             return back()->withInput()->withErrors(['periodo' => $excepcion->getMessage()]);
-        } catch (ReciboDuplicadoPeriodoException $excepcion) {
-            return redirect()->route('recibos.edit', $excepcion->reciboExistente)
-                ->withErrors(['periodo' => $excepcion->getMessage()]);
         }
 
         return redirect()->route('recibos.show', $recibo)
@@ -81,7 +78,7 @@ class ReciboController extends Controller
 
     public function show(Recibo $recibo): View
     {
-        $recibo->load(['locacion', 'contrato']);
+        $recibo->load(['locacion', 'contrato', 'conceptos.conceptoGastoFijo']);
 
         return view('locaciones.recibos.show', [
             'recibo' => $recibo,
@@ -90,8 +87,17 @@ class ReciboController extends Controller
 
     public function edit(Recibo $recibo): View
     {
+        $recibo->load('conceptos.conceptoGastoFijo');
+        $conceptosDisponibles = $this->servicioGeneracion->conceptosDisponibles($recibo->locacion, $recibo->periodo);
+
         return view('locaciones.recibos.edit', [
             'recibo' => $recibo,
+            // El propio recibo puede seguir usando los conceptos que ya tiene (edición, no
+            // generación) — se ofrecen los disponibles MÁS los que este recibo ya incluye.
+            'conceptosDisponibles' => $conceptosDisponibles->concat($recibo->conceptos->pluck('conceptoGastoFijo'))
+                ->unique('id')
+                ->sortBy('orden')
+                ->values(),
         ]);
     }
 
@@ -99,7 +105,11 @@ class ReciboController extends Controller
     {
         $datos = $this->datosConConceptos($solicitud);
 
-        $this->servicioGeneracion->actualizar($recibo, $datos);
+        try {
+            $this->servicioGeneracion->actualizar($recibo, $datos);
+        } catch (ConceptosReciboYaCubiertosException $excepcion) {
+            return back()->withInput()->withErrors(['periodo' => $excepcion->getMessage()]);
+        }
 
         return redirect()->route('recibos.show', $recibo)
             ->with('mensaje', 'Recibo actualizado correctamente.');
@@ -132,7 +142,7 @@ class ReciboController extends Controller
      */
     public function comprobante(Recibo $recibo): View
     {
-        $recibo->load(['locacion', 'contrato']);
+        $recibo->load(['locacion', 'contrato', 'conceptos.conceptoGastoFijo']);
 
         return view('locaciones.recibos.comprobante', [
             'recibo' => $recibo,
@@ -145,10 +155,15 @@ class ReciboController extends Controller
     private function datosConConceptos(SolicitudGuardarRecibo $solicitud): array
     {
         $datos = $solicitud->validated();
+        $datos['incluye_alquiler'] = $solicitud->boolean('incluye_alquiler');
 
-        foreach (['incluye_alquiler', 'incluye_luz', 'incluye_agua', 'incluye_seguridad', 'incluye_pasadizo'] as $concepto) {
-            $datos[$concepto] = $solicitud->boolean($concepto);
+        $conceptos = [];
+        foreach ($solicitud->validated('conceptos', []) as $conceptoId => $campos) {
+            if (filter_var($campos['incluido'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+                $conceptos[(int) $conceptoId] = $campos['monto'];
+            }
         }
+        $datos['conceptos'] = $conceptos;
 
         return $datos;
     }

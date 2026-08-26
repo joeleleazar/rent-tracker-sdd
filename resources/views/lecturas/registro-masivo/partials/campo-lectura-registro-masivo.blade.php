@@ -23,19 +23,33 @@
     data-lectura-anterior="{{ $lecturaAnterior?->lectura_actual }}"
 >
     @if ($lecturaDelPeriodo !== null && ! $modoEdicion)
+        {{--
+            specs/020 FR-004/FR-005: el ícono de completada es puramente informativo (sin
+            hx-get) — el botón de editar es un control aparte, con su propio ícono y tooltip,
+            para que un tooltip nunca quede huérfano al reemplazarse esta celda (ver
+            resources/js/registro-masivo-lecturas.js, htmx:beforeCleanupElement).
+        --}}
+        <span
+            class="me-2"
+            aria-label="Lectura completada"
+            data-bs-toggle="tooltip"
+            title="Lectura completada"
+        >
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+        </span>
+        <span class="cifra me-2">{{ $lecturaDelPeriodo->lectura_actual }}</span>
         <button
             type="button"
-            class="btn btn-sm btn-link p-0 me-2 text-decoration-none"
+            class="btn btn-sm btn-link p-0 text-decoration-none"
             hx-get="{{ route('lecturas.registroMasivo.editarInline', $lecturaDelPeriodo) }}"
             hx-target="#campo-lectura-{{ $locacion->id }}"
             hx-swap="outerHTML"
-            aria-label="Lectura completada de {{ $locacion->nombre }}: {{ $lecturaDelPeriodo->lectura_actual }}. Clic para editar"
+            aria-label="Editar lectura de {{ $locacion->nombre }}: {{ $lecturaDelPeriodo->lectura_actual }}"
             data-bs-toggle="tooltip"
-            title="Lectura completada — clic para editar"
+            title="Editar lectura"
         >
-            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+            <i class="bi bi-pencil-square" aria-hidden="true"></i>
         </button>
-        <span class="cifra">{{ $lecturaDelPeriodo->lectura_actual }}</span>
     @elseif ($lecturaDelPeriodo !== null && $modoEdicion)
         @php $claveErrorInline = 'lectura_actual'; @endphp
         {{--

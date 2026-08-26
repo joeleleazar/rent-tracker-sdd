@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ConsumoNegativoSinConfirmarException;
 use App\Exceptions\LecturaMedidorDuplicadaException;
 use App\Http\Requests\SolicitudGuardarLecturaMedidor;
+use App\Models\ConfiguracionGeneral;
 use App\Models\LecturaMedidor;
 use App\Models\Locacion;
 use App\Models\Recibo;
@@ -86,7 +87,7 @@ class LecturaMedidorController extends Controller
                     'periodo' => $periodo->format('Y-m-d'),
                     'lectura_anterior' => $lecturaAnterior,
                     'lectura_actual' => $datos['lectura_actual'],
-                    'consumo_calculado' => $consumo,
+                    'total' => $this->calcularTotal($consumo),
                     'fecha_registro' => now(),
                 ]);
             });
@@ -132,7 +133,6 @@ class LecturaMedidorController extends Controller
                 $lectura->update([
                     'lectura_anterior' => $lecturaAnterior,
                     'lectura_actual' => $datos['lectura_actual'],
-                    'consumo_calculado' => $consumo,
                 ]);
             });
         } catch (ConsumoNegativoSinConfirmarException $excepcion) {
@@ -141,6 +141,25 @@ class LecturaMedidorController extends Controller
 
         return redirect()->route('locaciones.lecturas.index', $lectura->locacion)
             ->with('mensaje', 'Lectura del medidor actualizada correctamente.');
+    }
+
+    /**
+     * specs/019: este flujo individual no tiene edición de total en pantalla
+     * (a diferencia del registro masivo) — el total simplemente se calcula y
+     * persiste igual que ya calculaba `ServicioGeneracionReciboPeriodo::
+     * calcularMontoLuzSugerido()` antes de esta feature (consumo × tarifa
+     * vigente, 0 sin dato de consumo), para que la columna NOT NULL de
+     * `lecturas_medidor` quede siempre completa también desde este flujo.
+     */
+    private function calcularTotal(?float $consumo): float
+    {
+        if ($consumo === null) {
+            return 0.0;
+        }
+
+        $tarifa = (float) ConfiguracionGeneral::actual()->tarifa_luz_por_unidad;
+
+        return round($consumo * $tarifa, 2);
     }
 
     private function resolverPeriodo(?string $periodo): Carbon

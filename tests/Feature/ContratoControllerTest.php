@@ -1,14 +1,19 @@
 <?php
 
+use App\Models\ConceptoGastoFijo;
 use App\Models\Contrato;
 use App\Models\Inquilino;
 use App\Models\Locacion;
 use App\Models\User;
+use App\Models\ValorConceptoContrato;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
     $this->locacion = Locacion::factory()->create(['es_alquilable' => true]);
     $this->inquilino = Inquilino::factory()->create();
+    $this->agua = ConceptoGastoFijo::firstWhere('nombre', 'Agua');
+    $this->pasadizo = ConceptoGastoFijo::firstWhere('nombre', 'Luz de Pasadizo');
+    $this->seguridad = ConceptoGastoFijo::firstWhere('nombre', 'Seguridad');
 });
 
 test('un administrador autenticado puede crear un contrato sin solapamiento', function () {
@@ -30,16 +35,17 @@ test('un administrador autenticado puede crear un contrato sin solapamiento', fu
     expect($contrato->monto_renta)->toBe('1500.00');
 });
 
-test('permite registrar los costos fijos del contrato y usa 0.00 por defecto si se omiten', function () {
+test('permite registrar los valores de referencia del contrato y usa 0.00 por defecto si se omiten', function () {
     $respuesta = $this->actingAs($this->admin)->post(route('contratos.store', $this->locacion), [
         'inquilino_id' => $this->inquilino->id,
         'fecha_inicio' => '2026-01-01',
         'fecha_fin' => '2026-12-31',
         'monto_renta' => '1500.00',
         'estado' => 'activo',
-        'costo_agua' => '50.00',
-        'costo_luz' => '80.00',
-        'costo_seguridad' => '40.00',
+        'valores' => [
+            $this->agua->id => '50.00',
+            $this->seguridad->id => '40.00',
+        ],
         'inquilinos' => [
             ['apellidos' => 'Pérez Gómez', 'nombres' => 'Juan Carlos', 'dni' => '13245678', 'fecha_nacimiento' => '1960-05-15'],
         ],
@@ -48,47 +54,66 @@ test('permite registrar los costos fijos del contrato y usa 0.00 por defecto si 
     $contrato = Contrato::firstWhere('locacion_id', $this->locacion->id);
 
     $respuesta->assertRedirect(route('contratos.show', $contrato));
-    expect($contrato->costo_agua)->toBe('50.00');
-    expect($contrato->costo_luz)->toBe('80.00');
-    expect($contrato->costo_pasadizo)->toBe('0.00');
-    expect($contrato->costo_seguridad)->toBe('40.00');
+    expect($contrato->valorDeConcepto($this->agua))->toBe(50.0);
+    expect($contrato->valorDeConcepto($this->pasadizo))->toBeNull();
+    expect($contrato->valorDeConcepto($this->seguridad))->toBe(40.0);
 });
 
-test('un administrador puede editar rapidamente solo los costos fijos del contrato', function () {
+test('un administrador puede editar rapidamente solo los valores de referencia del contrato', function () {
     $contrato = Contrato::factory()->create([
         'locacion_id' => $this->locacion->id,
         'inquilino_id' => $this->inquilino->id,
     ]);
 
     $respuesta = $this->actingAs($this->admin)->patch(route('contratos.costos.update', $contrato), [
-        'costo_agua' => '55.00',
-        'costo_luz' => '85.00',
-        'costo_pasadizo' => '35.00',
-        'costo_seguridad' => '45.00',
+        'valores' => [
+            $this->agua->id => '55.00',
+            $this->pasadizo->id => '35.00',
+            $this->seguridad->id => '45.00',
+        ],
     ]);
 
     $respuesta->assertRedirect(route('contratos.show', $contrato));
     $contrato->refresh();
-    expect($contrato->costo_agua)->toBe('55.00');
-    expect($contrato->costo_luz)->toBe('85.00');
-    expect($contrato->costo_pasadizo)->toBe('35.00');
-    expect($contrato->costo_seguridad)->toBe('45.00');
+    expect($contrato->valorDeConcepto($this->agua))->toBe(55.0);
+    expect($contrato->valorDeConcepto($this->pasadizo))->toBe(35.0);
+    expect($contrato->valorDeConcepto($this->seguridad))->toBe(45.0);
 });
 
-test('rechaza costos fijos no numericos en la edicion rapida', function () {
+test('rechaza valores de referencia no numericos en la edicion rapida', function () {
     $contrato = Contrato::factory()->create([
         'locacion_id' => $this->locacion->id,
         'inquilino_id' => $this->inquilino->id,
     ]);
 
     $respuesta = $this->actingAs($this->admin)->patch(route('contratos.costos.update', $contrato), [
-        'costo_agua' => 'no-es-un-numero',
-        'costo_luz' => '85.00',
-        'costo_pasadizo' => '35.00',
-        'costo_seguridad' => '45.00',
+        'valores' => [
+            $this->agua->id => 'no-es-un-numero',
+            $this->pasadizo->id => '35.00',
+        ],
     ]);
 
-    $respuesta->assertSessionHasErrors('costo_agua');
+    $respuesta->assertSessionHasErrors('valores.' . $this->agua->id);
+});
+
+test('la edicion rapida de valores nunca ofrece ni acepta un valor para renta o luz', function () {
+    $contrato = Contrato::factory()->create([
+        'locacion_id' => $this->locacion->id,
+        'inquilino_id' => $this->inquilino->id,
+    ]);
+    $renta = ConceptoGastoFijo::firstWhere('clave', 'renta');
+    $luz = ConceptoGastoFijo::firstWhere('clave', 'luz');
+
+    $respuesta = $this->actingAs($this->admin)->get(route('contratos.show', $contrato));
+    $respuesta->assertDontSee('name="valores[' . $renta->id . ']"', false);
+    $respuesta->assertDontSee('name="valores[' . $luz->id . ']"', false);
+
+    $this->actingAs($this->admin)->patch(route('contratos.costos.update', $contrato), [
+        'valores' => [$renta->id => '999.00', $luz->id => '999.00'],
+    ]);
+
+    expect($contrato->valorDeConcepto($renta))->toBeNull();
+    expect($contrato->valorDeConcepto($luz))->toBeNull();
 });
 
 test('editar la fecha_fin del contrato reinicia los hitos de notificacion ya enviados', function () {
@@ -372,4 +397,26 @@ test('permite corregir una resolucion ya registrada confirmando explicitamente',
 
     $respuesta->assertRedirect(route('contratos.show', $contrato));
     expect($contrato->fresh()->monto_devuelto_garantia)->toBe('1400.00');
+});
+
+test('el formulario de creacion de contrato ofrece los conceptos configurables, nunca renta ni luz', function () {
+    $renta = ConceptoGastoFijo::firstWhere('clave', 'renta');
+    $luz = ConceptoGastoFijo::firstWhere('clave', 'luz');
+
+    $respuesta = $this->actingAs($this->admin)->get(route('contratos.create', $this->locacion));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('name="valores[' . $this->agua->id . ']"', false);
+    $respuesta->assertDontSee('name="valores[' . $renta->id . ']"', false);
+    $respuesta->assertDontSee('name="valores[' . $luz->id . ']"', false);
+});
+
+test('el formulario de edicion de contrato precarga los valores de referencia ya configurados', function () {
+    $contrato = Contrato::factory()->create(['locacion_id' => $this->locacion->id, 'inquilino_id' => $this->inquilino->id]);
+    ValorConceptoContrato::create(['contrato_id' => $contrato->id, 'concepto_gasto_fijo_id' => $this->agua->id, 'valor' => 33]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('contratos.edit', $contrato));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('value="33"', false);
 });

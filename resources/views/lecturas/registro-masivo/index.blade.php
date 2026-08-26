@@ -17,13 +17,55 @@
                 </x-mensaje-alerta>
             @endif
 
+            <div id="contenido-periodo-lecturas">
+            {{--
+                specs/024 (periodo ágil): flechas + autoenvío del selector, sin botón "Cambiar
+                Periodo" ni recarga completa — hx-select re-extrae este mismo contenedor de la
+                respuesta completa de la ruta (misma vista de siempre), así el controlador no
+                necesita distinguir entre una petición htmx y una navegación normal.
+            --}}
             <form method="GET" action="{{ route('lecturas.registroMasivo.index') }}" class="card">
                 <div class="card-body d-flex flex-wrap align-items-end gap-3">
-                    <div>
-                        <x-input-label for="periodo_selector" value="Periodo (mes)" />
-                        <input id="periodo_selector" name="periodo" type="month" class="form-control" value="{{ $periodo->format('Y-m') }}">
+                    <div class="d-flex align-items-end gap-2">
+                        <a
+                            href="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->subMonth()->format('Y-m')]) }}"
+                            hx-get="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->subMonth()->format('Y-m')]) }}"
+                            hx-select="#contenido-periodo-lecturas"
+                            hx-target="#contenido-periodo-lecturas"
+                            hx-swap="outerHTML"
+                            class="btn btn-outline-secondary"
+                            aria-label="Periodo anterior"
+                        >
+                            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                        </a>
+                        <div>
+                            <x-input-label for="periodo_selector" value="Periodo (mes)" />
+                            <input
+                                id="periodo_selector"
+                                name="periodo"
+                                type="month"
+                                class="form-control"
+                                value="{{ $periodo->format('Y-m') }}"
+                                hx-get="{{ route('lecturas.registroMasivo.index') }}"
+                                hx-trigger="change"
+                                hx-select="#contenido-periodo-lecturas"
+                                hx-target="#contenido-periodo-lecturas"
+                                hx-swap="outerHTML"
+                            >
+                        </div>
+                        <a
+                            href="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->addMonth()->format('Y-m')]) }}"
+                            hx-get="{{ route('lecturas.registroMasivo.index', ['periodo' => $periodo->copy()->addMonth()->format('Y-m')]) }}"
+                            hx-select="#contenido-periodo-lecturas"
+                            hx-target="#contenido-periodo-lecturas"
+                            hx-swap="outerHTML"
+                            class="btn btn-outline-secondary"
+                            aria-label="Periodo siguiente"
+                        >
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        </a>
                     </div>
-                    <x-secondary-button>Cambiar Periodo</x-secondary-button>
+                    <x-secondary-button type="submit">Ir</x-secondary-button>
                 </div>
             </form>
 
@@ -50,10 +92,16 @@
                     </div>
 
                     <div class="d-flex gap-2 ms-auto">
-                        <a href="{{ route('lecturas.registroMasivo.exportarExcel', ['periodo' => $periodo->format('Y-m')]) }}" class="btn btn-outline-secondary btn-sm">
+                        {{--
+                            specs/020: hx-boost="false" excluye estos dos enlaces del
+                            hx-boost="true" heredado del layout raíz (specs/011) — sin esto, htmx
+                            intercepta la descarga y trata la respuesta binaria como si fuera HTML
+                            para reemplazar la página, en vez de dejar que el navegador la descargue.
+                        --}}
+                        <a href="{{ route('lecturas.registroMasivo.exportarExcel', ['periodo' => $periodo->format('Y-m')]) }}" class="btn btn-outline-secondary btn-sm" hx-boost="false">
                             <i class="bi bi-file-earmark-excel" aria-hidden="true"></i> Exportar a Excel
                         </a>
-                        <a href="{{ route('lecturas.registroMasivo.exportarPdf', ['periodo' => $periodo->format('Y-m')]) }}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{{ route('lecturas.registroMasivo.exportarPdf', ['periodo' => $periodo->format('Y-m')]) }}" class="btn btn-outline-secondary btn-sm" hx-boost="false">
                             <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Exportar a PDF
                         </a>
                     </div>
@@ -120,6 +168,7 @@
                     </div>
                 </form>
             @endif
+            </div>
         </div>
     </div>
 

@@ -200,6 +200,56 @@ test('rechaza guardar una locacion sin tipo', function () {
     expect(Locacion::count())->toBe(0);
 });
 
+// --- specs/025: no forzar "tipo" al editar una locación que nunca lo tuvo (FR-001/FR-002) ---
+
+test('permite editar una locacion sin tipo previo sin exigir que se asigne uno', function () {
+    $locacion = Locacion::factory()->create(['nombre' => 'Galería Sin Clasificar', 'tipo' => null]);
+
+    $respuesta = $this->actingAs($this->admin)->put(route('locaciones.update', $locacion), [
+        'nombre' => 'Galería Sin Clasificar (editada)',
+        'tamano' => $locacion->tamano,
+        'ubicacion_fisica' => $locacion->ubicacion_fisica,
+        'descripcion' => $locacion->descripcion,
+        'es_alquilable' => false,
+    ]);
+
+    $respuesta->assertRedirect(route('locaciones.show', $locacion));
+    $respuesta->assertSessionDoesntHaveErrors();
+    expect($locacion->fresh()->nombre)->toBe('Galería Sin Clasificar (editada)');
+    expect($locacion->fresh()->tipo)->toBeNull();
+});
+
+test('permite asignar un tipo valido al editar una locacion que no tenia tipo previo', function () {
+    $locacion = Locacion::factory()->create(['tipo' => null]);
+
+    $respuesta = $this->actingAs($this->admin)->put(route('locaciones.update', $locacion), [
+        'nombre' => $locacion->nombre,
+        'tamano' => $locacion->tamano,
+        'ubicacion_fisica' => $locacion->ubicacion_fisica,
+        'descripcion' => $locacion->descripcion,
+        'es_alquilable' => false,
+        'tipo' => 'piso',
+    ]);
+
+    $respuesta->assertRedirect(route('locaciones.show', $locacion));
+    expect($locacion->fresh()->tipo)->toBe('piso');
+});
+
+test('rechaza vaciar el tipo de una locacion que ya tenia uno asignado', function () {
+    $locacion = Locacion::factory()->create(['tipo' => 'local']);
+
+    $respuesta = $this->actingAs($this->admin)->put(route('locaciones.update', $locacion), [
+        'nombre' => $locacion->nombre,
+        'tamano' => $locacion->tamano,
+        'ubicacion_fisica' => $locacion->ubicacion_fisica,
+        'descripcion' => $locacion->descripcion,
+        'es_alquilable' => false,
+    ]);
+
+    $respuesta->assertSessionHasErrors('tipo');
+    expect($locacion->fresh()->tipo)->toBe('local');
+});
+
 test('rechaza asignar como padre a una de sus propias locaciones hijas', function () {
     $galeria = Locacion::factory()->create(['nombre' => 'Galería El Sol']);
     $piso = Locacion::factory()->create(['nombre' => 'Piso 1', 'locacion_padre_id' => $galeria->id]);

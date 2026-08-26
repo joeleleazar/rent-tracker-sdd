@@ -53,6 +53,121 @@ test('el guardado masivo registra varias lecturas en una sola accion e ignora la
     expect(LecturaMedidor::where('locacion_id', $local3->id)->exists())->toBeFalse();
 });
 
+test('una locacion sin ninguna lectura anterior calcula el consumo usando 0 como lectura anterior', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    $respuesta = $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => [
+            $local->id => ['lectura_actual' => '500'],
+        ],
+    ]);
+
+    $respuesta->assertRedirect(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+    $lectura = LecturaMedidor::where('locacion_id', $local->id)->first();
+    expect($lectura)->not->toBeNull();
+    expect((float) $lectura->consumo_calculado)->toBe(500.0);
+});
+
+test('el guardado masivo persiste el total recibido tal cual, sin recalcularlo', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    $respuesta = $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => [
+            $local->id => ['lectura_actual' => '500', 'total' => '999.99'],
+        ],
+    ]);
+
+    $respuesta->assertRedirect(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+    $lectura = LecturaMedidor::where('locacion_id', $local->id)->first();
+    expect((float) $lectura->total)->toBe(999.99);
+});
+
+test('el guardado masivo persiste un total negativo si el consumo negativo ya fue confirmado', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-07-01',
+        'lectura_actual' => 1000,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => [
+            $local->id => [
+                'lectura_actual' => '800',
+                'total' => '-170',
+                'confirmar_consumo_negativo' => '1',
+            ],
+        ],
+    ]);
+
+    $respuesta->assertRedirect(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+    $lectura = LecturaMedidor::where('locacion_id', $local->id)->where('periodo', '2026-08-01')->first();
+    expect((float) $lectura->total)->toBe(-170.0);
+});
+
+test('el guardado masivo calcula el total con consumo por tarifa cuando el campo total no llega', function () {
+    ConfiguracionGeneral::actual()->update(['tarifa_luz_por_unidad' => 0.5]);
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    $respuesta = $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.store'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => [
+            $local->id => ['lectura_actual' => '500'],
+        ],
+    ]);
+
+    $respuesta->assertRedirect(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+    $lectura = LecturaMedidor::where('locacion_id', $local->id)->first();
+    expect((float) $lectura->total)->toBe(250.0);
+});
+
+test('una fila completada muestra su total persistido y una fila pendiente expone un campo total editable', function () {
+    ConfiguracionGeneral::actual()->update(['tarifa_luz_por_unidad' => 10]);
+    $completa = Locacion::factory()->create(['es_alquilable' => true]);
+    $pendiente = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $completa->id,
+        'periodo' => '2026-08-01',
+        'lectura_actual' => 1250,
+        'total' => 12345.67,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('12345.67');
+    $respuesta->assertSee('name="lecturas[' . $pendiente->id . '][total]"', false);
+    $respuesta->assertDontSee('name="lecturas[' . $completa->id . '][total]"', false);
+});
+
+test('el autoguardado persiste el total en el borrador y el indice lo restaura al reabrir', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.borrador'), [
+        'periodo' => '2026-08-01',
+        'lecturas' => [
+            $local->id => ['lectura_actual' => '500', 'total' => '425.50'],
+        ],
+    ]);
+
+    $borrador = BorradorLecturaMedidor::where('usuario_id', $this->admin->id)
+        ->where('periodo', '2026-08-01')
+        ->where('locacion_id', $local->id)
+        ->first();
+
+    expect($borrador)->not->toBeNull();
+    expect($borrador->total)->toBe('425.50');
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+    $respuesta->assertOk();
+    $respuesta->assertSee('value="425.50"', false);
+});
+
 test('una fila con consumo negativo sin confirmar no se guarda pero no afecta otras filas validas', function () {
     $localOk = Locacion::factory()->create(['es_alquilable' => true]);
     $localNegativo = Locacion::factory()->create(['es_alquilable' => true]);
@@ -93,9 +208,9 @@ test('un valor no numerico en una fila no descarta las demas filas validas del l
     expect(LecturaMedidor::where('locacion_id', $localInvalido->id)->exists())->toBeFalse();
 });
 
-test('la referencia de la lectura anterior se muestra junto al campo o indica que no hay lectura previa', function () {
-    $conAnterior = Locacion::factory()->create(['es_alquilable' => true]);
-    $sinAnterior = Locacion::factory()->create(['es_alquilable' => true]);
+test('la referencia de la lectura anterior se muestra junto al campo o indica 0 si no hay lectura previa', function () {
+    $conAnterior = Locacion::factory()->create(['nombre' => 'Local Con Anterior', 'es_alquilable' => true]);
+    $sinAnterior = Locacion::factory()->create(['nombre' => 'Local Sin Anterior', 'es_alquilable' => true]);
 
     LecturaMedidor::factory()->create([
         'locacion_id' => $conAnterior->id,
@@ -107,7 +222,9 @@ test('la referencia de la lectura anterior se muestra junto al campo o indica qu
 
     $respuesta->assertOk();
     $respuesta->assertSee('1250.00');
-    $respuesta->assertSee('Sin lectura previa registrada');
+    $respuesta->assertDontSee('Sin lectura previa registrada');
+    preg_match('/Local Sin Anterior.*?<div>\s*0\s*<\/div>/s', $respuesta->getContent(), $coincidencia);
+    expect($coincidencia)->not->toBeEmpty();
 });
 
 test('el encabezado de la tabla incluye la columna consumo entre lectura actual y total', function () {
@@ -133,7 +250,6 @@ test('la celda de consumo de una fila completada arranca en el marcador inicial 
         'periodo' => '2026-08-01',
         'lectura_anterior' => 1000,
         'lectura_actual' => 1250,
-        'consumo_calculado' => 250,
     ]);
 
     $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
@@ -363,6 +479,30 @@ test('actualizar la tarifa con un valor invalido no modifica la configuracion ge
     expect(ConfiguracionGeneral::actual()->fresh()->tarifa_luz_por_unidad)->toBe($tarifaOriginal);
 });
 
+test('el boton de confirmar periodo declara type submit para el envio sin JavaScript', function () {
+    // specs/024: el botón "Cambiar Periodo" se reemplazó por flechas + autoenvío (hx-trigger="change");
+    // este botón "Ir" es el fallback de degradación elegante si JavaScript falla (Principio VI), y
+    // debe seguir siendo type="submit" para que el formulario clásico funcione sin htmx.
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index'));
+
+    $respuesta->assertOk();
+    preg_match('/<button[^>]*>\s*Ir\s*<\/button>/s', $respuesta->getContent(), $coincidencia);
+    expect($coincidencia)->not->toBeEmpty();
+    expect($coincidencia[0])->toContain('type="submit"');
+});
+
+test('los enlaces de exportar declaran hx-boost false para no ser interceptados por el boost global', function () {
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index'));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('Exportar a Excel');
+    preg_match_all('/<a[^>]*>(?:(?!<\/a>).)*Exportar a (?:Excel|PDF)(?:(?!<\/a>).)*<\/a>/s', $respuesta->getContent(), $coincidencias);
+    expect($coincidencias[0])->toHaveCount(2);
+    foreach ($coincidencias[0] as $enlace) {
+        expect($enlace)->toContain('hx-boost="false"');
+    }
+});
+
 // --- US5: Exportación a Excel y PDF (FR-016) ---
 
 test('la exportacion a excel responde con un archivo xlsx con las locaciones del periodo', function () {
@@ -372,7 +512,6 @@ test('la exportacion a excel responde con un archivo xlsx con las locaciones del
         'locacion_id' => $local->id,
         'periodo' => '2026-08-01',
         'lectura_actual' => 500,
-        'consumo_calculado' => 100,
     ]);
 
     $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.exportarExcel', ['periodo' => '2026-08']));
@@ -388,7 +527,6 @@ test('la exportacion a pdf responde con un archivo pdf con el mismo contenido', 
         'locacion_id' => $local->id,
         'periodo' => '2026-08-01',
         'lectura_actual' => 500,
-        'consumo_calculado' => 100,
     ]);
 
     $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.exportarPdf', ['periodo' => '2026-08']));
@@ -429,6 +567,41 @@ test('el icono de lectura completada aparece antes del valor de la lectura en el
 
     $respuesta->assertOk();
     $respuesta->assertSeeInOrder(['bi-check-circle-fill', '1250.00']);
+});
+
+test('el icono de lectura completada es informativo, sin hx-get asociado', function () {
+    $local = Locacion::factory()->create(['es_alquilable' => true]);
+
+    LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-08-01',
+        'lectura_actual' => 1250,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    preg_match('/<span[^>]*>\s*<i class="bi bi-check-circle-fill[^>]*><\/i>\s*<\/span>/s', $respuesta->getContent(), $coincidencia);
+    expect($coincidencia)->not->toBeEmpty();
+    expect($coincidencia[0])->not->toContain('hx-get');
+    $respuesta->assertSee('Lectura completada', false);
+});
+
+test('existe un boton de editar separado del icono de completada, con su propio hx-get', function () {
+    $local = Locacion::factory()->create(['nombre' => 'Local Editar Separado', 'es_alquilable' => true]);
+
+    $lectura = LecturaMedidor::factory()->create([
+        'locacion_id' => $local->id,
+        'periodo' => '2026-08-01',
+        'lectura_actual' => 1250,
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('bi-pencil-square', false);
+    $respuesta->assertSee(route('lecturas.registroMasivo.editarInline', $lectura), false);
+    $respuesta->assertSeeInOrder(['bi-check-circle-fill', '1250.00', 'bi-pencil-square']);
 });
 
 test('editar inline responde con la parcial de la fila en modo edicion con el valor prellenado', function () {
@@ -481,7 +654,6 @@ test('actualizar inline con consumo negativo sin confirmar exige confirmacion en
         'periodo' => '2026-08-01',
         'lectura_anterior' => 1000,
         'lectura_actual' => 1250,
-        'consumo_calculado' => 250,
     ]);
 
     $respuesta = $this->actingAs($this->admin)->patch(route('lecturas.registroMasivo.actualizarInline', $lectura), [
@@ -494,4 +666,18 @@ test('actualizar inline con consumo negativo sin confirmar exige confirmacion en
     $respuesta->assertSee('name="lectura_actual"', false);
     $respuesta->assertSee('value="900"', false);
     expect($lectura->fresh()->lectura_actual)->toBe('1250.00');
+});
+
+test('el periodo agil expone flechas hx-get al mes anterior y siguiente sin boton de recarga completa', function () {
+    $admin = User::factory()->create();
+
+    $respuesta = $this->actingAs($admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('id="contenido-periodo-lecturas"', false);
+    $respuesta->assertSee('hx-get="' . route('lecturas.registroMasivo.index', ['periodo' => '2026-07']) . '"', false);
+    $respuesta->assertSee('hx-get="' . route('lecturas.registroMasivo.index', ['periodo' => '2026-09']) . '"', false);
+    $respuesta->assertSee('hx-select="#contenido-periodo-lecturas"', false);
+    $respuesta->assertSee('hx-trigger="change"', false);
+    $respuesta->assertDontSee('Cambiar Periodo');
 });

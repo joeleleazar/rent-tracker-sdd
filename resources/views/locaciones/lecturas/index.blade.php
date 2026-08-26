@@ -24,7 +24,7 @@
                     // lógica de cálculo nueva — ver resources/js/historial-consumo-medidor.js.
                     $datosConsumo = $lecturas->map(fn ($lectura) => [
                         'periodo' => ucfirst($lectura->periodo->translatedFormat('F Y')),
-                        'consumo' => $lectura->consumo_calculado !== null ? (float) $lectura->consumo_calculado : null,
+                        'consumo' => (float) $lectura->consumo_calculado,
                     ])->values();
                 @endphp
 
@@ -61,12 +61,7 @@
                                     Lectura actual: {{ number_format((float) $lectura->lectura_actual, 2) }}
                                 </p>
                                 <p class="mb-1">
-                                    Consumo:
-                                    @if ($lectura->consumo_calculado === null)
-                                        sin dato anterior
-                                    @else
-                                        {{ number_format((float) $lectura->consumo_calculado, 2) }} unidades
-                                    @endif
+                                    Consumo: {{ number_format((float) $lectura->consumo_calculado, 2) }} unidades
                                 </p>
                                 @if ($lectura->discrepanciaConSiguiente())
                                     <x-mensaje-alerta tipo="error" class="mt-2">
