@@ -1,7 +1,7 @@
 <x-layouts.app-bootstrap>
     <x-slot name="header">
         <h2 class="fs-2 fw-bold mb-0">
-            Seguimiento de Pagos
+            Registro de Pagos
         </h2>
     </x-slot>
 

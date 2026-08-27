@@ -6,11 +6,13 @@ use App\Exceptions\MontoPagoExcedeSaldoException;
 use App\Exceptions\MontoPagoInvalidoException;
 use App\Exceptions\ReciboAnuladoNoAdmitePagosException;
 use App\Http\Requests\SolicitudGuardarPago;
+use App\Models\ConfiguracionGeneral;
 use App\Models\Pago;
 use App\Models\Recibo;
 use App\Services\ServicioGestionPagosRecibo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class PagoReciboController extends Controller
 {
@@ -54,5 +56,22 @@ class PagoReciboController extends Controller
 
         return redirect()->route('recibos.show', $reciboId)
             ->with('mensaje', 'Pago eliminado correctamente.');
+    }
+
+    /**
+     * specs/035: comprobante propio de un pago individual — distinto del
+     * comprobante del recibo completo (specs/031) — con el avance del
+     * recibo calculado al momento de la solicitud, nunca un valor
+     * persistido (research.md Decisión 4).
+     */
+    public function comprobante(Pago $pago): View
+    {
+        $pago->load(['recibo.locacion', 'recibo.contrato', 'recibo.conceptos', 'recibo.pagos']);
+
+        return view('pagos.comprobante', [
+            'pago' => $pago,
+            'recibo' => $pago->recibo,
+            'nombrePropietario' => ConfiguracionGeneral::actual()->nombre_propietario,
+        ]);
     }
 }

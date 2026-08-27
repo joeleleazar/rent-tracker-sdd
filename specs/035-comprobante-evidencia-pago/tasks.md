@@ -23,14 +23,14 @@ evidencia) depende de Foundational. Ambas historias son independientes entre sí
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirmar la línea base: correr `php artisan test` completo (binario Herd) y verificar que todo sigue en verde antes de tocar ningún archivo.
+- [X] T001 Confirmar la línea base: correr `php artisan test` completo (binario Herd) y verificar que todo sigue en verde antes de tocar ningún archivo.
 
 ## Phase 2: Foundational — columnas de evidencia en Pago
 
 **Propósito**: la base de datos que necesita US2. No bloquea a US1.
 
-- [ ] T002 Migración `add_evidencia_a_pagos_table`: `evidencia_ruta` (string, nullable), `evidencia_nombre_archivo` (string, nullable), `evidencia_tipo` (enum `pdf`/`imagen`, nullable) en `pagos` (data-model.md; research.md Decisión 2).
-- [ ] T003 Extender `app/Models/Pago.php`: agregar las 3 columnas nuevas a `$fillable` y el método `tieneEvidencia(): bool` (`evidencia_ruta !== null`) (data-model.md).
+- [X] T002 Migración `add_evidencia_a_pagos_table`: `evidencia_ruta` (string, nullable), `evidencia_nombre_archivo` (string, nullable), `evidencia_tipo` (enum `pdf`/`imagen`, nullable) en `pagos` (data-model.md; research.md Decisión 2).
+- [X] T003 Extender `app/Models/Pago.php`: agregar las 3 columnas nuevas a `$fillable` y el método `tieneEvidencia(): bool` (`evidencia_ruta !== null`) (data-model.md).
 
 **Checkpoint**: `Pago` puede tener una evidencia asociada — listo para US2.
 
@@ -46,14 +46,14 @@ monto de ese pago, el acumulado y el saldo pendiente (quickstart.md Escenario 1)
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T004 [P] [US1] Feature test `tests/Feature/ComprobantePagoControllerTest.php`: `GET pagos.comprobante` muestra N.° de recibo, N.° de pago, fecha, locación, inquilino, monto del pago, total del recibo, acumulado y saldo pendiente, matemáticamente consistentes; el comprobante sigue disponible si el recibo está anulado; refleja el monto actualizado si el pago se edita después de exportarlo por primera vez (contracts/comprobante-pago.md; research.md Decisión 4).
+- [X] T004 [P] [US1] Feature test `tests/Feature/ComprobantePagoControllerTest.php`: `GET pagos.comprobante` muestra N.° de recibo, N.° de pago, fecha, locación, inquilino, monto del pago, total del recibo, acumulado y saldo pendiente, matemáticamente consistentes; el comprobante sigue disponible si el recibo está anulado; refleja el monto actualizado si el pago se edita después de exportarlo por primera vez (contracts/comprobante-pago.md; research.md Decisión 4).
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] `PagoReciboController::comprobante(Pago $pago)` + ruta `GET /pagos/{pago}/comprobante` → `pagos.comprobante` en `routes/web.php`, cargando `$pago->recibo` con `locacion`/`contrato`/`conceptos`/`pagos` (contracts/comprobante-pago.md).
-- [ ] T006 [US1] Vista `resources/views/pagos/comprobante.blade.php`: standalone (propio `<head>`, sin el layout de sidebar), con la hoja de estilos real de Bootstrap 5 vía Vite (research.md Decisión 1) — bloques encabezado (logo + título "Comprobante de Pago"), metadatos, partes, monto de este pago destacado, avance del recibo (total/acumulado/saldo pendiente), espacio de firma, y cierre (contracts/comprobante-pago.md).
-- [ ] T007 [US1] En `resources/views/locaciones/recibos/show.blade.php`, agregar un enlace "Ver Comprobante" (`hx-boost="false"`) por cada pago listado, junto a las acciones Editar/Eliminar ya existentes (specs/032).
-- [ ] T008 [US1] Ejecutar el Escenario 1 de `quickstart.md` (contenido del comprobante, consistencia matemática, impresión, saldo en S/ 0.00 cuando corresponde) y corregir cualquier hallazgo antes de continuar.
+- [X] T005 [US1] `PagoReciboController::comprobante(Pago $pago)` + ruta `GET /pagos/{pago}/comprobante` → `pagos.comprobante` en `routes/web.php`, cargando `$pago->recibo` con `locacion`/`contrato`/`conceptos`/`pagos` (contracts/comprobante-pago.md).
+- [X] T006 [US1] Vista `resources/views/pagos/comprobante.blade.php`: standalone (propio `<head>`, sin el layout de sidebar), con la hoja de estilos real de Bootstrap 5 vía Vite (research.md Decisión 1) — bloques encabezado (logo + título "Comprobante de Pago"), metadatos, partes, monto de este pago destacado, avance del recibo (total/acumulado/saldo pendiente), espacio de firma, y cierre (contracts/comprobante-pago.md).
+- [X] T007 [US1] En `resources/views/locaciones/recibos/show.blade.php`, agregar un enlace "Ver Comprobante" (`hx-boost="false"`) por cada pago listado, junto a las acciones Editar/Eliminar ya existentes (specs/032).
+- [X] T008 [US1] Ejecutar el Escenario 1 de `quickstart.md` (contenido del comprobante, consistencia matemática, impresión, saldo en S/ 0.00 cuando corresponde) y corregir cualquier hallazgo antes de continuar.
 
 **Checkpoint**: User Story 1 completa — cada pago tiene su propio comprobante imprimible y firmable.
 
@@ -69,14 +69,14 @@ volver a consultarse; subir uno nuevo y confirmar que reemplaza al anterior (qui
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T009 [P] [US2] Feature test `tests/Feature/EvidenciaPagoControllerTest.php`: `POST pagos.evidencia.store` con una imagen válida y con un PDF válido quedan asociados al pago; una segunda subida reemplaza la evidencia anterior (el archivo viejo deja de existir en el disco); `GET pagos.evidencia.show` devuelve el archivo correcto; se rechaza un archivo de tipo no admitido y uno que excede el tamaño máximo, sin afectar el pago; `GET pagos.evidencia.show` sobre un pago sin evidencia responde 404 (contracts/evidencia-pago.md).
+- [X] T009 [P] [US2] Feature test `tests/Feature/EvidenciaPagoControllerTest.php`: `POST pagos.evidencia.store` con una imagen válida y con un PDF válido quedan asociados al pago; una segunda subida reemplaza la evidencia anterior (el archivo viejo deja de existir en el disco); `GET pagos.evidencia.show` devuelve el archivo correcto; se rechaza un archivo de tipo no admitido y uno que excede el tamaño máximo, sin afectar el pago; `GET pagos.evidencia.show` sobre un pago sin evidencia responde 404 (contracts/evidencia-pago.md).
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] `app/Http/Requests/SolicitudSubirEvidenciaPago.php`: `archivo` (`required`, `file`, `mimes:pdf,jpg,jpeg,png`, `max:10240`) (contracts/evidencia-pago.md; research.md Decisión 5).
-- [ ] T011 [US2] `app/Http/Controllers/EvidenciaPagoController.php`, métodos `store()` (borra la evidencia anterior del disco si existía, guarda la nueva en `pagos/{id}/`, actualiza las 3 columnas, todo en `DB::transaction`) y `show()` (`Storage::disk('local')->response(...)`, 404 si no hay evidencia) + rutas `POST /pagos/{pago}/evidencia` → `pagos.evidencia.store` y `GET /pagos/{pago}/evidencia` → `pagos.evidencia.show` en `routes/web.php` (contracts/evidencia-pago.md; research.md Decisión 3).
-- [ ] T012 [US2] En `resources/views/locaciones/recibos/show.blade.php`, agregar por cada pago listado: un indicador de "sin evidencia"/"evidencia subida" (`tieneEvidencia()`), un formulario para subir o reemplazar el archivo, y un enlace para consultar la evidencia ya subida.
-- [ ] T013 [US2] Ejecutar el Escenario 2 de `quickstart.md` (subir, consultar, reemplazar, con imagen y con PDF) y corregir cualquier hallazgo antes de continuar.
+- [X] T010 [US2] `app/Http/Requests/SolicitudSubirEvidenciaPago.php`: `archivo` (`required`, `file`, `mimes:pdf,jpg,jpeg,png`, `max:10240`) (contracts/evidencia-pago.md; research.md Decisión 5).
+- [X] T011 [US2] `app/Http/Controllers/EvidenciaPagoController.php`, métodos `store()` (borra la evidencia anterior del disco si existía, guarda la nueva en `pagos/{id}/`, actualiza las 3 columnas, todo en `DB::transaction`) y `show()` (`Storage::disk('local')->response(...)`, 404 si no hay evidencia) + rutas `POST /pagos/{pago}/evidencia` → `pagos.evidencia.store` y `GET /pagos/{pago}/evidencia` → `pagos.evidencia.show` en `routes/web.php` (contracts/evidencia-pago.md; research.md Decisión 3).
+- [X] T012 [US2] En `resources/views/locaciones/recibos/show.blade.php`, agregar por cada pago listado: un indicador de "sin evidencia"/"evidencia subida" (`tieneEvidencia()`), un formulario para subir o reemplazar el archivo, y un enlace para consultar la evidencia ya subida.
+- [X] T013 [US2] Ejecutar el Escenario 2 de `quickstart.md` (subir, consultar, reemplazar, con imagen y con PDF) y corregir cualquier hallazgo antes de continuar.
 
 **Checkpoint**: las dos historias de usuario están completas e independientemente verificables.
 
@@ -84,10 +84,10 @@ volver a consultarse; subir uno nuevo y confirmar que reemplaza al anterior (qui
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T014 Revisar los casos límite restantes de `quickstart.md`: archivo de tipo/tamaño no admitido, comprobante de un pago con recibo anulado, comprobante que refleja un pago editado después de la primera exportación.
-- [ ] T015 [P] Revisión de diseño con el skill `impeccable` sobre `pagos/comprobante.blade.php` y los cambios en `recibos/show.blade.php` (Principio VI de la constitución) — a diferencia del comprobante del recibo completo, esta vista sí debe auditarse como una vista Bootstrap normal, sin ninguna excepción.
-- [ ] T016 Correr la suite completa (`php artisan test`, binario Herd) y confirmar 0 fallos.
-- [ ] T017 Validar manualmente el checklist completo de `quickstart.md` (los 2 escenarios, los casos límite y la regresión) contra la base de datos de desarrollo real, en navegador.
+- [X] T014 Revisar los casos límite restantes de `quickstart.md`: archivo de tipo/tamaño no admitido, comprobante de un pago con recibo anulado, comprobante que refleja un pago editado después de la primera exportación.
+- [X] T015 [P] Revisión de diseño con el skill `impeccable` sobre `pagos/comprobante.blade.php` y los cambios en `recibos/show.blade.php` (Principio VI de la constitución) — a diferencia del comprobante del recibo completo, esta vista sí debe auditarse como una vista Bootstrap normal, sin ninguna excepción.
+- [X] T016 Correr la suite completa (`php artisan test`, binario Herd) y confirmar 0 fallos.
+- [X] T017 Validar manualmente el checklist completo de `quickstart.md` (los 2 escenarios, los casos límite y la regresión) contra la base de datos de desarrollo real, en navegador.
 
 ---
 

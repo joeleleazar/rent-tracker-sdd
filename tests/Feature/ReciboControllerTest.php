@@ -387,6 +387,80 @@ test('specs/032: reactivar un recibo anulado recalcula su estado a partir de sus
     expect($recibo->fecha_anulacion)->toBeNull();
 });
 
+test('specs/034: el detalle de un recibo sin pagos muestra la barra de progreso vacia', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1000.00',
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.show', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('aria-valuenow="0"', false);
+    $respuesta->assertSee('progress-bar bg-secondary', false);
+});
+
+test('specs/034: el detalle de un recibo con pago parcial muestra la barra proporcional al avance', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1000.00',
+    ]);
+    $recibo->pagos()->create(['monto' => 400, 'fecha_pago' => now()->format('Y-m-d')]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.show', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('aria-valuenow="40"', false);
+    $respuesta->assertSee('progress-bar bg-warning', false);
+});
+
+test('specs/034: el detalle de un recibo completamente pagado muestra la barra completa', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1000.00',
+    ]);
+    $recibo->pagos()->create(['monto' => 1000, 'fecha_pago' => now()->format('Y-m-d')]);
+    $recibo->update(['estado' => 'pagado']);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.show', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('aria-valuenow="100"', false);
+    $respuesta->assertSee('progress-bar bg-success', false);
+});
+
+test('specs/038: el detalle de recibo distribuye el resumen y los pagos en dos columnas', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1000.00',
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.show', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSeeInOrder(['col-lg-7', 'Estado', 'Total', 'col-lg-5', 'Pagos', 'Estado del Recibo'], false);
+});
+
+test('specs/038: un recibo anulado no muestra la tarjeta de Pagos en la columna derecha', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'estado' => 'anulado',
+        'fecha_anulacion' => now(),
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.show', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('Estado del Recibo');
+    $respuesta->assertDontSee('Todavía no se registró ningún pago');
+    $respuesta->assertDontSee('Registrar Pago');
+});
+
 test('anular un recibo sin confirmar es rechazado', function () {
     $recibo = Recibo::factory()->create(['contrato_id' => $this->contrato->id, 'locacion_id' => $this->locacion->id]);
 

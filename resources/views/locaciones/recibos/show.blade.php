@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="col-12 col-lg-8" style="max-width: 42rem;">
+    <div class="col-12">
         <div class="d-flex flex-column gap-3">
             @if (session('mensaje'))
                 <x-mensaje-alerta tipo="exito">{{ session('mensaje') }}</x-mensaje-alerta>
@@ -21,6 +21,13 @@
                 </x-mensaje-alerta>
             @endif
 
+            {{--
+                specs/038: dos columnas — resumen del recibo a la izquierda, gestión de pagos y
+                estado del recibo a la derecha (research.md Decisión 1). Se apila por debajo de
+                `lg` (992px) sin CSS a medida, considerando el sidebar fijo del layout.
+            --}}
+            <div class="row g-4">
+            <div class="col-lg-7">
             <div class="card">
                 <div class="card-body d-flex flex-column gap-3">
                     <dl class="row mb-0">
@@ -70,7 +77,9 @@
                     </div>
                 </div>
             </div>
+            </div>
 
+            <div class="col-lg-5 d-flex flex-column gap-3">
             @if ($recibo->estado !== 'anulado')
                 <div class="card">
                     <div class="card-body d-flex flex-column gap-3">
@@ -85,6 +94,8 @@
                             @endif
                         </div>
 
+                        <x-barra-progreso-pago :monto-pagado="$recibo->montoPagado()" :monto-total="$recibo->total()" />
+
                         {{--
                             specs/032 (FR-006): el estado Pendiente/Pagado ya no se elige a mano —
                             se recalcula automáticamente a partir de la suma de estos pagos
@@ -96,25 +107,73 @@
                         @else
                             <ul class="list-group">
                                 @foreach ($recibo->pagos->sortByDesc('fecha_pago') as $pago)
-                                    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
-                                        <div>
-                                            <span class="fw-semibold cifra">S/ {{ number_format((float) $pago->monto, 2) }}</span>
-                                            <span class="text-secondary"> · {{ $pago->fecha_pago->format('d/m/Y') }}</span>
-                                            @if ($pago->registradoPor)
-                                                <span class="text-secondary"> · Registrado por {{ $pago->registradoPor->name }}</span>
-                                            @endif
+                                    <li class="list-group-item d-flex flex-column gap-2">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                            <div>
+                                                <span class="fw-semibold cifra">S/ {{ number_format((float) $pago->monto, 2) }}</span>
+                                                <span class="text-secondary"> · {{ $pago->fecha_pago->format('d/m/Y') }}</span>
+                                                @if ($pago->registradoPor)
+                                                    <span class="text-secondary"> · Registrado por {{ $pago->registradoPor->name }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <a href="{{ route('pagos.comprobante', $pago) }}" class="btn btn-outline-primary btn-sm" hx-boost="false">
+                                                    <i class="bi bi-receipt" aria-hidden="true"></i> Ver Comprobante
+                                                </a>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editar-pago-{{ $pago->id }}">
+                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#eliminar-pago-{{ $pago->id }}">
+                                                    <i class="bi bi-trash" aria-hidden="true"></i> Eliminar
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editar-pago-{{ $pago->id }}">
-                                                <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
-                                            </button>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#eliminar-pago-{{ $pago->id }}">
-                                                <i class="bi bi-trash" aria-hidden="true"></i> Eliminar
-                                            </button>
+
+                                        {{-- specs/035: evidencia (imagen o PDF) del comprobante ya firmado — un único
+                                             archivo por pago, se reemplaza al subir uno nuevo (FR-007). --}}
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            @if ($pago->tieneEvidencia())
+                                                <span class="badge bg-success">Con evidencia</span>
+                                                <a href="{{ route('pagos.evidencia.show', $pago) }}" class="btn btn-outline-secondary btn-sm" hx-boost="false" target="_blank">
+                                                    <i class="bi bi-file-earmark-check" aria-hidden="true"></i> Ver Evidencia
+                                                </a>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#subir-evidencia-pago-{{ $pago->id }}">
+                                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reemplazar Evidencia
+                                                </button>
+                                            @else
+                                                <span class="badge bg-secondary">Sin evidencia</span>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#subir-evidencia-pago-{{ $pago->id }}">
+                                                    <i class="bi bi-upload" aria-hidden="true"></i> Subir Evidencia
+                                                </button>
+                                            @endif
                                         </div>
                                     </li>
                                 @endforeach
                             </ul>
+
+                            @foreach ($recibo->pagos as $pago)
+                                <x-modal-bootstrap name="subir-evidencia-pago-{{ $pago->id }}" focusable>
+                                    <form method="POST" action="{{ route('pagos.evidencia.store', $pago) }}" enctype="multipart/form-data">
+                                        @csrf
+
+                                        <div class="modal-body p-4 d-flex flex-column gap-3">
+                                            <h2 class="fs-4 fw-bold mb-0">{{ $pago->tieneEvidencia() ? 'Reemplazar' : 'Subir' }} Evidencia del Pago</h2>
+                                            <p class="mb-0 text-secondary">
+                                                Foto o escaneo del comprobante de este pago ya firmado por quien lo recibió (JPG, PNG o PDF, hasta 10 MB).
+                                            </p>
+                                            <div>
+                                                <x-input-label for="archivo-{{ $pago->id }}" value="Archivo" />
+                                                <input id="archivo-{{ $pago->id }}" name="archivo" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <x-secondary-button type="button" data-bs-dismiss="modal">No, cancelar</x-secondary-button>
+                                            <x-primary-button>Subir</x-primary-button>
+                                        </div>
+                                    </form>
+                                </x-modal-bootstrap>
+                            @endforeach
 
                             @foreach ($recibo->pagos as $pago)
                                 <x-modal-bootstrap name="editar-pago-{{ $pago->id }}" focusable>
@@ -202,6 +261,8 @@
                         @endif
                     </div>
                 </div>
+            </div>
+            </div>
             </div>
 
             <x-modal-bootstrap name="anular-recibo" focusable>

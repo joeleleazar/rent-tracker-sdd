@@ -4,6 +4,7 @@ use App\Http\Controllers\ConceptoGastoFijoController;
 use App\Http\Controllers\ConfiguracionGeneralController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\DocumentoContratoController;
+use App\Http\Controllers\EvidenciaPagoController;
 use App\Http\Controllers\InquilinoController;
 use App\Http\Controllers\LecturaMedidorController;
 use App\Http\Controllers\LocacionController;
@@ -78,6 +79,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/recibos/{recibo}/pagos', [PagoReciboController::class, 'store'])->name('pagos.store');
     Route::put('/pagos/{pago}', [PagoReciboController::class, 'update'])->name('pagos.update');
     Route::delete('/pagos/{pago}', [PagoReciboController::class, 'destroy'])->name('pagos.destroy');
+    Route::get('/pagos/{pago}/comprobante', [PagoReciboController::class, 'comprobante'])->name('pagos.comprobante');
+    Route::post('/pagos/{pago}/evidencia', [EvidenciaPagoController::class, 'store'])->name('pagos.evidencia.store');
+    Route::get('/pagos/{pago}/evidencia', [EvidenciaPagoController::class, 'show'])->name('pagos.evidencia.show');
 
     // specs/032: pantalla de seguimiento de pagos — misma jerarquía de locales que
     // recibos.registroMasivo.index (research.md Decisión 6). Registrada antes de

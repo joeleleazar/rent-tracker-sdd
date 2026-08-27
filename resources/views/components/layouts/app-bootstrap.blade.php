@@ -80,6 +80,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a href="{{ route('pagos.seguimiento.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('pagos.seguimiento.*') ? 'active' : '' }}">
+                                    <i class="bi bi-cash-coin" aria-hidden="true"></i> Registro de Pagos
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a href="{{ route('conceptosGastoFijo.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('conceptosGastoFijo.*') ? 'active' : '' }}">
                                     <i class="bi bi-tags" aria-hidden="true"></i> Conceptos de Gasto Fijo
                                 </a>
