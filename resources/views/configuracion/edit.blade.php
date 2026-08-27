@@ -27,6 +27,20 @@
                     @method('PUT')
 
                     <div>
+                        <x-input-label for="nombre_propietario" value="Nombre del Propietario/Administrador" />
+                        <x-text-input
+                            id="nombre_propietario"
+                            name="nombre_propietario"
+                            type="text"
+                            :value="old('nombre_propietario', $configuracion->nombre_propietario)"
+                        />
+                        <x-input-error :messages="$errors->get('nombre_propietario')" class="mt-2" />
+                        <p class="mt-2 mb-0">
+                            Aparece en el comprobante de recibo como "Recibido por". Si se deja vacío, esa línea no se muestra.
+                        </p>
+                    </div>
+
+                    <div>
                         <x-input-label for="correo_notificaciones_vencimiento" value="Correo para Notificaciones de Vencimiento" />
                         <x-text-input
                             id="correo_notificaciones_vencimiento"

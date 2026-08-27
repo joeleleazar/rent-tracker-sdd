@@ -79,52 +79,103 @@
             border-radius: 0.375rem;
             padding: 2rem;
         }
-        #comprobante-recibo h1 {
+
+        {{--
+            specs/031: reformato en 6 bloques verticales separados (encabezado, metadatos, partes,
+            conceptos, total, cierre — research.md Decisión 1), cada uno seguido de un
+            `.separador-bloque` en vez del `<dl>` plano anterior. Jerarquía tipográfica de 3
+            niveles (research.md Decisión 4): título (1.5rem), texto base (0.95rem, con variación
+            de peso/mayúsculas para etiquetas), total (1.75rem) — ningún tamaño adicional.
+        --}}
+        #comprobante-recibo .separador-bloque {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 1.25rem 0;
+        }
+
+        #comprobante-recibo .bloque-encabezado {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        #comprobante-recibo .logo-comprobante {
+            height: 2.5rem;
+            width: auto;
+            flex-shrink: 0;
+        }
+        #comprobante-recibo .bloque-encabezado h1 {
             font-size: 1.5rem;
             font-weight: 700;
             color: #111827;
-            margin: 0 0 1.5rem 0;
-        }
-        #comprobante-recibo dl {
             margin: 0;
         }
-        #comprobante-recibo .fila {
-            margin-bottom: 1rem;
+
+        #comprobante-recibo .fila-dato {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.35rem 0;
         }
-        #comprobante-recibo dt {
-            font-size: 1rem;
+        #comprobante-recibo .fila-dato .etiqueta {
+            font-size: 0.95rem;
             font-weight: 600;
             color: #374151;
         }
-        #comprobante-recibo dd {
-            font-size: 1rem;
+        #comprobante-recibo .fila-dato .valor {
+            font-size: 0.95rem;
+            font-weight: 400;
             color: #111827;
-            margin: 0;
+            text-align: right;
             font-variant-numeric: tabular-nums;
         }
-        #comprobante-recibo .fila-total {
-            border-top: 1px solid #d1d5db;
-            padding-top: 1rem;
-            margin-top: 1rem;
+
+        #comprobante-recibo .fila-concepto {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.35rem 0;
         }
-        #comprobante-recibo .fila-total dt,
-        #comprobante-recibo .fila-total dd {
-            font-size: 1.25rem;
-            font-weight: 700;
+        #comprobante-recibo .fila-concepto .nombre-concepto {
+            font-size: 0.95rem;
+            font-weight: 600;
             color: #111827;
         }
-        {{--
-            specs/030: esquina superior derecha, no el centro — la marca de "Anulado" de abajo es
-            una franja diagonal centrada sobre todo el documento (position: absolute; inset: 0);
-            el logo en una esquina evita superponerse con ella (FR-005).
-        --}}
-        #comprobante-recibo .logo-comprobante {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            height: 2.5rem;
-            width: auto;
+        #comprobante-recibo .fila-concepto .monto-concepto {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: #111827;
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
+
+        #comprobante-recibo .bloque-total {
+            background: #1e40af;
+            color: #ffffff;
+            border-radius: 0.375rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+        }
+        #comprobante-recibo .bloque-total .etiqueta-total {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        #comprobante-recibo .bloque-total .monto-total {
+            font-size: 1.75rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #comprobante-recibo .bloque-cierre {
+            text-align: center;
+            font-size: 0.95rem;
+            font-style: italic;
+            color: #374151;
+        }
+
         #comprobante-recibo .marca-anulado {
             position: absolute;
             inset: 0;
@@ -178,56 +229,90 @@
     <p id="estado-envio-whatsapp" class="estado-envio no-imprimir oculto" role="status"></p>
 
     <div id="comprobante-recibo" data-recibo-id="{{ $recibo->id }}">
-        <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" class="logo-comprobante">
-
         @if ($recibo->estado === 'anulado')
             <div class="marca-anulado">
                 <span>Anulado</span>
             </div>
         @endif
 
-        <h1>Recibo #{{ $recibo->id }}</h1>
+        {{-- Bloque 1: encabezado — logo + nombre del documento (research.md Decisión 5) --}}
+        <div class="bloque-encabezado">
+            <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" class="logo-comprobante">
+            <h1>Recibo de Pago</h1>
+        </div>
 
-        <dl>
-            <div class="fila">
-                <dt>Locación</dt>
-                <dd>{{ $recibo->locacion->nombre }}</dd>
-            </div>
-            <div class="fila">
-                <dt>Inquilino</dt>
-                <dd>{{ $recibo->contrato->inquilinoPrincipal()?->nombreCompleto() ?? '—' }}</dd>
-            </div>
-            <div class="fila">
-                <dt>Periodo</dt>
-                <dd>{{ $recibo->periodo->translatedFormat('F Y') }}</dd>
-            </div>
-            <div class="fila">
-                <dt>Fecha de emisión</dt>
-                <dd>{{ $recibo->fecha_emision->format('d/m/Y') }}</dd>
-            </div>
-            <div class="fila">
-                <dt>Estado</dt>
-                <dd>{{ ucfirst($recibo->estado) }}</dd>
-            </div>
+        <hr class="separador-bloque">
 
+        {{-- Bloque 2: metadatos del recibo (research.md Decisión 5) --}}
+        <div class="bloque-metadatos">
+            <div class="fila-dato">
+                <span class="etiqueta">N.° de recibo</span>
+                <span class="valor">{{ $recibo->id }}</span>
+            </div>
+            <div class="fila-dato">
+                <span class="etiqueta">Fecha de emisión</span>
+                <span class="valor">{{ $recibo->fecha_emision->format('d/m/Y') }}</span>
+            </div>
+            <div class="fila-dato">
+                <span class="etiqueta">Período</span>
+                <span class="valor">{{ $recibo->periodo->translatedFormat('F Y') }}</span>
+            </div>
+            <div class="fila-dato">
+                <span class="etiqueta">Estado</span>
+                <span class="valor">{{ ucfirst($recibo->estado) }}</span>
+            </div>
+        </div>
+
+        <hr class="separador-bloque">
+
+        {{-- Bloque 3: datos de las partes --}}
+        <div class="bloque-partes">
+            <div class="fila-dato">
+                <span class="etiqueta">Recibí de</span>
+                <span class="valor">{{ $recibo->contrato->inquilinoPrincipal()?->nombreCompleto() ?? '—' }}</span>
+            </div>
+            <div class="fila-dato">
+                <span class="etiqueta">Locación</span>
+                <span class="valor">{{ $recibo->locacion->nombre }}</span>
+            </div>
+            @if (filled($nombrePropietario))
+                <div class="fila-dato">
+                    <span class="etiqueta">Recibido por</span>
+                    <span class="valor">{{ $nombrePropietario }}</span>
+                </div>
+            @endif
+        </div>
+
+        <hr class="separador-bloque">
+
+        {{-- Bloque 4: detalle de conceptos — cada ítem en su propia línea (spec.md FR-006) --}}
+        <div class="bloque-conceptos">
             @if ($recibo->monto_renta !== null)
-                <div class="fila">
-                    <dt>Alquiler</dt>
-                    <dd>S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
+                <div class="fila-concepto">
+                    <span class="nombre-concepto">Alquiler</span>
+                    <span class="monto-concepto">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</span>
                 </div>
             @endif
             @foreach ($recibo->conceptos->sortBy('conceptoGastoFijo.orden') as $reciboConcepto)
-                <div class="fila">
-                    <dt>{{ $reciboConcepto->conceptoGastoFijo?->nombre ?? 'Concepto eliminado' }}</dt>
-                    <dd>S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</dd>
+                <div class="fila-concepto">
+                    <span class="nombre-concepto">{{ $reciboConcepto->conceptoGastoFijo?->nombre ?? 'Concepto eliminado' }}</span>
+                    <span class="monto-concepto">S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</span>
                 </div>
             @endforeach
+        </div>
 
-            <div class="fila fila-total">
-                <dt>Total</dt>
-                <dd>S/ {{ number_format($recibo->total(), 2) }}</dd>
-            </div>
-        </dl>
+        <hr class="separador-bloque">
+
+        {{-- Bloque 5: total — el único elemento que debe saltar a la vista de inmediato (research.md Decisión 3) --}}
+        <div class="bloque-total">
+            <span class="etiqueta-total">Total pagado</span>
+            <span class="monto-total">S/ {{ number_format($recibo->total(), 2) }}</span>
+        </div>
+
+        <hr class="separador-bloque">
+
+        {{-- Bloque 6: cierre (research.md Decisión 7) --}}
+        <p class="bloque-cierre">Gracias por su pago puntual.</p>
     </div>
 </body>
 </html>

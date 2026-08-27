@@ -21,6 +21,7 @@ class SolicitudActualizarConfiguracionGeneral extends FormRequest
             'correo_notificaciones_vencimiento' => ['required', 'email'],
             'tarifa_luz_por_unidad' => ['required', 'numeric', 'min:0'],
             'dias_anticipacion_alerta_pago' => ['required', 'integer', 'min:1'],
+            'nombre_propietario' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -35,6 +36,8 @@ class SolicitudActualizarConfiguracionGeneral extends FormRequest
             'dias_anticipacion_alerta_pago.required' => 'Los días de anticipación para la alerta de pago son obligatorios.',
             'dias_anticipacion_alerta_pago.integer' => 'Los días de anticipación deben ser un número entero.',
             'dias_anticipacion_alerta_pago.min' => 'Los días de anticipación deben ser al menos 1.',
+            'nombre_propietario.string' => 'El nombre del propietario debe ser un texto.',
+            'nombre_propietario.max' => 'El nombre del propietario no puede superar los 255 caracteres.',
         ];
     }
 }

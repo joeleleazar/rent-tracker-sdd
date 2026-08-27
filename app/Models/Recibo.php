@@ -63,6 +63,11 @@ class Recibo extends Model
         return $this->hasMany(ReciboConcepto::class);
     }
 
+    public function pagos(): HasMany
+    {
+        return $this->hasMany(Pago::class);
+    }
+
     /**
      * specs/024: "Renta" ya no es un concepto más de `conceptos()` — sigue
      * siendo `monto_renta`, con su prorrateo ya calculado (specs/008/019).
@@ -74,6 +79,30 @@ class Recibo extends Model
     public function total(): float
     {
         return (float) ($this->monto_renta ?? 0) + (float) $this->conceptos->sum('monto');
+    }
+
+    /**
+     * specs/032: suma de los pagos registrados contra este recibo — la fuente
+     * de verdad del avance de pago, en vez de un campo agregado aparte.
+     */
+    public function montoPagado(): float
+    {
+        return (float) $this->pagos->sum('monto');
+    }
+
+    /**
+     * Nunca negativo: si por algún motivo la suma de pagos superara el total
+     * (no debería ocurrir, ver ServicioGestionPagosRecibo), no se expone un
+     * saldo pendiente negativo.
+     */
+    public function saldoPendiente(): float
+    {
+        return max(0.0, $this->total() - $this->montoPagado());
+    }
+
+    public function estaPagadoPorCompleto(): bool
+    {
+        return $this->saldoPendiente() <= 0.0;
     }
 
     /**

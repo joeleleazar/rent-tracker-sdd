@@ -7,9 +7,11 @@ use App\Http\Controllers\DocumentoContratoController;
 use App\Http\Controllers\InquilinoController;
 use App\Http\Controllers\LecturaMedidorController;
 use App\Http\Controllers\LocacionController;
+use App\Http\Controllers\PagoReciboController;
 use App\Http\Controllers\ReciboController;
 use App\Http\Controllers\RegistroMasivoLecturasController;
 use App\Http\Controllers\RegistroMasivoRecibosController;
+use App\Http\Controllers\SeguimientoPagosController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -70,6 +72,18 @@ Route::middleware('auth')->group(function () {
     Route::put('/recibos/{recibo}', [ReciboController::class, 'update'])->name('recibos.update');
     Route::patch('/recibos/{recibo}/estado', [ReciboController::class, 'actualizarEstado'])->name('recibos.estado.update');
     Route::get('/recibos/{recibo}/comprobante', [ReciboController::class, 'comprobante'])->name('recibos.comprobante');
+
+    // specs/032: pagos de un recibo — anidada bajo /recibos/{recibo} para registrar,
+    // pero direccionada por su propio id (/pagos/{pago}) para editar/eliminar.
+    Route::post('/recibos/{recibo}/pagos', [PagoReciboController::class, 'store'])->name('pagos.store');
+    Route::put('/pagos/{pago}', [PagoReciboController::class, 'update'])->name('pagos.update');
+    Route::delete('/pagos/{pago}', [PagoReciboController::class, 'destroy'])->name('pagos.destroy');
+
+    // specs/032: pantalla de seguimiento de pagos — misma jerarquía de locales que
+    // recibos.registroMasivo.index (research.md Decisión 6). Registrada antes de
+    // /pagos/{pago} (más abajo, cuando exista) por el mismo motivo ya documentado
+    // para /recibos/registro-masivo.
+    Route::get('/pagos/seguimiento', [SeguimientoPagosController::class, 'index'])->name('pagos.seguimiento.index');
 
     // Lecturas de medidor (specs/005-lecturas-medidor-recibo-periodo, US1/US3)
     Route::get('/locaciones/{locacion}/lecturas', [LecturaMedidorController::class, 'index'])->name('locaciones.lecturas.index');

@@ -366,18 +366,25 @@ test('un recibo recien emitido inicia en estado pendiente', function () {
     expect($recibo->estado)->toBe('pendiente');
 });
 
-test('un administrador puede marcar un recibo como pagado', function () {
-    $recibo = Recibo::factory()->create(['contrato_id' => $this->contrato->id, 'locacion_id' => $this->locacion->id]);
+test('specs/032: reactivar un recibo anulado recalcula su estado a partir de sus pagos, sin elegirlo a mano', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1000.00',
+        'estado' => 'anulado',
+        'fecha_anulacion' => now(),
+    ]);
+    $recibo->pagos()->create(['monto' => 1000, 'fecha_pago' => now()->format('Y-m-d')]);
 
     $respuesta = $this->actingAs($this->admin)->patch(route('recibos.estado.update', $recibo), [
-        'nuevo_estado' => 'pagado',
+        'nuevo_estado' => 'activo',
         'confirmado' => '1',
     ]);
 
     $respuesta->assertRedirect(route('recibos.show', $recibo));
     $recibo->refresh();
     expect($recibo->estado)->toBe('pagado');
-    expect($recibo->fecha_pago)->not->toBeNull();
+    expect($recibo->fecha_anulacion)->toBeNull();
 });
 
 test('anular un recibo sin confirmar es rechazado', function () {
@@ -444,6 +451,80 @@ test('el comprobante incluye la hoja de estilos de impresion', function () {
     $respuesta->assertOk();
     $respuesta->assertSee('@media print');
     $respuesta->assertSee('no-imprimir', false);
+});
+
+test('specs/031: el comprobante muestra sus bloques en orden — encabezado, metadatos, partes, conceptos, total, cierre', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1500.00',
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.comprobante', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSeeInOrder([
+        'Recibo de Pago',
+        'N.° de recibo',
+        'Recibí de',
+        'Alquiler',
+        'Total',
+        'Gracias',
+    ]);
+});
+
+test('specs/031: el bloque de total del comprobante muestra el monto total correcto', function () {
+    $recibo = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1500.00',
+    ]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.comprobante', $recibo));
+
+    $respuesta->assertOk();
+    $respuesta->assertSee('bloque-total', false);
+    $respuesta->assertSee('1,500.00');
+});
+
+test('specs/031: cada concepto del comprobante aparece en su propia linea, y no hay linea de alquiler cuando no aplica', function () {
+    $reciboConAlquiler = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => '1500.00',
+    ]);
+    $reciboConAlquiler->conceptos()->create(['concepto_gasto_fijo_id' => $this->agua->id, 'monto' => 50]);
+    $reciboConAlquiler->conceptos()->create(['concepto_gasto_fijo_id' => $this->pasadizo->id, 'monto' => 30]);
+
+    $respuesta = $this->actingAs($this->admin)->get(route('recibos.comprobante', $reciboConAlquiler));
+    $respuesta->assertOk();
+    expect(substr_count($respuesta->getContent(), 'class="fila-concepto"'))->toBe(3);
+
+    $reciboSinAlquiler = Recibo::factory()->create([
+        'contrato_id' => $this->contrato->id,
+        'locacion_id' => $this->locacion->id,
+        'monto_renta' => null,
+    ]);
+    $reciboSinAlquiler->conceptos()->create(['concepto_gasto_fijo_id' => $this->agua->id, 'monto' => 50]);
+
+    $respuestaSinAlquiler = $this->actingAs($this->admin)->get(route('recibos.comprobante', $reciboSinAlquiler));
+    $respuestaSinAlquiler->assertOk();
+    $respuestaSinAlquiler->assertDontSee('Alquiler');
+});
+
+test('specs/031: el comprobante muestra a quien recibe el pago solo si esta configurado', function () {
+    $recibo = Recibo::factory()->create(['contrato_id' => $this->contrato->id, 'locacion_id' => $this->locacion->id]);
+
+    ConfiguracionGeneral::actual()->update(['nombre_propietario' => 'Carlos Alberto Mendoza Ibáñez']);
+    $conPropietario = $this->actingAs($this->admin)->get(route('recibos.comprobante', $recibo));
+    $conPropietario->assertOk();
+    $conPropietario->assertSee('Recibido por');
+    $conPropietario->assertSee('Carlos Alberto Mendoza Ibáñez');
+
+    ConfiguracionGeneral::actual()->update(['nombre_propietario' => null]);
+    $sinPropietario = $this->actingAs($this->admin)->get(route('recibos.comprobante', $recibo));
+    $sinPropietario->assertOk();
+    $sinPropietario->assertDontSee('Recibido por');
 });
 
 test('el formulario de creacion sugiere dias activos y monto prorrateado si el contrato inicia a mitad de mes', function () {

@@ -9,6 +9,7 @@ use App\Http\Requests\SolicitudActualizarEstadoRecibo;
 use App\Http\Requests\SolicitudGuardarRecibo;
 use App\Models\BorradorRecibo;
 use App\Models\ConceptoGastoFijo;
+use App\Models\ConfiguracionGeneral;
 use App\Models\Locacion;
 use App\Models\Recibo;
 use App\Services\ServicioCalculoProrrateoContrato;
@@ -125,7 +126,7 @@ class ReciboController extends Controller
 
     public function show(Recibo $recibo): View
     {
-        $recibo->load(['locacion', 'contrato', 'conceptos.conceptoGastoFijo']);
+        $recibo->load(['locacion', 'contrato', 'conceptos.conceptoGastoFijo', 'pagos.registradoPor']);
 
         return view('locaciones.recibos.show', [
             'recibo' => $recibo,
@@ -177,14 +178,20 @@ class ReciboController extends Controller
      * Cambia el estado de pago del recibo (pendiente/pagado/anulado, US1 de
      * specs/007). Transiciones hacia/desde "anulado" exigen `confirmado=true`.
      */
+    /**
+     * specs/032: tras retirar el toggle manual Pendiente/Pagado (FR-006), esta
+     * acción solo administra las 2 transiciones que siguen siendo manuales —
+     * anular y reactivar (salir de "anulado") — despachando al método
+     * correspondiente de ServicioCambioEstadoRecibo.
+     */
     public function actualizarEstado(SolicitudActualizarEstadoRecibo $solicitud, Recibo $recibo): RedirectResponse
     {
         try {
-            $this->servicioCambioEstado->cambiar(
-                $recibo,
-                $solicitud->validated('nuevo_estado'),
-                $solicitud->boolean('confirmado'),
-            );
+            if ($solicitud->validated('nuevo_estado') === 'anulado') {
+                $this->servicioCambioEstado->anular($recibo, $solicitud->boolean('confirmado'));
+            } else {
+                $this->servicioCambioEstado->reactivar($recibo, $solicitud->boolean('confirmado'));
+            }
         } catch (CambioEstadoReciboRequiereConfirmacionException $excepcion) {
             return back()->withErrors(['estado' => $excepcion->getMessage()]);
         }
@@ -204,6 +211,7 @@ class ReciboController extends Controller
 
         return view('locaciones.recibos.comprobante', [
             'recibo' => $recibo,
+            'nombrePropietario' => ConfiguracionGeneral::actual()->nombre_propietario,
         ]);
     }
 

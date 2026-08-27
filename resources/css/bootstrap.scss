@@ -365,3 +365,49 @@ $registro-masivo-recibos-columnas: minmax(16rem, 1fr) 10rem minmax(20rem, 2fr) 1
     flex-wrap: wrap;
     gap: map-get($spacers, 1);
 }
+
+// -----------------------------------------------------------------------
+// 12. Tabla de seguimiento de pagos (specs/032): mismo espíritu que las
+//     secciones 10-11, con 4 columnas propias (Nombre/Locación, Estado de
+//     Pago, Avance, Acción) — reutiliza .fila-arbol__nombre/__toggle/
+//     __espaciador-toggle/__hijos de la sección 5.
+// -----------------------------------------------------------------------
+$seguimiento-pagos-columnas: minmax(16rem, 1fr) 12rem minmax(12rem, 1fr) 10rem;
+
+.tabla-seguimiento-pagos {
+    overflow-x: auto;
+    padding-bottom: map-get($spacers, 2);
+}
+
+.tabla-seguimiento-pagos__encabezado,
+.fila-seguimiento-pagos {
+    display: grid;
+    grid-template-columns: $seguimiento-pagos-columnas;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    min-width: 46rem;
+}
+
+.tabla-seguimiento-pagos__encabezado {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    font-weight: 600;
+    color: $secondary;
+    border-bottom: 2px solid $border-color;
+    margin-bottom: map-get($spacers, 2);
+}
+
+.fila-seguimiento-pagos {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    border: 1px solid $border-color;
+    border-radius: var(--bs-border-radius);
+    background-color: $white;
+    margin-bottom: map-get($spacers, 2);
+}
+
+.fila-seguimiento-pagos:hover {
+    background-color: $light;
+}
+
+.fila-seguimiento-pagos__avance {
+    text-align: end;
+}

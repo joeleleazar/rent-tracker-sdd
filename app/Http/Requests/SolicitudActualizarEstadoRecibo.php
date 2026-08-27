@@ -15,10 +15,15 @@ class SolicitudActualizarEstadoRecibo extends FormRequest
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
+    /**
+     * specs/032: "activo" es el sentinel para reactivar (salir de "anulado")
+     * — ya no se elige a mano entre pendiente/pagado, se recalcula solo a
+     * partir de los pagos registrados (FR-006).
+     */
     public function rules(): array
     {
         return [
-            'nuevo_estado' => ['required', 'in:pendiente,pagado,anulado'],
+            'nuevo_estado' => ['required', 'in:anulado,activo'],
             'confirmado' => ['sometimes', 'boolean'],
         ];
     }

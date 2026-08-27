@@ -60,3 +60,27 @@ test('un usuario no autenticado no puede acceder a la configuracion', function (
 
     $respuesta->assertRedirect(route('login'));
 });
+
+test('specs/031: un administrador puede configurar el nombre del propietario', function () {
+    $respuesta = $this->actingAs($this->admin)->put(route('configuracion.update'), ($this->datosValidos)([
+        'nombre_propietario' => 'Carlos Alberto Mendoza Ibáñez',
+    ]));
+
+    $respuesta->assertRedirect(route('configuracion.edit'));
+    expect(ConfiguracionGeneral::actual()->nombre_propietario)->toBe('Carlos Alberto Mendoza Ibáñez');
+});
+
+test('specs/031: el nombre del propietario puede dejarse vacio', function () {
+    $respuesta = $this->actingAs($this->admin)->put(route('configuracion.update'), ($this->datosValidos)());
+
+    $respuesta->assertRedirect(route('configuracion.edit'));
+    expect(ConfiguracionGeneral::actual()->nombre_propietario)->toBeNull();
+});
+
+test('specs/031: rechaza un nombre de propietario demasiado largo', function () {
+    $respuesta = $this->actingAs($this->admin)->put(route('configuracion.update'), ($this->datosValidos)([
+        'nombre_propietario' => str_repeat('a', 256),
+    ]));
+
+    $respuesta->assertSessionHasErrors('nombre_propietario');
+});

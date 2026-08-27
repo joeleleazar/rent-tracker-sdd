@@ -26,6 +26,7 @@ class ConfiguracionGeneral extends Model
         'tarifa_luz_por_unidad',
         'dias_anticipacion_alerta_pago',
         'alerta_pago_mes_enviada_en',
+        'nombre_propietario',
     ];
 
     protected function casts(): array
@@ -110,6 +111,7 @@ class ConfiguracionGeneral extends Model
             'tarifa_luz_por_unidad' => 0,
             'dias_anticipacion_alerta_pago' => 5,
             'alerta_pago_mes_enviada_en' => null,
+            'nombre_propietario' => null,
         ];
     }
 }

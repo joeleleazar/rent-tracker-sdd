@@ -7,28 +7,45 @@ use App\Models\Recibo;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Cambia el estado de pago de un recibo (pendiente/pagado/anulado), exigiendo
- * confirmación explícita para cualquier transición hacia o desde "anulado"
- * (FR-004), y manteniendo fecha_pago/fecha_anulacion consistentes con el estado
- * resultante (FR-003). Las transiciones son libres (FR-005).
+ * specs/032: tras retirar el toggle manual Pendiente/Pagado (FR-006), las
+ * únicas transiciones de estado que un administrador sigue eligiendo a mano
+ * son anular un recibo y reactivarlo (salir de "anulado"). Ambas exigen
+ * confirmación explícita, igual que ya exigía el `cambiar()` genérico
+ * anterior para cualquier transición que involucrara "anulado" — la única
+ * diferencia es que ahora TODA transición de este servicio involucra
+ * "anulado" por definición, así que la confirmación ya no es condicional.
  */
 class ServicioCambioEstadoRecibo
 {
-    public function cambiar(Recibo $recibo, string $nuevoEstado, bool $confirmado): void
+    public function __construct(private readonly ServicioGestionPagosRecibo $servicioPagos)
     {
-        DB::transaction(function () use ($recibo, $nuevoEstado, $confirmado) {
-            $involucraAnulado = $nuevoEstado === 'anulado' || $recibo->estado === 'anulado';
+    }
 
-            if ($involucraAnulado && ! $confirmado) {
-                throw new CambioEstadoReciboRequiereConfirmacionException();
-            }
+    public function anular(Recibo $recibo, bool $confirmado): void
+    {
+        if (! $confirmado) {
+            throw new CambioEstadoReciboRequiereConfirmacionException();
+        }
 
-            $datos = ['estado' => $nuevoEstado];
+        DB::transaction(function () use ($recibo) {
+            $recibo->update(['estado' => 'anulado', 'fecha_anulacion' => now(), 'fecha_pago' => null]);
+        });
+    }
 
-            $datos['fecha_pago'] = $nuevoEstado === 'pagado' ? now() : null;
-            $datos['fecha_anulacion'] = $nuevoEstado === 'anulado' ? now() : null;
+    /**
+     * research.md Decisión 4/5: no recibe a qué estado volver — los pagos que
+     * el recibo ya tenía nunca se tocaron mientras estuvo anulado, así que
+     * Pendiente/Pagado se recalcula solo a partir de ellos.
+     */
+    public function reactivar(Recibo $recibo, bool $confirmado): void
+    {
+        if (! $confirmado) {
+            throw new CambioEstadoReciboRequiereConfirmacionException();
+        }
 
-            $recibo->update($datos);
+        DB::transaction(function () use ($recibo) {
+            $recibo->update(['estado' => 'pendiente', 'fecha_anulacion' => null]);
+            $this->servicioPagos->recalcularEstado($recibo->load('pagos'));
         });
     }
 }

@@ -20,6 +20,15 @@ test('actual devuelve los valores por defecto cuando no existe ninguna configura
     expect($configuracion->dias_anticipacion_alerta_pago)->toBe(5);
     expect($configuracion->alerta_pago_mes_enviada_en)->toBeNull();
     expect($configuracion->correo_notificaciones_vencimiento)->toBe(config('mail.from.address', 'hello@example.com'));
+    expect($configuracion->nombre_propietario)->toBeNull();
+});
+
+test('specs/031: actualizar el nombre del propietario lo persiste sin afectar a los demas', function () {
+    ConfiguracionGeneral::actual()->update(['nombre_propietario' => 'Carlos Alberto Mendoza Ibáñez']);
+
+    $configuracion = ConfiguracionGeneral::actual();
+    expect($configuracion->nombre_propietario)->toBe('Carlos Alberto Mendoza Ibáñez');
+    expect($configuracion->tarifa_luz_por_unidad)->toBe('0.0000');
 });
 
 test('actualizar un atributo lo persiste sin afectar a los demas', function () {
