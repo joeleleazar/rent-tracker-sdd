@@ -411,3 +411,187 @@ $seguimiento-pagos-columnas: minmax(16rem, 1fr) 12rem minmax(12rem, 1fr) 10rem;
 .fila-seguimiento-pagos__avance {
     text-align: end;
 }
+
+// -----------------------------------------------------------------------
+// 13. Rótulo de sección reutilizable (mayúsculas, tracking, tono secundario):
+//     encabezado propio de una tarjeta ("Resumen del Recibo", "Pagos",
+//     "Estado del Recibo"), no un kicker sobre otro título — sustituye al
+//     `<h3 class="fs-4 fw-bold">` genérico donde la tarjeta necesita un
+//     rótulo más discreto que compita menos con las cifras que contiene.
+// -----------------------------------------------------------------------
+.titulo-seccion {
+    // Token typography.seccion en DESIGN.md.
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: $secondary;
+}
+
+// -----------------------------------------------------------------------
+// 14. Detalle de recibo (vista recibos/show): fichas de contexto (locación,
+//     periodo, emisión), líneas de concepto con línea divisoria y una fila
+//     de total destacada — lista vertical simple, sin la grilla de columnas
+//     de las secciones 10-12 porque aquí no hay filas que alinear entre sí.
+// -----------------------------------------------------------------------
+.detalle-recibo__fichas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: map-get($spacers, 2);
+}
+
+.detalle-recibo__ficha {
+    display: flex;
+    align-items: center;
+    gap: map-get($spacers, 2);
+    flex: 1 1 10rem;
+    padding: map-get($spacers, 2);
+    border: 1px solid $border-color;
+    border-radius: var(--bs-border-radius);
+}
+
+.detalle-recibo__ficha-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--bs-border-radius);
+    background-color: $light;
+    color: $secondary;
+    font-size: 1.1rem;
+}
+
+.detalle-recibo__ficha-etiqueta {
+    // Mismo token "label" que .titulo-seccion (DESIGN.md, typography.label).
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: $secondary;
+}
+
+.detalle-recibo__linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    padding: map-get($spacers, 2) 0;
+    border-bottom: 1px solid $border-color;
+}
+
+.detalle-recibo__linea:last-of-type {
+    border-bottom: none;
+}
+
+.detalle-recibo__linea-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: map-get($spacers, 3);
+    padding: map-get($spacers, 3);
+    margin-top: map-get($spacers, 1);
+    border-radius: var(--bs-border-radius);
+    background-color: rgba($primary, .08);
+}
+
+// -----------------------------------------------------------------------
+// 15. Lista de pagos (vista recibos/show, specs/032-035): cada pago es una
+//     fila con ícono de estado de evidencia, monto, metadatos y un menú
+//     `dropdown` nativo de Bootstrap con las acciones — reemplaza la fila de
+//     botones inline que antes competía visualmente con el monto cuando
+//     había varios pagos en la lista.
+// -----------------------------------------------------------------------
+.pago-item {
+    padding: map-get($spacers, 2);
+    border: 1px solid $border-color;
+    border-radius: var(--bs-border-radius);
+}
+
+.pago-item__icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--bs-border-radius);
+    background-color: $light;
+    color: $secondary;
+}
+
+.pago-item__icono--con-evidencia {
+    background-color: rgba($success, .12);
+    color: $success;
+}
+
+// -----------------------------------------------------------------------
+// 16. Migas de pan discretas (vista recibos/show): separador "·" en vez del
+//     "/" por defecto de Bootstrap, tono secundario en vez de negro pleno —
+//     para una miga de navegación de bajo énfasis por encima del título de
+//     la página, distinta de x-ruta-jerarquia-locacion (que sí representa
+//     una jerarquía real de locaciones y usa sus propios separadores).
+// -----------------------------------------------------------------------
+.breadcrumb-discreta {
+    // Tamaño: se aplica la clase `small` de Bootstrap en el marcado (mismo
+    // token .875em ya usado en el resto del proyecto), no un valor propio.
+    --bs-breadcrumb-divider: '·';
+}
+
+.breadcrumb-discreta .breadcrumb-item,
+.breadcrumb-discreta .breadcrumb-item a {
+    color: $secondary;
+}
+
+.breadcrumb-discreta .breadcrumb-item a:hover {
+    color: $primary;
+}
+
+// -----------------------------------------------------------------------
+// 17. Notificaciones de respuesta efímeras (specs/042, x-mensaje-alerta):
+//     el cierre del alert usa la transición `.fade` de Bootstrap. Con
+//     movimiento reducido activado, el cierre es instantáneo — la lógica de
+//     autocierre y la pausa por hover no cambian (viven en resources/js/
+//     bootstrap.js).
+// -----------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+    .alert.fade {
+        transition: none;
+    }
+}
+
+// -----------------------------------------------------------------------
+// 18. Barra de carga de navegación (specs/042, US2): barra fina fija en el
+//     borde superior de la ventana. Construida sobre `progress` /
+//     `progress-bar` de Bootstrap; lo único a medida es la posición fija y
+//     el alto reducido (precedente: "Estado Vacío" en DESIGN.md). Se
+//     muestra/oculta desde resources/js/htmx.js alternando `d-none`.
+// -----------------------------------------------------------------------
+.barra-carga-navegacion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 2000; // por encima del sidebar y del contenido durante la navegación
+    padding: 0;
+    background-color: transparent; // sin línea de fondo cuando la barra está al 0 %
+    border-radius: 0;
+}
+
+.barra-carga-navegacion .progress-bar {
+    // El avance se anima con `transform: scaleX()` (compositado por GPU), no con
+    // `width`, para no provocar reflow en cada frame.
+    width: 100%;
+    background-color: $primary;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .barra-carga-navegacion .progress-bar {
+        transition: none;
+    }
+}

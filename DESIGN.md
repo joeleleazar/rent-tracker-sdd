@@ -29,6 +29,12 @@ typography:
     fontSize: "1.5rem"
     fontWeight: 700
     lineHeight: 1.3
+  seccion:
+    fontFamily: "'Instrument Sans', ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "0.06em"
 rounded:
   default: "0.375rem"
   pill: "50rem"
@@ -105,11 +111,14 @@ High-contrast, WCAG AA-minimum palette — every value was deliberately chosen d
 - **Title** (700, `fs-3`–`fs-4` / 1.5–1.75rem): card and modal section headings ("Costos Fijos de Referencia," "¿Está seguro de eliminar…?").
 - **Body** (400–600, 1rem): form labels (`fw-semibold`), dl/dt-dd detail pairs, table cells, button labels.
 - **Label** (600, `small`, `text-secondary`): helper text under a field ("Suma de los 4 costos de arriba"), timestamps, secondary metadata.
+- **Título de Sección** (700, 0.75rem, uppercase, 0.06em tracking, `text-secondary` — `.titulo-seccion`): a card's own discreet heading ("Resumen del Recibo," "Pagos"), used instead of the louder `fs-4 fw-bold` heading where the card's content (figures, a status pill) should carry more visual weight than its title. It is the heading itself, never a redundant label sitting above a separate, larger heading.
 
 Body copy is short-form (labels, single sentences, table cells) throughout — there is no long-form reading surface in this system, so no 65–75ch measure constraint applies; forms instead cap their column at `max-width: 42rem` so a label and its input never stretch wider than a single glance.
 
 ### Named Rules
 **The No-Decoration Rule.** Hierarchy comes from Bootstrap's stock weight/size steps (`fs-2` → `fs-5`, `fw-semibold` → `fw-bold`) alone — never from letter-spacing tricks, all-caps labels, or a second display face. One family, one job each for weight and size.
+
+*Confirmed exception (specs/041, 2026-08-27):* the `.titulo-seccion` token (uppercase, tracked, `typography.seccion` in the frontmatter) is the one deliberate, user-confirmed departure — a card's own discreet heading where the card's content should outweigh its title. It replaces `fs-4 fw-bold` for that one role only; it is never layered as a second label above another heading.
 
 ## Layout
 
@@ -164,7 +173,10 @@ Bootstrap's stock corner radius throughout (`--bs-border-radius`, 0.375rem) — 
 The system's one recurring custom pattern: a centered, dashed-border block (`1px dashed #d1d5db`, 0.375rem radius) with a single support icon above a muted sentence, used everywhere a list can legitimately be empty (no locaciones, no contratos, no recibos, no lecturas yet). It deliberately avoids a card (no shadow, no white fill) so an empty state never looks like a piece of content — it reads as "nothing here yet," not as "here's a card about nothing."
 
 ### Mensaje / Alert
-Bootstrap `alert-success`/`alert-danger`, always paired with a support icon (`bi-check-circle-fill` / `bi-exclamation-triangle-fill`) per the constitution's requirement that status feedback carry both color and an icon, never color alone. Persistent (no auto-dismiss) — the user closes it by acting, not by a timeout.
+Bootstrap `alert-success`/`alert-danger`, always paired with a support icon (`bi-check-circle-fill` / `bi-exclamation-triangle-fill`) per the constitution's requirement that status feedback carry both color and an icon, never color alone. Rendered as a dismissible alert (`alert-dismissible fade show` + `btn-close`). It **auto-closes after at most 8 seconds** (specs/042), but the timer pauses while the pointer or keyboard focus is over the alert and restarts in full on leave, so a message is never lost while being read; the `btn-close` closes it immediately. Without JavaScript the alert stays persistent (graceful degradation). Field-level validation errors are the exception — those remain persistent next to their input until corrected.
+
+### Barra de carga de navegación (bespoke)
+A hairline (3px) fixed bar at the top edge of the viewport (specs/042), built from Bootstrap `progress`/`progress-bar` with the `$primary` fill — the only custom part is the fixed position and reduced height, in the same spirit as the "Estado Vacío" bespoke component. It appears when a boosted in-app navigation (a GET request) takes longer than a ~150ms anti-flicker threshold and is removed as soon as the new content is ready, the request fails, or it is aborted. Form submissions do **not** trigger it — they keep the disabled "Guardando…" button as their feedback — and the first hard page load relies on the browser's native indicator. Honors `prefers-reduced-motion` (no width animation) and never takes focus.
 
 ## Do's and Don'ts
 

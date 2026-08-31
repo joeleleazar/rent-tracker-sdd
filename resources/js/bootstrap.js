@@ -35,3 +35,75 @@ function autoabrirModales() {
 
 document.addEventListener('DOMContentLoaded', autoabrirModales);
 document.addEventListener('htmx:afterSettle', autoabrirModales);
+
+/**
+ * Autocierre de las notificaciones de respuesta (specs/042, US1).
+ *
+ * Cada `<x-mensaje-alerta>` renderizado (un `.alert.alert-dismissible`) se
+ * cierra solo tras `MS_AUTOCIERRE` milisegundos. El temporizador se detiene
+ * mientras el puntero del ratón o el foco de teclado están dentro de la
+ * notificación, y se REINICIA a la duración completa al salir (no se reanuda
+ * el remanente). El botón `.btn-close` del propio componente sigue cerrando
+ * al instante vía `data-bs-dismiss="alert"`.
+ *
+ * Sin este script la notificación queda visible de forma persistente
+ * (degradación elegante, FR-007).
+ *
+ * Se engancha a `DOMContentLoaded` y a `htmx:afterSettle` por el mismo motivo
+ * que `autoabrirModales`: con hx-boost, una navegación no vuelve a disparar
+ * `DOMContentLoaded`.
+ */
+const MS_AUTOCIERRE = 8000;
+
+function programarAutocierreNotificacion(alerta) {
+    if (alerta.dataset.autocierreActivo === '1') {
+        return;
+    }
+
+    alerta.dataset.autocierreActivo = '1';
+
+    let temporizador = null;
+
+    const detener = () => {
+        clearTimeout(temporizador);
+        temporizador = null;
+    };
+
+    const iniciar = () => {
+        detener();
+        temporizador = setTimeout(() => {
+            bootstrap.Alert.getOrCreateInstance(alerta).close();
+        }, MS_AUTOCIERRE);
+    };
+
+    alerta.addEventListener('mouseenter', detener);
+    alerta.addEventListener('mouseleave', () => {
+        // Si el foco de teclado sigue dentro de la notificación, no reanudar
+        // todavía: lo hará el `focusout` correspondiente.
+        if (!alerta.contains(document.activeElement)) {
+            iniciar();
+        }
+    });
+
+    alerta.addEventListener('focusin', detener);
+    alerta.addEventListener('focusout', (evento) => {
+        // `focusout` también salta al mover el foco entre hijos de la propia
+        // notificación; solo se reanuda si el foco realmente salió de ella y
+        // el puntero tampoco está encima.
+        if (alerta.contains(evento.relatedTarget) || alerta.matches(':hover')) {
+            return;
+        }
+        iniciar();
+    });
+
+    iniciar();
+}
+
+function escanearNotificaciones() {
+    document
+        .querySelectorAll('.alert.alert-dismissible:not([data-autocierre-activo])')
+        .forEach(programarAutocierreNotificacion);
+}
+
+document.addEventListener('DOMContentLoaded', escanearNotificaciones);
+document.addEventListener('htmx:afterSettle', escanearNotificaciones);

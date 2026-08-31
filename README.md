@@ -23,6 +23,15 @@ de abajo) vive en:
   consulta histórico que originó el Principio VI de la constitución.
 - [`specs/`](specs/) — especificaciones funcionales por feature (Spec Kit).
 
+### Acceso y usuarios
+
+El sistema no tiene auto-registro público. Las cuentas se administran desde la sección
+**Usuarios**, visible y accesible **sólo para el perfil `master`** (`specs/040`). El `master`
+puede crear cuentas, editarlas, restablecer contraseñas, cambiar perfiles y desactivar/reactivar
+o eliminar cuentas; el perfil `administrador` tiene acceso operativo completo al resto del sistema
+pero ninguna a esa sección. Toda cuenta nueva nace como `administrador` salvo que el `master` elija
+otro perfil, y el sistema siempre conserva al menos un `master` activo.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

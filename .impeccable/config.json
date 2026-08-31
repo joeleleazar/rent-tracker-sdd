@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-08-25T05:28:15.685Z",
         "reason": "PDF export table body (exportar-pdf.blade.php) is a dense, fixed-px print document rendered by dompdf, a distinct context from the responsive on-screen rem-based type ramp in DESIGN.md; 11px keeps many table rows readable on one printed page, matching common print-document body sizes."
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "1.1rem",
+        "files": [
+          "resources/css/bootstrap.scss"
+        ],
+        "createdAt": "2026-08-28T03:34:06.415Z",
+        "reason": "icon glyph size for bootstrap-icons inside .detalle-recibo__ficha-icono, not body/heading running text — DESIGN.md's type ramp (body/headline/title/label/seccion) covers prose roles only"
       }
     ]
   }

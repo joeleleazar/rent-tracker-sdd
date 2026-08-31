@@ -107,14 +107,18 @@ contenido se sigue viendo apilado en una sola columna, en el mismo orden que ant
 
 ## Assumptions
 
-- **La imagen de referencia se adopta como guía de distribución espacial (dos columnas: resumen | pagos +
-  estado), no como especificación visual literal.** Algunos detalles decorativos de la captura (etiquetas en
-  mayúsculas, "chips" con ícono para Locación/Período/Emisión, menú de acciones de solo ícono tipo "⋮") entran
-  en conflicto directo con reglas ya establecidas y aplicadas en esta misma sesión: el "No-Decoration Rule"
-  de `DESIGN.md` (ninguna etiqueta en mayúsculas) y el Principio VI de la constitución ("los íconos nunca
-  reemplazan una etiqueta explícita"). Por eso esta feature reproduce la distribución en columnas de la
-  imagen usando los componentes y la tipografía ya establecidos del sistema de diseño del proyecto (tarjetas,
-  `dl`/`dt`/`dd`, badges con texto, botones con ícono + etiqueta), no una reestilización nueva.
+- **[SUPERSEDIDO por specs/041-fichas-visuales-detalle-recibo, 2026-08-27 — ver ese spec.]** ~~La imagen de
+  referencia se adopta como guía de distribución espacial (dos columnas: resumen | pagos + estado), no como
+  especificación visual literal. Algunos detalles decorativos de la captura (etiquetas en mayúsculas, "chips"
+  con ícono para Locación/Período/Emisión, menú de acciones de solo ícono tipo "⋮") entran en conflicto
+  directo con reglas ya establecidas y aplicadas en esta misma sesión: el "No-Decoration Rule" de `DESIGN.md`
+  (ninguna etiqueta en mayúsculas) y el Principio VI de la constitución ("los íconos nunca reemplazan una
+  etiqueta explícita"). Por eso esta feature reproduce la distribución en columnas de la imagen usando los
+  componentes y la tipografía ya establecidos del sistema de diseño del proyecto (tarjetas, `dl`/`dt`/`dd`,
+  badges con texto, botones con ícono + etiqueta), no una reestilización nueva.~~ En una sesión posterior el
+  usuario confirmó explícitamente que sí quería las fichas con ícono, las etiquetas en mayúsculas y el menú
+  de acciones — specs/041 documenta esa decisión y la excepción resultante al "No-Decoration Rule". La
+  distribución en dos columnas en sí (FR-001 a FR-005 de este spec) sigue vigente sin cambios.
 - El ancho máximo actual de la página (`col-lg-8` con `max-width: 42rem`, pensado para una sola columna
   angosta) se amplía para acomodar las dos columnas — mismo criterio que otras pantallas del proyecto que
   combinan tarjetas anchas (ej. el árbol de locaciones), en vez de mantener el límite pensado para

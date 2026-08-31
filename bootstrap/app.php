@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // specs/040: gestión de usuarios por perfiles.
+        $middleware->alias([
+            'perfil.master' => \App\Http\Middleware\RequerirPerfilMaster::class,
+            'cuenta.activa' => \App\Http\Middleware\AsegurarCuentaActiva::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

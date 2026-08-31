@@ -1,6 +1,26 @@
 <!--
 Sync Impact Report
-Version change: 2.1.0 → 2.1.1
+Version change: 2.1.1 → 2.2.0
+Modified principles: N/A
+Added sections: N/A
+Removed sections: N/A
+Modified sections:
+- Restricciones Técnicas y Estándares de Interfaz, bullet "Mensajes de Estado y Feedback" — se
+  reemplaza la exigencia de "mensajes persistentes" por notificaciones de respuesta EFÍMERAS que
+  se autocierran tras un máximo de 8 segundos, con el temporizador en pausa mientras el puntero o
+  el foco de teclado están sobre la notificación y con un control de cierre manual inmediato. Los
+  errores de validación por campo siguen mostrándose de forma persistente junto a su campo. Cambio
+  pedido explícitamente por el usuario (specs/042-loader-y-notificaciones-autocierre); se documenta
+  como enmienda y no como desviación silenciosa, mismo criterio con el que specs/041 trató la
+  excepción al "No-Decoration Rule" de DESIGN.md. Bump MINOR: amplía/ajusta un lineamiento de
+  interfaz, no un principio central ni el stack.
+Follow-up TODOs:
+- DESIGN.md, sección "Mensaje / Alert": quitar "Persistent (no auto-dismiss)" y describir el
+  autocierre con pausa por hover (tarea T012 de specs/042).
+-->
+
+<!--
+Sync Impact Report (histórico) — Version change: 2.1.0 → 2.1.1
 Modified principles:
 - VI. Sistema de Componentes Visuales (Bootstrap 5), bullet "Documentos de referencia de
   diseño" — corrige la referencia desactualizada a docs/referencias-diseno-bootstrap/: los 3
@@ -112,7 +132,7 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
 - **Entorno de Ejecución**: PHP 8.2+ | Laravel 11.x | PostgreSQL 15+.
 - **Frontend / Vistas**: Bootstrap 5.3 + Bootstrap Icons (ver Principio VI) sobre Blade Templates, respetando como piso las pautas WCAG 2.1 Nivel AA.
 - **Diseño Responsivo**: La interfaz DEBE ser responsive sin ruptura de diseño, pérdida de contenido ni scroll horizontal no deseado en los breakpoints estándar de Bootstrap.
-- **Mensajes de Estado y Feedback**: Notificaciones de éxito, error o alerta presentadas con mensajes persistentes, colores de alto contraste e iconos de soporte comprensibles (ej. banner verde con texto: "El pago fue registrado exitosamente").
+- **Mensajes de Estado y Feedback**: Notificaciones de éxito, error o alerta presentadas con colores de alto contraste e iconos de soporte comprensibles (ej. banner verde con texto: "El pago fue registrado exitosamente"). Estas notificaciones de respuesta son EFÍMERAS: se autocierran tras un máximo de 8 segundos, el temporizador se detiene mientras el puntero del ratón o el foco de teclado están sobre la notificación (y se reinicia a la duración completa al salir), y siempre ofrecen un control de cierre manual inmediato. Sin JavaScript la notificación permanece visible (degradación elegante). Los errores de validación por campo NO son efímeros: se muestran de forma persistente junto a su campo hasta que el dato se corrige.
 
 ## Flujo de Trabajo, Calidad y Criterios de Aceptación
 
@@ -131,4 +151,4 @@ La interfaz DEBE construirse sobre Bootstrap 5.3 (compilado desde su fuente Sass
   - **PATCH**: Ajustes de redacción, correcciones tipográficas o clarificaciones operativas.
 - Todo desarrollo, Pull Request o revisión de código DEBE verificar el estricto cumplimiento de estos artículos antes de ser aprobado.
 
-**Version**: 2.1.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-24
+**Version**: 2.2.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-30

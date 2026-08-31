@@ -30,6 +30,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'perfil' => \App\Enums\PerfilUsuario::Administrador,
+            'activo' => true,
         ];
     }
 
@@ -40,6 +42,37 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Cuenta con perfil Master (acceso exclusivo al CRUD de usuarios, specs/040).
+     */
+    public function master(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'perfil' => \App\Enums\PerfilUsuario::Master,
+        ]);
+    }
+
+    /**
+     * Cuenta con perfil Administrador (sin acceso a la gestión de usuarios).
+     */
+    public function administrador(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'perfil' => \App\Enums\PerfilUsuario::Administrador,
+        ]);
+    }
+
+    /**
+     * Cuenta desactivada: no puede iniciar sesión ni acceder a secciones
+     * protegidas.
+     */
+    public function inactivo(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'activo' => false,
         ]);
     }
 }

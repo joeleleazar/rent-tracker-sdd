@@ -65,6 +65,18 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // specs/040 (FR-018): historial de eventos de seguridad de la gestión
+        // de usuarios (altas, cambios de perfil, restablecimientos de
+        // contraseña, desactivaciones y reactivaciones), con su autor y la
+        // cuenta afectada. Archivo diario aparte del log general de la app.
+        'seguridad' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/seguridad.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_DAILY_DAYS', 90),
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

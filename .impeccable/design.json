@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-24T00:00:00Z",
+  "generatedAt": "2026-08-27T00:00:00Z",
   "title": "Design System: Rent Tracker",
   "extensions": {
     "colorMeta": {
@@ -19,7 +19,8 @@
     "typographyMeta": {
       "body": { "displayName": "Body", "purpose": "Form labels, table cells, dl/dt-dd detail pairs, button labels." },
       "headline": { "displayName": "Headline", "purpose": "One per page, in the layout header slot." },
-      "title": { "displayName": "Title", "purpose": "Card and modal section headings." }
+      "title": { "displayName": "Title", "purpose": "Card and modal section headings." },
+      "seccion": { "displayName": "Título de Sección", "purpose": "A card's own discreet uppercase heading (.titulo-seccion) where the card's content should outweigh its title — e.g. Resumen del Recibo, Pagos." }
     },
     "shadows": [
       { "name": "resting", "value": "0 .125rem .375rem rgba(17,24,39,.08)", "purpose": "Every .card at rest." },

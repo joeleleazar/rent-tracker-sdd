@@ -1,8 +1,45 @@
+@php
+    // Calculado antes del layout: se usa tanto en el x-slot name="header" (badge
+    // de estado junto al título) como en la línea "Estado" del resumen más abajo.
+    $claseEstado = match ($recibo->estado) {
+        'pagado' => 'text-bg-success',
+        'anulado' => 'text-bg-danger',
+        default => 'text-bg-secondary',
+    };
+@endphp
+
 <x-layouts.app-bootstrap>
     <x-slot name="header">
-        <h2 class="fs-2 fw-bold mb-0">
-            Recibo #{{ $recibo->id }} — {{ $recibo->locacion->nombre }}
-        </h2>
+        <nav aria-label="breadcrumb" class="breadcrumb-discreta small mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('recibos.registroMasivo.index') }}" class="text-decoration-none">Emitir Recibos</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Recibo #{{ $recibo->id }}</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <h2 class="fs-2 fw-bold mb-0 d-flex flex-wrap align-items-center gap-2">
+                Recibo #{{ $recibo->id }} — {{ $recibo->locacion->nombre }}
+                <span class="badge {{ $claseEstado }}">{{ ucfirst($recibo->estado) }}</span>
+            </h2>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('locaciones.recibos.index', $recibo->locacion) }}" class="btn btn-link text-secondary text-decoration-none">
+                    <i class="bi bi-clock-history" aria-hidden="true"></i> Ver Historial
+                </a>
+                {{-- hx-boost="false": el comprobante es una página standalone con su
+                     propio <head>/CSS (ver comprobante.blade.php), no el layout compartido;
+                     debe cargarse con una navegación clásica completa, no un swap parcial. --}}
+                <a href="{{ route('recibos.comprobante', $recibo) }}" class="btn btn-outline-secondary" hx-boost="false">
+                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Ver Comprobante
+                </a>
+                <a href="{{ route('recibos.edit', $recibo) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Recibo
+                </a>
+            </div>
+        </div>
     </x-slot>
 
     <div class="col-12">
@@ -30,50 +67,55 @@
             <div class="col-lg-7">
             <div class="card">
                 <div class="card-body d-flex flex-column gap-3">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4 fw-semibold">Estado</dt>
-                        <dd class="col-sm-8">
-                            @php
-                                $claseEstado = match ($recibo->estado) {
-                                    'pagado' => 'text-bg-success',
-                                    'anulado' => 'text-bg-danger',
-                                    default => 'text-bg-secondary',
-                                };
-                            @endphp
-                            <span class="badge {{ $claseEstado }}">
-                                {{ ucfirst($recibo->estado) }}
-                            </span>
-                        </dd>
+                    <h3 class="titulo-seccion mb-0">Resumen del Recibo</h3>
 
-                        <dt class="col-sm-4 fw-semibold">Locación</dt>
-                        <dd class="col-sm-8">{{ $recibo->locacion->nombre }}</dd>
+                    <div class="detalle-recibo__fichas">
+                        <div class="detalle-recibo__ficha">
+                            <span class="detalle-recibo__ficha-icono"><i class="bi bi-house" aria-hidden="true"></i></span>
+                            <div>
+                                <div class="detalle-recibo__ficha-etiqueta">Locación</div>
+                                <div class="fw-semibold">{{ $recibo->locacion->nombre }}</div>
+                            </div>
+                        </div>
+                        <div class="detalle-recibo__ficha">
+                            <span class="detalle-recibo__ficha-icono"><i class="bi bi-calendar3" aria-hidden="true"></i></span>
+                            <div>
+                                <div class="detalle-recibo__ficha-etiqueta">Periodo</div>
+                                <div class="fw-semibold">{{ $recibo->periodo->translatedFormat('F Y') }}</div>
+                            </div>
+                        </div>
+                        <div class="detalle-recibo__ficha">
+                            <span class="detalle-recibo__ficha-icono"><i class="bi bi-clock-history" aria-hidden="true"></i></span>
+                            <div>
+                                <div class="detalle-recibo__ficha-etiqueta">Emisión</div>
+                                <div class="fw-semibold">{{ $recibo->fecha_emision->format('d/m/Y') }}</div>
+                            </div>
+                        </div>
+                    </div>
 
-                        <dt class="col-sm-4 fw-semibold">Periodo</dt>
-                        <dd class="col-sm-8">{{ $recibo->periodo->translatedFormat('F Y') }}</dd>
-
-                        <dt class="col-sm-4 fw-semibold">Fecha de emisión</dt>
-                        <dd class="col-sm-8">{{ $recibo->fecha_emision->format('d/m/Y') }}</dd>
+                    <div>
+                        <div class="detalle-recibo__linea">
+                            <span class="text-secondary">Estado</span>
+                            <span class="badge {{ $claseEstado }}">{{ ucfirst($recibo->estado) }}</span>
+                        </div>
 
                         @if ($recibo->monto_renta !== null)
-                            <dt class="col-sm-4 fw-semibold">Monto de Renta</dt>
-                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</dd>
+                            <div class="detalle-recibo__linea">
+                                <span class="text-secondary">Renta</span>
+                                <span class="fw-semibold cifra">S/ {{ number_format((float) $recibo->monto_renta, 2) }}</span>
+                            </div>
                         @endif
                         @foreach ($recibo->conceptos->sortBy('conceptoGastoFijo.orden') as $reciboConcepto)
-                            <dt class="col-sm-4 fw-semibold">Monto de {{ $reciboConcepto->conceptoGastoFijo?->nombre ?? 'concepto eliminado' }}</dt>
-                            <dd class="col-sm-8 cifra">S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</dd>
+                            <div class="detalle-recibo__linea">
+                                <span class="text-secondary">{{ $reciboConcepto->conceptoGastoFijo?->nombre ?? 'Concepto eliminado' }}</span>
+                                <span class="fw-semibold cifra">S/ {{ number_format((float) $reciboConcepto->monto, 2) }}</span>
+                            </div>
                         @endforeach
 
-                        <dt class="col-sm-4 fw-bold">Total</dt>
-                        <dd class="col-sm-8 fw-bold cifra">S/ {{ number_format($recibo->total(), 2) }}</dd>
-                    </dl>
-
-                    <div class="d-flex flex-wrap gap-3 pt-2">
-                        <a href="{{ route('recibos.edit', $recibo) }}" class="btn btn-primary"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar Recibo</a>
-                        {{-- hx-boost="false": el comprobante es una página standalone con su
-                             propio <head>/CSS (ver comprobante.blade.php), no el layout compartido;
-                             debe cargarse con una navegación clásica completa, no un swap parcial. --}}
-                        <a href="{{ route('recibos.comprobante', $recibo) }}" class="btn btn-primary" hx-boost="false">Ver Comprobante</a>
-                        <a href="{{ route('locaciones.recibos.index', $recibo->locacion) }}" class="btn btn-outline-secondary"><i class="bi bi-clock-history" aria-hidden="true"></i> Ver Historial de Recibos</a>
+                        <div class="detalle-recibo__linea-total">
+                            <span class="titulo-seccion mb-0">Total</span>
+                            <span class="fw-bold cifra fs-5 text-primary">S/ {{ number_format($recibo->total(), 2) }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -84,7 +126,7 @@
                 <div class="card">
                     <div class="card-body d-flex flex-column gap-3">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                            <h3 class="fs-4 fw-bold mb-0">Pagos</h3>
+                            <h3 class="titulo-seccion mb-0">Pagos</h3>
                             @if ($recibo->estado === 'pagado')
                                 <span class="badge bg-success">Pagado en su totalidad</span>
                             @else
@@ -105,51 +147,81 @@
                         @if ($recibo->pagos->isEmpty())
                             <p class="text-secondary mb-0">Todavía no se registró ningún pago para este recibo.</p>
                         @else
-                            <ul class="list-group">
+                            <div class="d-flex flex-column gap-2">
                                 @foreach ($recibo->pagos->sortByDesc('fecha_pago') as $pago)
-                                    <li class="list-group-item d-flex flex-column gap-2">
-                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                                            <div>
-                                                <span class="fw-semibold cifra">S/ {{ number_format((float) $pago->monto, 2) }}</span>
-                                                <span class="text-secondary"> · {{ $pago->fecha_pago->format('d/m/Y') }}</span>
+                                    <div class="pago-item d-flex align-items-start gap-3">
+                                        <span class="pago-item__icono {{ $pago->tieneEvidencia() ? 'pago-item__icono--con-evidencia' : '' }}">
+                                            <i class="bi {{ $pago->tieneEvidencia() ? 'bi-check-lg' : 'bi-cash-stack' }}" aria-hidden="true"></i>
+                                        </span>
+
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold cifra">S/ {{ number_format((float) $pago->monto, 2) }}</div>
+                                            <div class="text-secondary small">
+                                                {{ $pago->fecha_pago->format('d/m/Y') }}
                                                 @if ($pago->registradoPor)
-                                                    <span class="text-secondary"> · Registrado por {{ $pago->registradoPor->name }}</span>
+                                                    · {{ $pago->registradoPor->name }}
                                                 @endif
                                             </div>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <a href="{{ route('pagos.comprobante', $pago) }}" class="btn btn-outline-primary btn-sm" hx-boost="false">
-                                                    <i class="bi bi-receipt" aria-hidden="true"></i> Ver Comprobante
-                                                </a>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editar-pago-{{ $pago->id }}">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#eliminar-pago-{{ $pago->id }}">
-                                                    <i class="bi bi-trash" aria-hidden="true"></i> Eliminar
-                                                </button>
+                                            {{-- specs/035: evidencia (imagen o PDF) del comprobante ya firmado — un único
+                                                 archivo por pago, se reemplaza al subir uno nuevo (FR-007). --}}
+                                            <div class="mt-1">
+                                                @if ($pago->tieneEvidencia())
+                                                    <span class="badge bg-success">Con evidencia</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Sin evidencia</span>
+                                                @endif
                                             </div>
                                         </div>
 
-                                        {{-- specs/035: evidencia (imagen o PDF) del comprobante ya firmado — un único
-                                             archivo por pago, se reemplaza al subir uno nuevo (FR-007). --}}
-                                        <div class="d-flex flex-wrap align-items-center gap-2">
-                                            @if ($pago->tieneEvidencia())
-                                                <span class="badge bg-success">Con evidencia</span>
-                                                <a href="{{ route('pagos.evidencia.show', $pago) }}" class="btn btn-outline-secondary btn-sm" hx-boost="false" target="_blank">
-                                                    <i class="bi bi-file-earmark-check" aria-hidden="true"></i> Ver Evidencia
-                                                </a>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#subir-evidencia-pago-{{ $pago->id }}">
-                                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reemplazar Evidencia
-                                                </button>
-                                            @else
-                                                <span class="badge bg-secondary">Sin evidencia</span>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#subir-evidencia-pago-{{ $pago->id }}">
-                                                    <i class="bi bi-upload" aria-hidden="true"></i> Subir Evidencia
-                                                </button>
-                                            @endif
+                                        <div class="dropdown flex-shrink-0">
+                                            {{--
+                                                specs/041: el ícono es refuerzo visual de la etiqueta "Más",
+                                                nunca su reemplazo (Principio VI) — a diferencia de un botón
+                                                "⋮" sin texto visible.
+                                            --}}
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Más acciones para este pago">
+                                                <i class="bi bi-three-dots-vertical" aria-hidden="true"></i> Más
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a href="{{ route('pagos.comprobante', $pago) }}" class="dropdown-item" hx-boost="false">
+                                                        <i class="bi bi-receipt me-2" aria-hidden="true"></i>Ver Comprobante
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editar-pago-{{ $pago->id }}">
+                                                        <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Editar
+                                                    </button>
+                                                </li>
+                                                @if ($pago->tieneEvidencia())
+                                                    <li>
+                                                        <a href="{{ route('pagos.evidencia.show', $pago) }}" class="dropdown-item" hx-boost="false" target="_blank">
+                                                            <i class="bi bi-file-earmark-check me-2" aria-hidden="true"></i>Ver Evidencia
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subir-evidencia-pago-{{ $pago->id }}">
+                                                            <i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>Reemplazar Evidencia
+                                                        </button>
+                                                    </li>
+                                                @else
+                                                    <li>
+                                                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subir-evidencia-pago-{{ $pago->id }}">
+                                                            <i class="bi bi-upload me-2" aria-hidden="true"></i>Subir Evidencia
+                                                        </button>
+                                                    </li>
+                                                @endif
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#eliminar-pago-{{ $pago->id }}">
+                                                        <i class="bi bi-trash me-2" aria-hidden="true"></i>Eliminar
+                                                    </button>
+                                                </li>
+                                            </ul>
                                         </div>
-                                    </li>
+                                    </div>
                                 @endforeach
-                            </ul>
+                            </div>
 
                             @foreach ($recibo->pagos as $pago)
                                 <x-modal-bootstrap name="subir-evidencia-pago-{{ $pago->id }}" focusable>
@@ -226,23 +298,37 @@
                         @endif
 
                         @if (! $recibo->estaPagadoPorCompleto())
-                            <form method="POST" action="{{ route('pagos.store', $recibo) }}" class="d-flex flex-wrap align-items-end gap-3">
-                                @csrf
-                                <div>
-                                    <x-input-label for="monto" value="Monto del Pago (S/)" />
-                                    <div class="input-group">
-                                        <span class="input-group-text">S/</span>
-                                        <x-text-input id="monto" name="monto" type="number" step="0.01" min="0.01" max="{{ $recibo->saldoPendiente() }}" required />
+                            <button type="button" class="btn btn-primary align-self-start" data-bs-toggle="modal" data-bs-target="#registrar-pago">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar Pago
+                            </button>
+
+                            <x-modal-bootstrap name="registrar-pago" :show="$errors->has('monto') || $errors->has('fecha_pago')" focusable>
+                                <form method="POST" action="{{ route('pagos.store', $recibo) }}">
+                                    @csrf
+
+                                    <div class="modal-body p-4 d-flex flex-column gap-3">
+                                        <h2 class="fs-4 fw-bold mb-0">Registrar Pago</h2>
+                                        <div>
+                                            <x-input-label for="monto" value="Monto del Pago (S/)" />
+                                            <div class="input-group">
+                                                <span class="input-group-text">S/</span>
+                                                <x-text-input id="monto" name="monto" type="number" step="0.01" min="0.01" max="{{ $recibo->saldoPendiente() }}" :value="old('monto')" required />
+                                            </div>
+                                            <x-input-error :messages="$errors->get('monto')" class="mt-2" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="fecha_pago" value="Fecha del Pago" />
+                                            <x-text-input id="fecha_pago" name="fecha_pago" type="date" :value="old('fecha_pago', now()->format('Y-m-d'))" max="{{ now()->format('Y-m-d') }}" required />
+                                            <x-input-error :messages="$errors->get('fecha_pago')" class="mt-2" />
+                                        </div>
                                     </div>
-                                    <x-input-error :messages="$errors->get('monto')" class="mt-2" />
-                                </div>
-                                <div>
-                                    <x-input-label for="fecha_pago" value="Fecha del Pago" />
-                                    <x-text-input id="fecha_pago" name="fecha_pago" type="date" :value="now()->format('Y-m-d')" max="{{ now()->format('Y-m-d') }}" required />
-                                    <x-input-error :messages="$errors->get('fecha_pago')" class="mt-2" />
-                                </div>
-                                <x-primary-button>Registrar Pago</x-primary-button>
-                            </form>
+
+                                    <div class="modal-footer">
+                                        <x-secondary-button type="button" data-bs-dismiss="modal">No, cancelar</x-secondary-button>
+                                        <x-primary-button>Registrar Pago</x-primary-button>
+                                    </div>
+                                </form>
+                            </x-modal-bootstrap>
                         @endif
                     </div>
                 </div>
@@ -250,16 +336,26 @@
 
             <div class="card">
                 <div class="card-body d-flex flex-column gap-3">
-                    <h3 class="fs-4 fw-bold">Estado del Recibo</h3>
+                    <h3 class="titulo-seccion mb-0 {{ $recibo->estado === 'anulado' ? '' : 'text-danger' }}">Estado del Recibo</h3>
 
-                    <div class="d-flex flex-wrap gap-2">
-                        @if ($recibo->estado === 'anulado')
+                    @if ($recibo->estado === 'anulado')
+                        <p class="text-secondary mb-0">
+                            Este recibo está anulado y no cuenta para los reportes de cobranza. Podés reactivarlo si fue un error.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
                             <button type="button" class="btn btn-danger" disabled aria-pressed="true">Anulado</button>
                             <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reactivar-recibo">Reactivar Recibo</button>
-                        @else
-                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#anular-recibo">Anular Recibo</button>
-                        @endif
-                    </div>
+                        </div>
+                    @else
+                        <p class="text-secondary mb-0">
+                            Anular este recibo lo marcará como inválido y dejará de contar para los reportes de cobranza. Podrás revertirlo manualmente si fue un error.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#anular-recibo">
+                                <i class="bi bi-x-circle" aria-hidden="true"></i> Anular Recibo
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
             </div>

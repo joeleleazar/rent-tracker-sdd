@@ -26,6 +26,18 @@
     </head>
     <body>
         {{--
+            Barra de carga de navegación (specs/042, US2): barra fina fija en el
+            borde superior de la ventana que aparece cuando una navegación
+            boosteada (petición GET) tarda más que el umbral anti-parpadeo y se
+            retira al completarse, fallar o abortarse. Los envíos de formulario
+            NO la disparan (conservan el botón "Guardando…"). Lógica en
+            resources/js/htmx.js; estilos en resources/css/bootstrap.scss (§18).
+        --}}
+        <div class="barra-carga-navegacion progress d-none" aria-hidden="true">
+            <div class="progress-bar"></div>
+        </div>
+
+        {{--
             hx-boost (specs/011): convierte todos los enlaces y formularios internos
             en peticiones asíncronas sin recarga completa de página, sin requerir
             ningún cambio en controladores/rutas — ver contracts/convenciones-htmx.md.
@@ -94,6 +106,14 @@
                                     <i class="bi bi-gear" aria-hidden="true"></i> Configuración
                                 </a>
                             </li>
+                            {{-- specs/040: la gestión de usuarios es exclusiva del perfil Master. --}}
+                            @can('gestionar-usuarios')
+                                <li class="nav-item">
+                                    <a href="{{ route('usuarios.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+                                        <i class="bi bi-people" aria-hidden="true"></i> Usuarios
+                                    </a>
+                                </li>
+                            @endcan
                         </ul>
 
                         <div class="d-flex flex-md-column flex-row align-items-center align-items-md-stretch gap-3 mt-md-auto pt-md-3 border-top border-secondary">

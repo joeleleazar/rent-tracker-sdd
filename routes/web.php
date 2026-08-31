@@ -3,6 +3,7 @@
 use App\Http\Controllers\ConceptoGastoFijoController;
 use App\Http\Controllers\ConfiguracionGeneralController;
 use App\Http\Controllers\ContratoController;
+use App\Http\Controllers\ControladorUsuario;
 use App\Http\Controllers\DocumentoContratoController;
 use App\Http\Controllers\EvidenciaPagoController;
 use App\Http\Controllers\InquilinoController;
@@ -19,7 +20,7 @@ Route::get('/', function () {
     return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'cuenta.activa'])->group(function () {
     // specs/013-arbol-jerarquico-locaciones: el listado general de locaciones
     // se consolidó en locaciones.index (árbol jerárquico unificado); esta ruta
     // se conserva como alias de navegación post-login en vez de eliminarse.
@@ -117,6 +118,22 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/configuracion', [ConfiguracionGeneralController::class, 'edit'])->name('configuracion.edit');
     Route::put('/configuracion', [ConfiguracionGeneralController::class, 'update'])->name('configuracion.update');
+
+    // specs/040: gestión de usuarios por perfiles — sección exclusiva del
+    // perfil Master (middleware `perfil.master`), además de `auth` y
+    // `cuenta.activa` heredados del grupo. Un Administrador que conozca
+    // cualquiera de estas URLs recibe 403.
+    Route::middleware('perfil.master')->prefix('usuarios')->name('usuarios.')->controller(ControladorUsuario::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/crear', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{usuario}/editar', 'edit')->name('edit');
+        Route::put('/{usuario}', 'update')->name('update');
+        Route::put('/{usuario}/contrasena', 'restablecerContrasena')->name('contrasena.update');
+        Route::put('/{usuario}/perfil', 'cambiarPerfil')->name('perfil.update');
+        Route::put('/{usuario}/estado', 'cambiarEstado')->name('estado.update');
+        Route::delete('/{usuario}', 'destroy')->name('destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
