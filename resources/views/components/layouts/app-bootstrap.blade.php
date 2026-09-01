@@ -137,6 +137,12 @@
                                     <i class="bi bi-cash-coin" aria-hidden="true"></i> Registro de Pagos
                                 </a>
                             </li>
+                            {{-- specs/044 (US3): cobro rápido por QR desde el inicio. --}}
+                            <li class="nav-item">
+                                <a href="{{ route('cobro.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('cobro.*') ? 'active' : '' }}">
+                                    <i class="bi bi-qr-code-scan" aria-hidden="true"></i> Cobro por QR
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a href="{{ route('conceptosGastoFijo.index') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('conceptosGastoFijo.*') ? 'active' : '' }}">
                                     <i class="bi bi-tags" aria-hidden="true"></i> Conceptos de Gasto Fijo

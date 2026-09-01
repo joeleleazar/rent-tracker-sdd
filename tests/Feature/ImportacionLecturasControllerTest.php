@@ -126,7 +126,7 @@ test('la grilla manual y su autoguardado siguen respondiendo igual', function ()
 
     $this->actingAs($this->admin)->get(route('lecturas.registroMasivo.index', ['periodo' => '2026-08']))
         ->assertOk()
-        ->assertSee('name="lecturas[' . $local->id . '][lectura_actual]"', false);
+        ->assertSee('name="lecturas['.$local->id.'][lectura_actual]"', false);
 
     $this->actingAs($this->admin)->post(route('lecturas.registroMasivo.borrador'), [
         'periodo' => '2026-08-01',

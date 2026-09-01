@@ -24,8 +24,7 @@ class ServicioImportacionLecturas
 {
     public function __construct(
         private readonly ServicioCalculoConsumoMedidor $servicioConsumo,
-    ) {
-    }
+    ) {}
 
     /**
      * Parsea el archivo y valida cada fila SIN tocar la base de datos.
@@ -34,7 +33,7 @@ class ServicioImportacionLecturas
      */
     public function previsualizar(UploadedFile $archivo, Carbon $periodo): array
     {
-        $import = new ImportacionLecturasImport();
+        $import = new ImportacionLecturasImport;
         Excel::import($import, $archivo);
 
         if ($import->filas->isEmpty()) {
@@ -48,8 +47,8 @@ class ServicioImportacionLecturas
         $faltantes = $import->columnasFaltantes();
         if (! empty($faltantes)) {
             return $this->rechazo(
-                'El archivo no corresponde a la plantilla de lecturas: faltan las columnas ' .
-                implode(', ', $faltantes) . '.'
+                'El archivo no corresponde a la plantilla de lecturas: faltan las columnas '.
+                implode(', ', $faltantes).'.'
             );
         }
 
@@ -81,7 +80,7 @@ class ServicioImportacionLecturas
      */
     public function confirmar(array $filasInput, Carbon $periodo): ResultadoImportacion
     {
-        $resultado = new ResultadoImportacion();
+        $resultado = new ResultadoImportacion;
 
         $normalizadas = collect($filasInput)->map(fn ($fila) => [
             'local_id' => $fila['local_id'] ?? null,

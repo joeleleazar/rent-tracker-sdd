@@ -37,8 +37,7 @@ class RegistroMasivoRecibosController extends Controller
         private readonly ServicioGeneracionReciboPeriodo $servicioGeneracion,
         private readonly ServicioPlantillaRecibos $servicioPlantilla,
         private readonly ServicioImportacionRecibos $servicioImportacion,
-    ) {
-    }
+    ) {}
 
     /**
      * specs/044 (US2): descarga la plantilla xlsx del periodo seleccionado —
@@ -93,7 +92,7 @@ class RegistroMasivoRecibosController extends Controller
         if ($resultado->nadaGuardado()) {
             return back()
                 ->withInput()
-                ->withErrors(['archivo' => 'Ninguna fila era válida: no se guardó nada. ' . $resultado->mensaje('masculino')]);
+                ->withErrors(['archivo' => 'Ninguna fila era válida: no se guardó nada. '.$resultado->mensaje('masculino')]);
         }
 
         return redirect()

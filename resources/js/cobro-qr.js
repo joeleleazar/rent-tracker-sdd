@@ -8,6 +8,8 @@
  * host, se navega a ella (lleva la firma de `URL::signedRoute`).
  */
 
+import { Html5Qrcode } from 'html5-qrcode';
+
 async function iniciarLector() {
     const contenedor = document.getElementById('lector-qr');
     if (!contenedor) {
@@ -15,9 +17,8 @@ async function iniciarLector() {
     }
 
     const soporteCamara = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-    const libreriaDisponible = typeof window.Html5Qrcode !== 'undefined';
 
-    if (!soporteCamara || !libreriaDisponible) {
+    if (!soporteCamara || typeof Html5Qrcode === 'undefined') {
         ocultarBloqueCamara();
         return;
     }
@@ -27,7 +28,7 @@ async function iniciarLector() {
         bloque.hidden = false;
     }
 
-    const lector = new window.Html5Qrcode('lector-qr');
+    const lector = new Html5Qrcode('lector-qr');
     const config = { fps: 10, qrbox: { width: 240, height: 240 } };
 
     const alLeer = (textoDecodificado) => {

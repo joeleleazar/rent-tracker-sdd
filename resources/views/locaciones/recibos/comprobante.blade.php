@@ -176,6 +176,35 @@
             color: #374151;
         }
 
+        /*
+         * specs/044 (US3): código para registrar el pago. Discreto y centrado
+         * al pie, sin romper la composición del documento; se imprime junto con
+         * el resto del comprobante. Es un `data:` URI PNG, así que la captura
+         * con html2canvas (US2 de specs/031) no tiene problemas de color.
+         */
+        #comprobante-recibo .bloque-qr-cobro {
+            margin-top: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        #comprobante-recibo .bloque-qr-cobro img {
+            width: 96px;
+            height: 96px;
+        }
+        #comprobante-recibo .bloque-qr-cobro .leyenda-qr {
+            font-size: 0.75rem;
+            color: #4b5563;
+            text-align: center;
+        }
+        #comprobante-recibo .bloque-qr-cobro .numero-recibo-grande {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #111827;
+        }
+
         #comprobante-recibo .marca-anulado {
             position: absolute;
             inset: 0;
@@ -313,6 +342,16 @@
 
         {{-- Bloque 6: cierre (research.md Decisión 7) --}}
         <p class="bloque-cierre">Gracias por su pago puntual.</p>
+
+        {{-- specs/044 (US3): código para registrar el pago de este recibo desde "Cobro por QR". --}}
+        <div class="bloque-qr-cobro">
+            @if (! empty($codigoQrCobro))
+                <img src="{{ $codigoQrCobro }}" alt="Código para registrar el pago del recibo #{{ $recibo->id }}">
+            @else
+                <span class="numero-recibo-grande">Recibo #{{ $recibo->id }}</span>
+            @endif
+            <span class="leyenda-qr">Escanee este código en «Cobro por QR» para registrar el pago.</span>
+        </div>
     </div>
 </body>
 </html>

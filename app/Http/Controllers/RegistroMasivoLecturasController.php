@@ -46,8 +46,7 @@ class RegistroMasivoLecturasController extends Controller
         private readonly ServicioCalculoConsumoMedidor $servicioConsumo,
         private readonly ServicioPlantillaLecturas $servicioPlantilla,
         private readonly ServicioImportacionLecturas $servicioImportacion,
-    ) {
-    }
+    ) {}
 
     /**
      * specs/044 (US1): descarga la plantilla xlsx del periodo seleccionado —
@@ -107,7 +106,7 @@ class RegistroMasivoLecturasController extends Controller
         if ($resultado->nadaGuardado()) {
             return back()
                 ->withInput()
-                ->withErrors(['archivo' => 'Ninguna fila era válida: no se guardó nada. ' . $resultado->mensaje()]);
+                ->withErrors(['archivo' => 'Ninguna fila era válida: no se guardó nada. '.$resultado->mensaje()]);
         }
 
         return redirect()
@@ -204,7 +203,7 @@ class RegistroMasivoLecturasController extends Controller
                 $consumo = $this->servicioConsumo->calcularConsumo($lecturaAnteriorParaConsumo, (float) $valorActual);
 
                 if ($consumo !== null && $consumo < 0 && ! $confirmado) {
-                    throw new ConsumoNegativoSinConfirmarException();
+                    throw new ConsumoNegativoSinConfirmarException;
                 }
 
                 // specs/019 FR-003/FR-004 (research.md Decisión 2): el total ya llega calculado
@@ -282,7 +281,7 @@ class RegistroMasivoLecturasController extends Controller
             BorradorLecturaMedidor::upsert($registros, ['usuario_id', 'periodo', 'locacion_id'], ['lectura_actual', 'total', 'updated_at']);
         }
 
-        return response('Borrador guardado a las ' . $ahora->format('H:i') . '.');
+        return response('Borrador guardado a las '.$ahora->format('H:i').'.');
     }
 
     /**
@@ -370,7 +369,7 @@ class RegistroMasivoLecturasController extends Controller
                 $consumo = $this->servicioConsumo->calcularConsumo($lecturaAnteriorValor, (float) $datos['lectura_actual']);
 
                 if ($consumo !== null && $consumo < 0 && ! $confirmado) {
-                    throw new ConsumoNegativoSinConfirmarException();
+                    throw new ConsumoNegativoSinConfirmarException;
                 }
 
                 $lectura->update([
@@ -454,7 +453,7 @@ class RegistroMasivoLecturasController extends Controller
 
         foreach ($nodos as $nodo) {
             $locacion = $nodo['locacion'];
-            $rutaActual = $ruta === '' ? $locacion->nombre : $ruta . ' > ' . $locacion->nombre;
+            $rutaActual = $ruta === '' ? $locacion->nombre : $ruta.' > '.$locacion->nombre;
 
             if ($locacion->es_alquilable) {
                 $lecturaDelPeriodo = $lecturasDelPeriodo->get($locacion->id);

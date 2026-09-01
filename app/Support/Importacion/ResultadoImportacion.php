@@ -12,8 +12,7 @@ class ResultadoImportacion
         public int $creadas = 0,
         public int $actualizadas = 0,
         public int $omitidas = 0,
-    ) {
-    }
+    ) {}
 
     public function registrarCreacion(): void
     {

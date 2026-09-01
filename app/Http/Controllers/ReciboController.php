@@ -14,6 +14,7 @@ use App\Models\Locacion;
 use App\Models\Recibo;
 use App\Services\ServicioCalculoProrrateoContrato;
 use App\Services\ServicioCambioEstadoRecibo;
+use App\Services\ServicioCodigoQrRecibo;
 use App\Services\ServicioGeneracionReciboPeriodo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,8 +36,7 @@ class ReciboController extends Controller
         private readonly ServicioGeneracionReciboPeriodo $servicioGeneracion,
         private readonly ServicioCambioEstadoRecibo $servicioCambioEstado,
         private readonly ServicioCalculoProrrateoContrato $servicioProrrateo,
-    ) {
-    }
+    ) {}
 
     public function index(Locacion $locacion): View
     {
@@ -113,7 +113,7 @@ class ReciboController extends Controller
             ],
         );
 
-        return response('Borrador guardado a las ' . now()->format('H:i') . '.');
+        return response('Borrador guardado a las '.now()->format('H:i').'.');
     }
 
     private function borradorDe(Locacion $locacion, Carbon $periodo): ?BorradorRecibo
@@ -205,13 +205,17 @@ class ReciboController extends Controller
      * impresión (`window.print()`) y para captura como imagen (`html2canvas` +
      * `navigator.share`), con marca "ANULADO" si corresponde (FR-009).
      */
-    public function comprobante(Recibo $recibo): View
+    public function comprobante(Recibo $recibo, ServicioCodigoQrRecibo $servicioQr): View
     {
         $recibo->load(['locacion', 'contrato', 'conceptos.conceptoGastoFijo']);
 
         return view('locaciones.recibos.comprobante', [
             'recibo' => $recibo,
             'nombrePropietario' => ConfiguracionGeneral::actual()->nombre_propietario,
+            // specs/044 (US3): QR firmado hacia la vista de cobro rápido. Puede
+            // ser null si la generación falla (sin GD) — la vista muestra el
+            // número de recibo en grande como alternativa.
+            'codigoQrCobro' => $servicioQr->dataUri($recibo),
         ]);
     }
 

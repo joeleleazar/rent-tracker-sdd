@@ -10,7 +10,9 @@ namespace App\Support\Importacion;
 class FilaImportada
 {
     public const ACCION_CREAR = 'crear';
+
     public const ACCION_ACTUALIZAR = 'actualizar';
+
     public const ACCION_OMITIR = 'omitir';
 
     /**
@@ -26,8 +28,7 @@ class FilaImportada
         public string $accion = self::ACCION_OMITIR,
         /** Error que el usuario NO puede corregir editando celdas (local inexistente, periodo distinto…). */
         public bool $errorNoRecuperable = false,
-    ) {
-    }
+    ) {}
 
     public function invalidar(string $motivo, bool $noRecuperable = false): void
     {

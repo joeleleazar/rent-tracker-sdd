@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 class ServicioGestionPagosRecibo
 {
     /**
-     * @param array{monto: float|string, fecha_pago: string} $datos
+     * @param  array{monto: float|string, fecha_pago: string, medio_pago?: string|null}  $datos
      */
     public function registrar(Recibo $recibo, array $datos, ?int $registradoPorId): Pago
     {
@@ -34,6 +34,9 @@ class ServicioGestionPagosRecibo
             $pago = $recibo->pagos()->create([
                 'monto' => $monto,
                 'fecha_pago' => $datos['fecha_pago'],
+                // specs/044 (US3): el cobro rápido informa el medio de pago; el resto
+                // del flujo de pagos (specs/032) no envía esta clave y queda en null.
+                'medio_pago' => $datos['medio_pago'] ?? null,
                 'registrado_por_id' => $registradoPorId,
             ]);
 
@@ -44,7 +47,7 @@ class ServicioGestionPagosRecibo
     }
 
     /**
-     * @param array{monto: float|string, fecha_pago: string} $datos
+     * @param  array{monto: float|string, fecha_pago: string}  $datos
      */
     public function actualizar(Pago $pago, array $datos): Pago
     {
@@ -89,14 +92,14 @@ class ServicioGestionPagosRecibo
     private function asegurarReciboVigente(Recibo $recibo): void
     {
         if ($recibo->estado === 'anulado') {
-            throw new ReciboAnuladoNoAdmitePagosException();
+            throw new ReciboAnuladoNoAdmitePagosException;
         }
     }
 
     private function asegurarMontoValido(float $monto): void
     {
         if ($monto <= 0) {
-            throw new MontoPagoInvalidoException();
+            throw new MontoPagoInvalidoException;
         }
     }
 

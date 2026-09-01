@@ -3,6 +3,7 @@
 use App\Http\Controllers\ConceptoGastoFijoController;
 use App\Http\Controllers\ConfiguracionGeneralController;
 use App\Http\Controllers\ContratoController;
+use App\Http\Controllers\ControladorCobroQr;
 use App\Http\Controllers\ControladorPanelInicio;
 use App\Http\Controllers\ControladorUsuario;
 use App\Http\Controllers\DocumentoContratoController;
@@ -95,6 +96,15 @@ Route::middleware(['auth', 'cuenta.activa'])->group(function () {
     // /pagos/{pago} (más abajo, cuando exista) por el mismo motivo ya documentado
     // para /recibos/registro-masivo.
     Route::get('/pagos/seguimiento', [SeguimientoPagosController::class, 'index'])->name('pagos.seguimiento.index');
+
+    // specs/044 (US3): cobro por QR desde el inicio. `cobro.recibo` (destino del
+    // QR del comprobante y del ingreso manual) va FIRMADA — un id crudo no debe
+    // abrir el formulario de pago (FR-023/FR-030). El resto solo hereda auth +
+    // cuenta.activa: Master y Administrador comparten esta pila (research.md D10).
+    Route::get('/cobro', [ControladorCobroQr::class, 'index'])->name('cobro.index');
+    Route::get('/cobro/buscar', [ControladorCobroQr::class, 'buscar'])->name('cobro.buscar');
+    Route::get('/cobro/recibo/{recibo}', [ControladorCobroQr::class, 'recibo'])->middleware('signed')->name('cobro.recibo');
+    Route::post('/cobro/recibo/{recibo}/pago', [ControladorCobroQr::class, 'registrarPago'])->name('cobro.pago.store');
 
     // Lecturas de medidor (specs/005-lecturas-medidor-recibo-periodo, US1/US3)
     Route::get('/locaciones/{locacion}/lecturas', [LecturaMedidorController::class, 'index'])->name('locaciones.lecturas.index');

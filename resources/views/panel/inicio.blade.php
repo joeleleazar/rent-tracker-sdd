@@ -7,6 +7,7 @@
 
     <div class="col-12">
         <div class="d-flex flex-column gap-4">
+            @include('panel.partials.acceso-cobro-qr')
             @include('panel.partials.morosos')
             @include('panel.partials.proximos-vencimientos')
             @include('panel.partials.indicadores')

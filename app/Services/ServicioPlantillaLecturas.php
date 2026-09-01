@@ -24,8 +24,7 @@ class ServicioPlantillaLecturas
 
     public function __construct(
         private readonly ServicioConstruccionArbolLocaciones $servicioArbol,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, array{periodo: string, local_id: int, Locación: string, 'Lectura Periodo Anterior': string|null, 'Lectura Actual': string|null}>
@@ -64,7 +63,7 @@ class ServicioPlantillaLecturas
 
         foreach ($nodos as $nodo) {
             $locacion = $nodo['locacion'];
-            $rutaActual = $ruta === '' ? $locacion->nombre : $ruta . ' > ' . $locacion->nombre;
+            $rutaActual = $ruta === '' ? $locacion->nombre : $ruta.' > '.$locacion->nombre;
 
             if ($locacion->es_alquilable) {
                 $anterior = $anteriores->get($locacion->id)?->lectura_actual;

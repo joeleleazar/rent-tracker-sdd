@@ -19,8 +19,7 @@ class PlantillaRecibosExport implements FromCollection, WithHeadings
     public function __construct(
         private readonly Carbon $periodo,
         private readonly ServicioPlantillaRecibos $servicio,
-    ) {
-    }
+    ) {}
 
     public function collection(): Collection
     {

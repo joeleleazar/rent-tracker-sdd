@@ -25,8 +25,7 @@ class ServicioPlantillaRecibos
     public function __construct(
         private readonly ServicioConstruccionArbolLocaciones $servicioArbol,
         private readonly ServicioGeneracionReciboPeriodo $servicioGeneracion,
-    ) {
-    }
+    ) {}
 
     /** Conceptos activos que NO son Renta ni Luz — una columna por cada uno. */
     public function columnasConcepto(): Collection
@@ -116,7 +115,7 @@ class ServicioPlantillaRecibos
 
         foreach ($nodos as $nodo) {
             $locacion = $nodo['locacion'];
-            $rutaActual = $ruta === '' ? $locacion->nombre : $ruta . ' > ' . $locacion->nombre;
+            $rutaActual = $ruta === '' ? $locacion->nombre : $ruta.' > '.$locacion->nombre;
             $contrato = $contratos->get($locacion->id);
 
             if ($locacion->es_alquilable && $contrato !== null) {
@@ -132,7 +131,7 @@ class ServicioPlantillaRecibos
                     'Locación' => $rutaActual,
                     'Contrato' => $variosRecibos
                         ? 'varios recibos — editar individualmente'
-                        : ('#' . $contrato->id . ' ' . ($contrato->inquilinoPrincipal()?->nombreCompleto() ?? '')),
+                        : ('#'.$contrato->id.' '.($contrato->inquilinoPrincipal()?->nombreCompleto() ?? '')),
                     'Renta' => $this->montoRenta($recibo, $contrato),
                     'Luz' => $this->montoLuz($recibo, $conceptoLuz, $locacion, $periodo),
                 ];

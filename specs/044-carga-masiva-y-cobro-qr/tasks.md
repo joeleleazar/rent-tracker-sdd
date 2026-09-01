@@ -232,70 +232,70 @@ registrar pago parcial y luego total con evidencia, probar recibo anulado y enla
 
 ### Tests para User Story 3 ⚠️
 
-- [ ] T040 [P] [US3] `tests/Unit/ServicioCodigoQrReciboTest.php`: `dataUri()` devuelve
+- [X] T040 [P] [US3] `tests/Unit/ServicioCodigoQrReciboTest.php`: `dataUri()` devuelve
   `data:image/png;base64,` no vacío; el enlace embebido es `URL::signedRoute('cobro.recibo', $recibo)`;
   `verificar()` acepta la URL firmada y rechaza una con la firma alterada.
-- [ ] T041 [P] [US3] `tests/Feature/CobroQrControllerTest.php`: `cobro.index` 200 para ambos perfiles;
+- [X] T041 [P] [US3] `tests/Feature/CobroQrControllerTest.php`: `cobro.index` 200 para ambos perfiles;
   `cobro.buscar` con número inexistente → back con error; con número válido → redirect a `cobro.recibo`
   firmada; `cobro.recibo` sin firma → 403; con firma válida y recibo con saldo → formulario;
   recibo anulado → aviso sin formulario; recibo saldado → aviso; `cobro.pago.store` registra el pago
   (saldo baja, estado recalculado) y con `evidencia` adjunta guarda el archivo; monto > saldo → error;
   el comprobante (`recibos.show`… `comprobante`) renderiza un `<img src="data:image/png;base64,`.
-- [ ] T042 [P] [US3] `tests/Feature/ComprobanteReciboQrTest.php` (o extender el test existente del
+- [X] T042 [P] [US3] `tests/Feature/ComprobanteReciboQrTest.php` (o extender el test existente del
   comprobante): el QR aparece en la vista y no rompe el render.
 
 ### Implementación para User Story 3
 
-- [ ] T043 [P] [US3] `app/Services/ServicioCodigoQrRecibo.php`: `enlace(Recibo): string`
+- [X] T043 [P] [US3] `app/Services/ServicioCodigoQrRecibo.php`: `enlace(Recibo): string`
   (`URL::signedRoute('cobro.recibo', $recibo)`), `dataUri(Recibo): string` (PNG base64 vía
   `endroid/qr-code`, con fallback SVG propio si la librería no está — research.md Decisión 8),
   `numeroEsValido(string): bool`.
-- [ ] T044 [P] [US3] `app/Http/Requests/SolicitudRegistrarCobroRapido.php`: `monto` `required numeric
+- [X] T044 [P] [US3] `app/Http/Requests/SolicitudRegistrarCobroRapido.php`: `monto` `required numeric
   gt:0`; `fecha_pago` `required date before_or_equal:today`; `medio_pago` `nullable string max:60`;
   `evidencia` `nullable file mimes:jpg,jpeg,png,pdf max:5120`. Mensajes en español.
-- [ ] T045 [US3] Extender `app/Services/ServicioGestionPagosRecibo.php::registrar()` para persistir
+- [X] T045 [US3] Extender `app/Services/ServicioGestionPagosRecibo.php::registrar()` para persistir
   `medio_pago` cuando venga en `$datos` (clave opcional, retrocompatible); no cambiar firmas públicas.
   Añadir caso al `tests/Unit/ServicioGestionPagosReciboTest.php`.
-- [ ] T046 [US3] `app/Http/Controllers/ControladorCobroQr.php`:
+- [X] T046 [US3] `app/Http/Controllers/ControladorCobroQr.php`:
   `index()` (vista de escaneo), `buscar(Request)` (valida `numero`, resuelve `Recibo`, redirige a
   `cobro.recibo` firmada o back con error), `recibo(Request, Recibo)` (middleware `signed`; elige modo
   formulario/aviso según `estado`/`saldoPendiente()`), `registrarPago(SolicitudRegistrarCobroRapido,
   Recibo)` (llama a `ServicioGestionPagosRecibo::registrar` + evidencia opcional reutilizando la lógica
   de `EvidenciaPagoController`, redirige a `cobro.recibo` firmada con `session('mensaje')`).
-- [ ] T047 [US3] Confirmar/afinar el bloque de rutas de T009 para US3 y su orden; `cobro.recibo` con
+- [X] T047 [US3] Confirmar/afinar el bloque de rutas de T009 para US3 y su orden; `cobro.recibo` con
   `->middleware('signed')`, el resto solo `auth`+`cuenta.activa`.
-- [ ] T048 [P] [US3] `resources/js/cobro-qr.js`: inicializa `html5-qrcode` sobre `#lector-qr` si existe
+- [X] T048 [P] [US3] `resources/js/cobro-qr.js`: inicializa `html5-qrcode` sobre `#lector-qr` si existe
   `window.Html5Qrcode` y hay `getUserMedia`; al decodificar una URL de `cobro.recibo` de este host,
   `window.location = url`; si falla permiso o no hay soporte, oculta el bloque de cámara y deja el
   ingreso manual. Sin romper si el elemento no está en la página.
-- [ ] T049 [P] [US3] `resources/views/cobro/index.blade.php`: layout `app-bootstrap`; card con
+- [X] T049 [P] [US3] `resources/views/cobro/index.blade.php`: layout `app-bootstrap`; card con
   `#lector-qr` (oculto por defecto, lo muestra el JS) y `<form method="GET" action="{{ route('cobro.buscar') }}">`
   con `numero` (`inputmode="numeric"`) siempre visible; aviso "necesita cámara y HTTPS" discreto.
   `@vite('resources/js/cobro-qr.js')`.
-- [ ] T050 [P] [US3] `resources/views/cobro/recibo.blade.php`: modo **aviso** (`<x-mensaje-alerta>` +
+- [X] T050 [P] [US3] `resources/views/cobro/recibo.blade.php`: modo **aviso** (`<x-mensaje-alerta>` +
   enlace a `cobro.index`) o modo **formulario** — `card` de resumen (local vía
   `<x-ruta-jerarquia-locacion>`, periodo, `total()`, `montoPagado()`, `saldoPendiente()` con `.cifra` y
   `S/`) + `<form method="POST">` con `monto` (`input-group` `S/`, default saldo), `fecha_pago` (default
   hoy), `medio_pago` (`<select>` opcional), `evidencia` (`<input type="file">` opcional). Errores por
   campo persistentes.
-- [ ] T051 [US3] `resources/views/locaciones/recibos/comprobante.blade.php`: agregar
+- [X] T051 [US3] `resources/views/locaciones/recibos/comprobante.blade.php`: agregar
   `<img alt="Código para registrar el pago" src="{{ $codigoQrDataUri }}" width="96" height="96">` +
   leyenda pequeña en la esquina inferior del `#comprobante-recibo`, dentro de reglas que se respeten en
   `@media print`; pasar `$codigoQrDataUri` desde `ReciboController::comprobante()` vía
   `ServicioCodigoQrRecibo`.
-- [ ] T052 [P] [US3] `resources/views/panel/partials/acceso-cobro-qr.blade.php`: `card` con
+- [X] T052 [P] [US3] `resources/views/panel/partials/acceso-cobro-qr.blade.php`: `card` con
   `bi-qr-code-scan`, título "Cobro por QR", texto breve y botón/enlace a `cobro.index`. Incluir con
   `@include` al inicio de `resources/views/panel/inicio.blade.php`.
-- [ ] T053 [US3] `resources/views/components/layouts/app-bootstrap.blade.php`: ítem de menú "Cobro por
+- [X] T053 [US3] `resources/views/components/layouts/app-bootstrap.blade.php`: ítem de menú "Cobro por
   QR" (`bi-qr-code-scan`, `active` con `request()->routeIs('cobro.*')`) tras "Registro de Pagos".
 - [ ] T054 [US3] `/impeccable polish` sobre `cobro/index.blade.php`, `cobro/recibo.blade.php`,
   `panel/partials/acceso-cobro-qr.blade.php`, `panel/inicio.blade.php`, `app-bootstrap.blade.php` y el
   cambio del comprobante (`/impeccable audit` para el comprobante por su naturaleza de impresión);
   aplicar hallazgos; actualizar `DESIGN.md`.
-- [ ] T055 [US3] `php artisan test --filter=CobroQr` + `--filter=Comprobante` +
+- [X] T055 [US3] `php artisan test --filter=CobroQr` + `--filter=Comprobante` +
   `tests/Unit/ServicioGestionPagosReciboTest.php tests/Feature/EvidenciaPagoControllerTest.php
   tests/Feature/PagoReciboControllerTest.php`; todo verde. `npm run build` sin errores.
-- [ ] T056 [US3] `git commit` — "US3: cobro por QR desde el inicio (specs/044)".
+- [X] T056 [US3] `git commit` — "US3: cobro por QR desde el inicio (specs/044)".
 
 **Checkpoint**: las tres historias funcionan de forma independiente.
 
@@ -303,15 +303,15 @@ registrar pago parcial y luego total con evidencia, probar recibo anulado y enla
 
 ## Phase 6: Polish & transversal
 
-- [ ] T057 [P] Correr la suite completa `php artisan test`; cero regresiones en specs/015/016/023/032/035
+- [X] T057 [P] Correr la suite completa `php artisan test`; cero regresiones en specs/015/016/023/032/035
   y en el resto.
-- [ ] T058 [P] `vendor/bin/pint` (o el linter del proyecto) sobre todos los archivos nuevos/modificados.
-- [ ] T059 Revisar `routes/web.php`: nombres, orden y agrupación coherentes con los comentarios de estilo
+- [X] T058 [P] `vendor/bin/pint` (o el linter del proyecto) sobre todos los archivos nuevos/modificados.
+- [X] T059 Revisar `routes/web.php`: nombres, orden y agrupación coherentes con los comentarios de estilo
   existentes (bloques con `// specs/044:` explicando el orden frente a `{recibo}`/`{lectura}`).
-- [ ] T060 Ejecutar la validación manual de `specs/044-carga-masiva-y-cobro-qr/quickstart.md` hasta donde
+- [X] T060 Ejecutar la validación manual de `specs/044-carga-masiva-y-cobro-qr/quickstart.md` hasta donde
   el entorno lo permita; anotar en el reporte final qué quedó sin verificar (escaneo por cámara: requiere
   dispositivo + HTTPS).
-- [ ] T061 Commit de cierre si Polish produjo cambios — "Polish specs/044: lint, rutas, regresión".
+- [X] T061 Commit de cierre si Polish produjo cambios — "Polish specs/044: lint, rutas, regresión".
 
 ---
 

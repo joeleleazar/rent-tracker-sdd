@@ -29,15 +29,14 @@ class ServicioImportacionRecibos
     public function __construct(
         private readonly ServicioGeneracionReciboPeriodo $servicioGeneracion,
         private readonly ServicioPlantillaRecibos $servicioPlantilla,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{ok: bool, motivoRechazo: string|null, filas: array<int, FilaImportada>, columnas: Collection, avisos: array<int, string>}
      */
     public function previsualizar(UploadedFile $archivo, Carbon $periodo): array
     {
-        $import = new ImportacionRecibosImport();
+        $import = new ImportacionRecibosImport;
         Excel::import($import, $archivo);
 
         $columnas = $this->servicioPlantilla->columnasConcepto();
@@ -53,8 +52,8 @@ class ServicioImportacionRecibos
         $faltantes = $import->columnasFaltantes();
         if (! empty($faltantes)) {
             return $this->rechazo(
-                'El archivo no corresponde a la plantilla de recibos: faltan las columnas ' .
-                implode(', ', $faltantes) . '.',
+                'El archivo no corresponde a la plantilla de recibos: faltan las columnas '.
+                implode(', ', $faltantes).'.',
                 $columnas,
             );
         }
@@ -92,7 +91,7 @@ class ServicioImportacionRecibos
      */
     public function confirmar(array $filasInput, Carbon $periodo): ResultadoImportacion
     {
-        $resultado = new ResultadoImportacion();
+        $resultado = new ResultadoImportacion;
         $columnas = $this->servicioPlantilla->columnasConcepto();
         $conceptoLuz = ConceptoGastoFijo::firstWhere('clave', 'luz');
 
@@ -155,7 +154,7 @@ class ServicioImportacionRecibos
 
     /**
      * @param  Collection<int, ConceptoGastoFijo>  $columnas
-     * @return array<int, float>  concepto_gasto_fijo_id => monto
+     * @return array<int, float> concepto_gasto_fijo_id => monto
      */
     private function mapaConceptos(FilaImportada $fila, Collection $columnas, ?ConceptoGastoFijo $conceptoLuz): array
     {
