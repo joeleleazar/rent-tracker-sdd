@@ -24,9 +24,9 @@ RUN npm run build
 
 
 # ---------------------------------------------------------------------------
-# Etapa 2 — Runtime PHP 8.3 + FrankenPHP
+# Etapa 2 — Runtime PHP 8.4 + FrankenPHP
 # ---------------------------------------------------------------------------
-FROM dunglas/frankenphp:1-php8.3-alpine AS runtime
+FROM dunglas/frankenphp:1-php8.4-alpine AS runtime
 
 # Extensiones que necesitan Laravel + PostgreSQL + dompdf + PhpSpreadsheet.
 RUN install-php-extensions \
