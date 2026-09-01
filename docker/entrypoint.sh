@@ -26,6 +26,14 @@ php artisan storage:link 2>/dev/null || true
 # Esquema al día. --force omite la confirmación interactiva en producción.
 php artisan migrate --force --no-interaction
 
+# Datos de PRUEBA (destructivo sobre el dominio). Se ejecuta solo mientras
+# SEED_DEMO=true esté en el entorno de Render; quitá la variable después del
+# primer arranque para no re-generar los datos en cada deploy.
+if [ "${SEED_DEMO:-}" = "true" ]; then
+    echo "entrypoint: SEED_DEMO=true — cargando DatosPruebaSeeder."
+    php artisan db:seed --class="Database\\Seeders\\DatosPruebaSeeder" --force --no-interaction
+fi
+
 # Cuenta de acceso inicial (perfil Master). Idempotente: no duplica ni pisa una
 # cuenta existente. Sin esto no habría forma de iniciar sesión (specs/040 quitó
 # el registro público).
