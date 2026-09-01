@@ -12,6 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Render termina el TLS en su borde y reenvía la petición al contenedor
+        // por HTTP; sin esto Laravel ve "http" y genera URLs de assets con
+        // http:// (mixed content). El contenedor nunca se expone directo, así
+        // que confiar en todos los proxies es seguro aquí.
+        $middleware->trustProxies(at: '*');
+
         // specs/040: gestión de usuarios por perfiles.
         $middleware->alias([
             'perfil.master' => \App\Http\Middleware\RequerirPerfilMaster::class,
