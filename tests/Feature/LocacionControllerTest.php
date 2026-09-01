@@ -105,10 +105,12 @@ test('un nodo con locaciones hijas expone un control de colapso y uno sin hijas 
     $respuesta->assertDontSee('data-bs-target="#hijos-locacion-' . $local->id . '"', false);
 });
 
-test('la ruta dashboard redirige al arbol unificado de locaciones', function () {
+test('la ruta dashboard renderiza el panel de inicio de cobranza', function () {
+    // specs/043: `dashboard` dejó de ser un alias hacia locaciones.index y ahora
+    // renderiza el panel de inicio (morosos, próximos vencimientos, indicadores).
     $respuesta = $this->actingAs($this->admin)->get(route('dashboard'));
 
-    $respuesta->assertRedirect(route('locaciones.index'));
+    $respuesta->assertOk()->assertSee('Estado de cobranza');
 });
 
 test('el detalle de una locacion muestra la ruta de jerarquia truncada', function () {

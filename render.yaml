@@ -1,0 +1,70 @@
+# Blueprint de Render (https://render.com/docs/blueprint-spec)
+# Crea, en el plan gratuito: 1 base de datos PostgreSQL + 1 servicio web Docker.
+#
+# Uso: en el panel de Render -> "New" -> "Blueprint" -> apuntar a este repo.
+# Después del primer deploy, definir manualmente APP_KEY y APP_URL (ver DEPLOY.md).
+
+databases:
+  - name: rent-tracker-db
+    plan: free
+    databaseName: rent_tracker
+    user: rent_tracker
+
+services:
+  - type: web
+    name: rent-tracker
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: "Rent Tracker"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      # Generar con `php artisan key:generate --show` y pegar aquí en el panel.
+      # Si se deja vacía, el contenedor genera una efímera en cada arranque
+      # (las sesiones se invalidan al dormir/despertar el servicio).
+      - key: APP_KEY
+        sync: false
+      # Poner la URL pública del servicio tras el primer deploy,
+      # p. ej. https://rent-tracker.onrender.com  (evita mixed content / redirects).
+      - key: APP_URL
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_STACK
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: pgsql
+      # Cadena de conexión interna de la base creada arriba.
+      - key: DB_URL
+        fromDatabase:
+          name: rent-tracker-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      # Sin worker en el plan gratuito: los jobs (exportaciones, correos) corren
+      # de forma síncrona dentro del request.
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: local
+      # Credenciales de la cuenta Master inicial (UsuarioInicialSeeder).
+      # Si se dejan vacías se usa admin@rent-tracker.test / demo1234:
+      # cambiá la contraseña desde la app apenas ingreses.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

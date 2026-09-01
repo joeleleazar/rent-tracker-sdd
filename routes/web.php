@@ -3,6 +3,7 @@
 use App\Http\Controllers\ConceptoGastoFijoController;
 use App\Http\Controllers\ConfiguracionGeneralController;
 use App\Http\Controllers\ContratoController;
+use App\Http\Controllers\ControladorPanelInicio;
 use App\Http\Controllers\ControladorUsuario;
 use App\Http\Controllers\DocumentoContratoController;
 use App\Http\Controllers\EvidenciaPagoController;
@@ -21,12 +22,12 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'cuenta.activa'])->group(function () {
-    // specs/013-arbol-jerarquico-locaciones: el listado general de locaciones
-    // se consolidó en locaciones.index (árbol jerárquico unificado); esta ruta
-    // se conserva como alias de navegación post-login en vez de eliminarse.
-    Route::get('/dashboard', function () {
-        return redirect()->route('locaciones.index');
-    })->name('dashboard');
+    // specs/043-panel-inicio-cobranza: la ruta de inicio post-login pasa de ser
+    // un alias hacia locaciones.index (specs/013) a renderizar el panel de
+    // cobranza de solo lectura (morosos, próximos vencimientos, indicadores).
+    // El nombre `dashboard` se conserva porque AuthenticatedSessionController y
+    // la ruta raíz redirigen a él.
+    Route::get('/dashboard', [ControladorPanelInicio::class, 'index'])->name('dashboard');
 
     Route::get('/locaciones', [LocacionController::class, 'index'])->name('locaciones.index');
     Route::get('/locaciones/crear', [LocacionController::class, 'create'])->name('locaciones.create');

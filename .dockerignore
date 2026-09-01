@@ -1,0 +1,49 @@
+# Dependencias y artefactos que se reconstruyen dentro de la imagen
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+auth.json
+
+# Contenido transitorio de storage (se conserva la estructura de carpetas)
+/storage/logs/*
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/*.key
+/storage/pail
+
+# Control de versiones y CI
+.git
+.gitattributes
+.github
+
+# Herramientas de especificación / diseño / editor (no aportan al runtime)
+/specs
+/.specify
+/.impeccable
+/.claude
+/.vscode
+/.idea
+/.zed
+/.nova
+/.cursor
+/.codex
+
+# Pruebas y cachés de test
+/tests
+/.phpunit.cache
+.phpunit.result.cache
+_ide_helper.php
+Homestead.*
+
+# Varios
+Thumbs.db
+.DS_Store
+*.log

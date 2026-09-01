@@ -73,7 +73,7 @@
                         <ul class="nav nav-pills flex-md-column flex-row flex-wrap gap-2 mb-md-3" style="min-width: 0;">
                             <li class="nav-item">
                                 <a href="{{ route('dashboard') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                                    <i class="bi bi-buildings" aria-hidden="true"></i> Locaciones
+                                    <i class="bi bi-clipboard-data" aria-hidden="true"></i> Inicio
                                 </a>
                             </li>
                             <li class="nav-item">

@@ -178,6 +178,9 @@ Bootstrap `alert-success`/`alert-danger`, always paired with a support icon (`bi
 ### Barra de carga de navegación (bespoke)
 A hairline (3px) fixed bar at the top edge of the viewport (specs/042), built from Bootstrap `progress`/`progress-bar` with the `$primary` fill — the only custom part is the fixed position and reduced height, in the same spirit as the "Estado Vacío" bespoke component. It appears when a boosted in-app navigation (a GET request) takes longer than a ~150ms anti-flicker threshold and is removed as soon as the new content is ready, the request fails, or it is aborted. Form submissions do **not** trigger it — they keep the disabled "Guardando…" button as their feedback — and the first hard page load relies on the browser's native indicator. Honors `prefers-reduced-motion` (no width animation) and never takes focus.
 
+### Stat card (KPI tile)
+Introduced at scale by the inicio panel (specs/043): a plain `.card` whose `.card-body` holds a small `text-secondary` label above one large figure (`fs-3`/`fs-5`, `fw-bold`, `.cifra` for tabular alignment, `S/` prefix on money, `text-danger` on a figure that represents debt). No icon, no sparkline, no delta — it states one number and what it is. Laid out in a `row g-3` of `col-6 col-lg-3` tiles so they read two-up on mobile and in a single band on desktop. It is a read-only display primitive: a stat card never contains a control.
+
 ## Do's and Don'ts
 
 ### Do:
