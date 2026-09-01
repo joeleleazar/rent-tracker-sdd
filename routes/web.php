@@ -109,6 +109,13 @@ Route::middleware(['auth', 'cuenta.activa'])->group(function () {
     Route::get('/lecturas/registro-masivo/lecturas/{lectura}/editar-inline', [RegistroMasivoLecturasController::class, 'editarInline'])->name('lecturas.registroMasivo.editarInline');
     Route::patch('/lecturas/registro-masivo/lecturas/{lectura}', [RegistroMasivoLecturasController::class, 'actualizarInline'])->name('lecturas.registroMasivo.actualizarInline');
 
+    // specs/044 (US1): carga masiva de lecturas por plantilla. Vía adicional a
+    // la grilla manual y a la exportación de specs/015; rutas literales, todas
+    // antes de /lecturas/{lectura} (arriba) por el mismo motivo ya documentado.
+    Route::get('/lecturas/registro-masivo/plantilla', [RegistroMasivoLecturasController::class, 'plantilla'])->name('lecturas.registroMasivo.plantilla');
+    Route::post('/lecturas/registro-masivo/importar/previsualizar', [RegistroMasivoLecturasController::class, 'previsualizarImportacion'])->name('lecturas.registroMasivo.importar.previsualizar');
+    Route::post('/lecturas/registro-masivo/importar/confirmar', [RegistroMasivoLecturasController::class, 'confirmarImportacion'])->name('lecturas.registroMasivo.importar.confirmar');
+
     // Catálogo de conceptos de gasto fijo (specs/024)
     Route::get('/conceptos-gasto-fijo', [ConceptoGastoFijoController::class, 'index'])->name('conceptosGastoFijo.index');
     Route::get('/conceptos-gasto-fijo/crear', [ConceptoGastoFijoController::class, 'create'])->name('conceptosGastoFijo.create');

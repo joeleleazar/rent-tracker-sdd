@@ -14,6 +14,7 @@ class Pago extends Model
         'recibo_id',
         'monto',
         'fecha_pago',
+        'medio_pago',
         'registrado_por_id',
         'evidencia_ruta',
         'evidencia_nombre_archivo',

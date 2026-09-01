@@ -15,6 +15,8 @@ export default defineConfig({
                 'resources/js/historial-consumo-medidor.js',
                 'resources/js/costos-fijos-contrato.js',
                 'resources/js/registro-masivo-lecturas.js',
+                'resources/js/importacion-vista-previa.js',
+                'resources/js/cobro-qr.js',
             ],
             refresh: true,
             fonts: [

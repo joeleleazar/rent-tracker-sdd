@@ -114,6 +114,14 @@
                 </div>
             </div>
 
+            {{-- specs/044 (US1): carga masiva por plantilla — vía adicional a la grilla de abajo. --}}
+            <div class="card">
+                <div class="card-body">
+                    @include('lecturas.registro-masivo.partials.acciones-importacion', ['periodo' => $periodo])
+                </div>
+            </div>
+            <div id="vista-previa-importacion-lecturas"></div>
+
             @if (empty($raices))
                 <x-estado-vacio icono="bi-speedometer2">Todavía no hay locaciones registradas.</x-estado-vacio>
             @else

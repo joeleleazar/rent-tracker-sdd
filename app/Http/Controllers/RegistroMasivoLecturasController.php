@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Exceptions\ConsumoNegativoSinConfirmarException;
 use App\Exceptions\LecturaMedidorDuplicadaException;
 use App\Exports\ExportacionRegistroMasivoLecturas;
+use App\Exports\PlantillaLecturasExport;
 use App\Http\Requests\SolicitudActualizarTarifaRegistroMasivo;
+use App\Http\Requests\SolicitudConfirmarImportacionLecturas;
 use App\Http\Requests\SolicitudGuardarLecturaMedidor;
 use App\Http\Requests\SolicitudGuardarRegistroMasivoLecturas;
 use App\Models\BorradorLecturaMedidor;
@@ -14,6 +16,8 @@ use App\Models\LecturaMedidor;
 use App\Models\Locacion;
 use App\Services\ServicioCalculoConsumoMedidor;
 use App\Services\ServicioConstruccionArbolLocaciones;
+use App\Services\ServicioImportacionLecturas;
+use App\Services\ServicioPlantillaLecturas;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +44,75 @@ class RegistroMasivoLecturasController extends Controller
     public function __construct(
         private readonly ServicioConstruccionArbolLocaciones $servicioArbol,
         private readonly ServicioCalculoConsumoMedidor $servicioConsumo,
+        private readonly ServicioPlantillaLecturas $servicioPlantilla,
+        private readonly ServicioImportacionLecturas $servicioImportacion,
     ) {
+    }
+
+    /**
+     * specs/044 (US1): descarga la plantilla xlsx del periodo seleccionado —
+     * una fila por locación alquilable, con la lectura actual precargada si ya
+     * existe registro para ese periodo. La tarifa por kWh NO viaja en el
+     * archivo (FR-015).
+     */
+    public function plantilla(Request $solicitud): BinaryFileResponse
+    {
+        $periodo = $this->resolverPeriodo($solicitud->query('periodo'));
+
+        return Excel::download(
+            new PlantillaLecturasExport($periodo, $this->servicioPlantilla),
+            "lecturas-plantilla-{$periodo->format('Y-m')}.xlsx",
+        );
+    }
+
+    /**
+     * specs/044 (US1): parsea el archivo subido y devuelve la vista previa
+     * editable (parcial htmx). No persiste nada (FR-013). Un archivo cuya
+     * estructura no corresponde a la plantilla, o de otro periodo, se rechaza
+     * con estado 422 y sin tabla (FR-010).
+     */
+    public function previsualizarImportacion(Request $solicitud): Response
+    {
+        $solicitud->validate([
+            'archivo' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:5120'],
+            'periodo' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        $periodo = Carbon::parse($solicitud->input('periodo'))->startOfMonth();
+        $resultado = $this->servicioImportacion->previsualizar($solicitud->file('archivo'), $periodo);
+
+        $vista = view('lecturas.registro-masivo.partials.vista-previa-importacion', [
+            'periodo' => $periodo,
+            'resultado' => $resultado,
+        ]);
+
+        return $resultado['ok']
+            ? response($vista)
+            : response($vista, Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * specs/044 (US1): guarda las filas válidas de la vista previa (upsert por
+     * locación y periodo, en una transacción). Redirige con el resumen efímero
+     * de creadas/actualizadas/omitidas; si nada quedó guardado, vuelve con el
+     * error y sin persistir.
+     */
+    public function confirmarImportacion(SolicitudConfirmarImportacionLecturas $solicitud): RedirectResponse
+    {
+        $periodo = Carbon::parse($solicitud->validated('periodo'))->startOfMonth();
+        $filas = $solicitud->validated('filas');
+
+        $resultado = $this->servicioImportacion->confirmar($filas, $periodo);
+
+        if ($resultado->nadaGuardado()) {
+            return back()
+                ->withInput()
+                ->withErrors(['archivo' => 'Ninguna fila era válida: no se guardó nada. ' . $resultado->mensaje()]);
+        }
+
+        return redirect()
+            ->route('lecturas.registroMasivo.index', ['periodo' => $periodo->format('Y-m')])
+            ->with('mensaje', $resultado->mensaje());
     }
 
     public function index(Request $solicitud): View
