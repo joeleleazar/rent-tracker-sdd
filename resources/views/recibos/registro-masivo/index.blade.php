@@ -59,6 +59,14 @@
                 </div>
             </form>
 
+            {{-- specs/044 (US2): carga masiva de recibos por plantilla — vía adicional a la tabla de abajo. --}}
+            <div class="card">
+                <div class="card-body">
+                    @include('recibos.registro-masivo.partials.acciones-importacion', ['periodo' => $periodo])
+                </div>
+            </div>
+            <div id="vista-previa-importacion-recibos"></div>
+
             @if (empty($raices))
                 <x-estado-vacio icono="bi-receipt">Todavía no hay locaciones registradas.</x-estado-vacio>
             @else

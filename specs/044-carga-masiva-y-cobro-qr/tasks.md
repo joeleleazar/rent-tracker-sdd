@@ -161,15 +161,15 @@ activo → inválida.
 
 ### Tests para User Story 2 ⚠️
 
-- [ ] T025 [P] [US2] `tests/Unit/ServicioImportacionRecibosTest.php`: mapeo de columnas de concepto por
+- [X] T025 [P] [US2] `tests/Unit/ServicioImportacionRecibosTest.php`: mapeo de columnas de concepto por
   nombre contra el catálogo vigente (columna inexistente ignorada con aviso; concepto nuevo con default);
   `totalSugerido()` = renta+luz+Σconceptos; total explícito distinto → ajuste sobre luz (o el punto que
   use specs/019 — el test fija el comportamiento acordado); motivos de invalidez (monto negativo/no
   numérico, sin contrato activo, >1 recibo vigente, periodo distinto).
-- [ ] T026 [P] [US2] `tests/Unit/ServicioPlantillaRecibosTest.php`: encabezados = fijas + una por
+- [X] T026 [P] [US2] `tests/Unit/ServicioPlantillaRecibosTest.php`: encabezados = fijas + una por
   `ConceptoGastoFijo` activo no protegido + `Total`; precarga desde el recibo vigente único; derivación
   cuando no hay recibo; marcador cuando hay varios.
-- [ ] T027 [P] [US2] `tests/Feature/ImportacionRecibosControllerTest.php`: descarga (headers dinámicos,
+- [X] T027 [P] [US2] `tests/Feature/ImportacionRecibosControllerTest.php`: descarga (headers dinámicos,
   primera columna `periodo`); `previsualizar` (tabla + aviso de columna ignorada); `previsualizar` con
   plantilla de lecturas → 422; `previsualizar` con `periodo` de archivo distinto al de pantalla → 422;
   **sin estado** (nada persistido en `previsualizar`); `confirmar` crea vía `generar()` y actualiza vía
@@ -178,16 +178,16 @@ activo → inválida.
 
 ### Implementación para User Story 2
 
-- [ ] T028 [P] [US2] `app/Services/ServicioPlantillaRecibos.php`: `columnasConcepto(): Collection`
+- [X] T028 [P] [US2] `app/Services/ServicioPlantillaRecibos.php`: `columnasConcepto(): Collection`
   (`ConceptoGastoFijo::activos()->ordenados()` sin protegidos) y `filas(Carbon $periodo): array` con
   batch-fetch de contratos activos, recibos vigentes del periodo y `ValorConceptoContrato`; deriva luz
   con `ServicioGeneracionReciboPeriodo::calcularMontoLuzSugerido()`.
-- [ ] T029 [P] [US2] `app/Exports/PlantillaRecibosExport.php` (`FromCollection` + `WithHeadings`):
+- [X] T029 [P] [US2] `app/Exports/PlantillaRecibosExport.php` (`FromCollection` + `WithHeadings`):
   encabezados dinámicos con `periodo` como primera columna, filas desde `ServicioPlantillaRecibos`.
-- [ ] T030 [P] [US2] `app/Imports/ImportacionRecibosImport.php` (`ToCollection` + `WithHeadingRow`):
+- [X] T030 [P] [US2] `app/Imports/ImportacionRecibosImport.php` (`ToCollection` + `WithHeadingRow`):
   expone la colección cruda + la lista de encabezados detectados (para el aviso de columna ignorada y
   para validar `periodo`/`local_id`/`Total`).
-- [ ] T031 [US2] `app/Services/ServicioImportacionRecibos.php`: `previsualizar(UploadedFile, Carbon)`
+- [X] T031 [US2] `app/Services/ServicioImportacionRecibos.php`: `previsualizar(UploadedFile, Carbon)`
   (rechaza si falta encabezado esperado o si `periodo` del archivo ≠ `$periodo`) y
   `confirmar(array $filas, Carbon): ResultadoImportacion`. `confirmar` recorre filas válidas en **una**
   `DB::transaction`: 0 recibos vigentes → `ServicioGeneracionReciboPeriodo::generar()`; 1 →
@@ -196,26 +196,26 @@ activo → inválida.
   leer `specs/019-total-editable-recibos/` y confirmar el punto real donde el total editable se refleja
   (concepto luz u otro); si difiere de la suposición, adoptar el mecanismo real y actualizar T025 y
   `contracts/importar-recibos.md`.
-- [ ] T032 [US2] `app/Http/Requests/SolicitudConfirmarImportacionRecibos.php`: `periodo`, `filas`
+- [X] T032 [US2] `app/Http/Requests/SolicitudConfirmarImportacionRecibos.php`: `periodo`, `filas`
   `required array`, `filas.*.local_id` `required integer`, `filas.*.renta|luz|total` `nullable numeric`,
   `filas.*.conceptos` `array`, `filas.*.conceptos.*` `nullable numeric`.
-- [ ] T033 [US2] Métodos en `app/Http/Controllers/RegistroMasivoRecibosController.php`: `plantilla`,
+- [X] T033 [US2] Métodos en `app/Http/Controllers/RegistroMasivoRecibosController.php`: `plantilla`,
   `previsualizarImportacion`, `confirmarImportacion` — mismo patrón que US1, `session('mensaje')` en
   género masculino ("N creados…").
-- [ ] T034 [P] [US2]
+- [X] T034 [P] [US2]
   `resources/views/recibos/registro-masivo/partials/acciones-importacion.blade.php` — análogo a US1.
-- [ ] T035 [US2]
+- [X] T035 [US2]
   `resources/views/recibos/registro-masivo/partials/vista-previa-importacion.blade.php`: tabla con
   `renta`, `luz`, un input por `conceptos[<id>]`, `total` (con `data-editado`), celda "Total sugerido",
   badges/motivos, aviso de columna ignorada, botón confirmar. `@vite` del JS de vista previa.
-- [ ] T036 [US2] Integrar en `resources/views/recibos/registro-masivo/index.blade.php`: barra de
+- [X] T036 [US2] Integrar en `resources/views/recibos/registro-masivo/index.blade.php`: barra de
   acciones + `<div id="vista-previa-importacion-recibos">`; no tocar la tabla existente.
 - [ ] T037 [US2] `/impeccable polish` sobre `recibos/registro-masivo/index.blade.php` y los parciales
   nuevos; aplicar hallazgos; `DESIGN.md` si corresponde.
-- [ ] T038 [US2] `php artisan test --filter=ImportacionRecibos` +
+- [X] T038 [US2] `php artisan test --filter=ImportacionRecibos` +
   `tests/Feature/RegistroMasivoRecibosControllerTest.php` +
   `tests/Unit/ServicioGeneracionReciboPeriodoTest.php tests/Unit/ReciboTest.php`; todo verde.
-- [ ] T039 [US2] `git commit` — "US2: carga masiva de recibos por plantilla (specs/044)".
+- [X] T039 [US2] `git commit` — "US2: carga masiva de recibos por plantilla (specs/044)".
 
 **Checkpoint**: US1 y US2 funcionan de forma independiente.
 

@@ -68,6 +68,11 @@ Route::middleware(['auth', 'cuenta.activa'])->group(function () {
     // "registro-masivo" como {recibo} y falla con un error de tipo en la BD
     // antes de llegar siquiera a este controlador.
     Route::get('/recibos/registro-masivo', [RegistroMasivoRecibosController::class, 'index'])->name('recibos.registroMasivo.index');
+    // specs/044 (US2): carga masiva de recibos por plantilla. Rutas literales
+    // registradas antes de /recibos/{recibo} y de /recibos/registro-masivo/{locacion}/recibos.
+    Route::get('/recibos/registro-masivo/plantilla', [RegistroMasivoRecibosController::class, 'plantilla'])->name('recibos.registroMasivo.plantilla');
+    Route::post('/recibos/registro-masivo/importar/previsualizar', [RegistroMasivoRecibosController::class, 'previsualizarImportacion'])->name('recibos.registroMasivo.importar.previsualizar');
+    Route::post('/recibos/registro-masivo/importar/confirmar', [RegistroMasivoRecibosController::class, 'confirmarImportacion'])->name('recibos.registroMasivo.importar.confirmar');
     Route::get('/recibos/registro-masivo/{locacion}/recibos', [RegistroMasivoRecibosController::class, 'recibosDelPeriodo'])->name('recibos.registroMasivo.recibosDelPeriodo');
 
     Route::get('/recibos/{recibo}', [ReciboController::class, 'show'])->name('recibos.show');

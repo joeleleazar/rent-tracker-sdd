@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PlantillaRecibosExport;
+use App\Http\Requests\SolicitudConfirmarImportacionRecibos;
 use App\Models\ConceptoGastoFijo;
 use App\Models\Contrato;
 use App\Models\Locacion;
 use App\Models\Recibo;
 use App\Services\ServicioConstruccionArbolLocaciones;
 use App\Services\ServicioGeneracionReciboPeriodo;
+use App\Services\ServicioImportacionRecibos;
+use App\Services\ServicioPlantillaRecibos;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Registro masivo de recibos (specs/023): pantalla análoga a
@@ -28,7 +35,70 @@ class RegistroMasivoRecibosController extends Controller
     public function __construct(
         private readonly ServicioConstruccionArbolLocaciones $servicioArbol,
         private readonly ServicioGeneracionReciboPeriodo $servicioGeneracion,
+        private readonly ServicioPlantillaRecibos $servicioPlantilla,
+        private readonly ServicioImportacionRecibos $servicioImportacion,
     ) {
+    }
+
+    /**
+     * specs/044 (US2): descarga la plantilla xlsx del periodo seleccionado —
+     * una fila por locación con contrato activo, con columnas dinámicas por
+     * concepto de gasto fijo.
+     */
+    public function plantilla(Request $solicitud): BinaryFileResponse
+    {
+        $periodo = $this->resolverPeriodo($solicitud->query('periodo'));
+
+        return Excel::download(
+            new PlantillaRecibosExport($periodo, $this->servicioPlantilla),
+            "recibos-plantilla-{$periodo->format('Y-m')}.xlsx",
+        );
+    }
+
+    /**
+     * specs/044 (US2): parsea el archivo subido y devuelve la vista previa
+     * editable (parcial htmx). No persiste nada (FR-013). Archivo desalineado,
+     * de otro periodo o de la otra plantilla → 422 sin tabla (FR-010).
+     */
+    public function previsualizarImportacion(Request $solicitud): Response
+    {
+        $solicitud->validate([
+            'archivo' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:5120'],
+            'periodo' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        $periodo = Carbon::parse($solicitud->input('periodo'))->startOfMonth();
+        $resultado = $this->servicioImportacion->previsualizar($solicitud->file('archivo'), $periodo);
+
+        $vista = view('recibos.registro-masivo.partials.vista-previa-importacion', [
+            'periodo' => $periodo,
+            'resultado' => $resultado,
+        ]);
+
+        return $resultado['ok']
+            ? response($vista)
+            : response($vista, Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * specs/044 (US2): guarda las filas válidas de la vista previa (upsert de
+     * recibo + conceptos por locación y periodo, en una transacción). Redirige
+     * con el resumen efímero; si nada quedó guardado, vuelve con el error.
+     */
+    public function confirmarImportacion(SolicitudConfirmarImportacionRecibos $solicitud): RedirectResponse
+    {
+        $periodo = Carbon::parse($solicitud->validated('periodo'))->startOfMonth();
+        $resultado = $this->servicioImportacion->confirmar($solicitud->validated('filas'), $periodo);
+
+        if ($resultado->nadaGuardado()) {
+            return back()
+                ->withInput()
+                ->withErrors(['archivo' => 'Ninguna fila era válida: no se guardó nada. ' . $resultado->mensaje('masculino')]);
+        }
+
+        return redirect()
+            ->route('recibos.registroMasivo.index', ['periodo' => $periodo->format('Y-m')])
+            ->with('mensaje', $resultado->mensaje('masculino'));
     }
 
     public function index(Request $solicitud): View
