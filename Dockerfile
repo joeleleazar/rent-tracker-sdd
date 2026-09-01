@@ -39,6 +39,16 @@ RUN install-php-extensions \
         opcache \
         pcntl
 
+# FrankenPHP trae el binario con la capability cap_net_bind_service (+ep) para
+# escuchar en 80/443 sin ser root. Render ejecuta los contenedores con un
+# conjunto de capabilities reducido y execve de un binario que pide una
+# capability no concedible falla con "Operation not permitted" (EPERM).
+# Render entrega un puerto alto vía $PORT, así que la capability no hace falta:
+# se elimina del binario.
+RUN apk add --no-cache --virtual .setcap libcap \
+    && setcap -r /usr/local/bin/frankenphp || true \
+    && apk del .setcap
+
 # Composer (binario de la imagen oficial).
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
