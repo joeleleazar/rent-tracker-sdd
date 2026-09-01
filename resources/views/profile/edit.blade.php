@@ -1,7 +1,7 @@
 <x-layouts.app-bootstrap>
     <x-slot name="header">
-        <h2 class="fs-3 fw-semibold mb-0">
-            {{ __('Profile') }}
+        <h2 class="fs-2 fw-bold mb-0">
+            Mi perfil
         </h2>
     </x-slot>
 

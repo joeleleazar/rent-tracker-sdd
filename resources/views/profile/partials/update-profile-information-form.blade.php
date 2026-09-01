@@ -1,11 +1,11 @@
-<section>
+<section class="d-flex flex-column gap-3">
     <header>
-        <h2 class="fs-4 fw-bold">
-            {{ __('Profile Information') }}
-        </h2>
+        <h3 class="fs-4 fw-bold mb-1">
+            Información del perfil
+        </h3>
 
-        <p class="fs-5">
-            {{ __("Update your account's profile information and email address.") }}
+        <p class="text-secondary mb-0">
+            Actualiza el nombre y el correo electrónico de tu cuenta.
         </p>
     </header>
 
@@ -18,29 +18,30 @@
         @method('patch')
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" value="Nombre" />
             <x-text-input id="name" name="name" type="text" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="email" value="Correo electrónico" />
             <x-text-input id="email" name="email" type="email" :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="fs-5 mt-2">
-                        {{ __('Your email address is unverified.') }}
+                <div class="mt-2">
+                    <p class="mb-1">
+                        Tu correo electrónico no está verificado.
 
-                        <button form="send-verification" class="btn btn-link fs-5 p-0 align-baseline">
-                            {{ __('Click here to re-send the verification email.') }}
+                        <button form="send-verification" class="btn btn-link p-0 align-baseline">
+                            Reenviar el correo de verificación.
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="fs-5 fw-semibold text-success mt-2">
-                            {{ __('A new verification link has been sent to your email address.') }}
+                        <p class="fw-semibold text-success mb-0">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                            Enviamos un nuevo enlace de verificación a tu correo.
                         </p>
                     @endif
                 </div>
@@ -48,10 +49,12 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-primary-button>Guardar</x-primary-button>
 
             @if (session('status') === 'profile-updated')
-                <p class="fs-5 mb-0">{{ __('Saved.') }}</p>
+                <p class="text-success fw-semibold mb-0">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Guardado.
+                </p>
             @endif
         </div>
     </form>

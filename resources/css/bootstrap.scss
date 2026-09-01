@@ -205,18 +205,43 @@ $arbol-gap-fila: map-get($spacers, 2); // separación vertical entre filas
 
 // -----------------------------------------------------------------------
 // 8. Navegación lateral (sidebar-principal, ver app-bootstrap.blade.php):
-//    el estado hover de los enlaces no activos no tenía ninguna señal visual
-//    propia sobre el fondo oscuro (solo heredaba el color de enlace, poco
-//    perceptible en blanco-sobre-oscuro); se agrega un fondo sutil y una
-//    transición breve, coherente con el resto de los estados interactivos
-//    del proyecto (botones, filas de tabla).
+//    rail vertical fijo en escritorio (≥768px) y panel deslizante (offcanvas)
+//    en pantallas angostas, conmutado por la clase `offcanvas-md` de Bootstrap
+//    — antes era una franja horizontal que, al envolver, apilaba toda la
+//    navegación arriba y empujaba el contenido fuera de vista. El estado hover
+//    de los enlaces no activos no tiene señal de enlace perceptible en
+//    blanco-sobre-oscuro, así que se le agrega un fondo sutil y una transición
+//    breve, coherente con el resto de los estados interactivos del proyecto.
 // -----------------------------------------------------------------------
 .sidebar-principal {
-    background-color: $dark;
-    width: 100%;
+    // `!important` es necesario: en ≥768px la clase `.offcanvas-md` de Bootstrap
+    // fuerza `background-color: transparent !important` al volver el panel a modo
+    // estático, lo que dejaba el rail sin fondo y el texto blanco ilegible sobre
+    // el fondo claro de la página.
+    background-color: $dark !important;
+    color: $white;
+
+    // Ancho del panel en modo offcanvas (< md): acotado para no tapar toda la
+    // pantalla en un teléfono estrecho.
+    --bs-offcanvas-width: min(20rem, 82vw);
+}
+
+// La cabecera del offcanvas y su botón de cierre viven sobre el fondo oscuro.
+.sidebar-principal .offcanvas-header {
+    padding: map-get($spacers, 3);
+}
+
+// El cuerpo desplazable ocupa toda la altura disponible; el bloque de
+// usuario/cerrar sesión queda anclado abajo vía `mt-md-auto` en el marcado.
+.sidebar-principal .offcanvas-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 @media (min-width: 768px) {
+    // `offcanvas-md` ya restaura `visibility`/`transform` en este breakpoint;
+    // aquí solo se fija el ancho del rail y que ocupe el alto completo.
     .sidebar-principal {
         width: 280px;
         min-height: 100vh;
@@ -235,6 +260,28 @@ $arbol-gap-fila: map-get($spacers, 2); // separación vertical entre filas
 
 .sidebar-principal .nav-link.active {
     background-color: $accent-rent-tracker;
+}
+
+// Barra superior compacta (< md): fija arriba con el botón de menú y el logo,
+// sobre el mismo fondo oscuro del sidebar para leerse como una sola pieza de
+// navegación. Respeta el área segura del notch en teléfonos modernos.
+.sidebar-topbar {
+    position: sticky;
+    top: 0;
+    z-index: $zindex-sticky;
+    background-color: $dark;
+    padding-top: max(#{map-get($spacers, 2)}, env(safe-area-inset-top));
+}
+
+.sidebar-topbar__toggle {
+    // Botón sobrio sobre el fondo oscuro: sin relleno de color, solo el realce
+    // de hover/focus coherente con los enlaces del sidebar.
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: rgba(255, 255, 255, .1);
+    }
 }
 
 // -----------------------------------------------------------------------

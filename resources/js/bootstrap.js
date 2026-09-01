@@ -107,3 +107,31 @@ function escanearNotificaciones() {
 
 document.addEventListener('DOMContentLoaded', escanearNotificaciones);
 document.addEventListener('htmx:afterSettle', escanearNotificaciones);
+
+/**
+ * Cierre del sidebar en modo offcanvas (< md).
+ *
+ * En pantallas angostas el sidebar (`layouts/app-bootstrap.blade.php`) es un
+ * `offcanvas-md`: un panel deslizante que se abre desde la barra superior. Con
+ * hx-boost activo, seguir un enlace del menú reemplaza el contenido sin recargar
+ * la página, así que el panel se quedaría abierto tapando el resultado. Este
+ * listener lo cierra al pulsar cualquier enlace de navegación, pero solo cuando
+ * está realmente en modo offcanvas — a partir de 768px `offcanvas-md` es un rail
+ * estático y no debe ocultarse nunca.
+ */
+const CONSULTA_SIDEBAR_OFFCANVAS = window.matchMedia('(max-width: 767.98px)');
+
+document.addEventListener('click', (evento) => {
+    if (!CONSULTA_SIDEBAR_OFFCANVAS.matches) {
+        return;
+    }
+
+    const enlace = evento.target.closest('#sidebar-principal .nav-link, #sidebar-principal a[href]');
+
+    if (!enlace) {
+        return;
+    }
+
+    const panel = document.getElementById('sidebar-principal');
+    bootstrap.Offcanvas.getOrCreateInstance(panel).hide();
+});

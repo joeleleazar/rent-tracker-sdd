@@ -21,11 +21,11 @@
                 </x-mensaje-alerta>
             @endif
 
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start gap-3">
                 <p class="mb-0 text-secondary">
                     Estos son los conceptos disponibles para configurar en contratos y para incluir en recibos. "Renta" y "Luz" son conceptos protegidos: sus montos se calculan automáticamente y no pueden desactivarse ni eliminarse.
                 </p>
-                <a href="{{ route('conceptosGastoFijo.create') }}" class="btn btn-primary text-nowrap">
+                <a href="{{ route('conceptosGastoFijo.create') }}" class="btn btn-primary text-nowrap align-self-stretch align-self-sm-start">
                     <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo Concepto
                 </a>
             </div>

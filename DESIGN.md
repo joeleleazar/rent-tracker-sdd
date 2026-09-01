@@ -122,7 +122,9 @@ Body copy is short-form (labels, single sentences, table cells) throughout — t
 
 ## Layout
 
-Fixed sidebar (280px, always visible ≥768px) + fluid content column, built from `d-flex flex-column flex-md-row` — below 768px the sidebar collapses into a horizontal strip above the content instead of a hamburger drawer, so every nav item stays visible and reachable rather than hidden behind a toggle.
+Fixed sidebar (280px, always visible ≥768px) + fluid content column, built from `d-flex flex-column flex-md-row`. Below 768px the sidebar is a Bootstrap `offcanvas-md`: a compact dark top bar (logo + `☰ Menú`) stays pinned to the viewport, and the full navigation slides in from the left as an off-canvas drawer over a dimmed backdrop, closing when a link is chosen (via `resources/js/bootstrap.js`, guarded to the `max-width: 767.98px` range so the static desktop rail is never hidden) or when the backdrop is tapped.
+
+*Confirmed decision (2026-08-31):* this replaced the earlier always-visible horizontal strip, which — once its items wrapped on a phone — stacked the whole menu at the top of the page and pushed the actual content out of the first viewport. The drawer is the intentional pattern now; do not revert to an always-expanded mobile nav. Both layouts carry `<meta name="viewport" … viewport-fit=cover>` and the top bar pads with `env(safe-area-inset-top)` so the toggle clears a notch.
 
 Content pages constrain themselves per task rather than filling the viewport: detail and form pages cap at `max-width: 42rem`–`48rem` inside a `container-xl`, keeping a single-column read on wide monitors instead of stretching a `dl` or form to an uncomfortable line length. List/table surfaces (the locación tree, contract history) are allowed the full column width since they carry tabular data, not prose.
 
@@ -166,7 +168,7 @@ Bootstrap's stock corner radius throughout (`--bs-border-radius`, 0.375rem) — 
 - **Error:** `invalid-feedback` rendered unconditionally visible (`d-block`) beneath the field, red text, no icon duplication with the field itself.
 
 ### Navigation
-- **Sidebar:** dark (`#111827`) vertical rail on desktop, horizontal strip on mobile. Inactive links are white-on-dark with no background; hover adds a soft 10%-white fill; the active route gets the Signature Teal fill — the sidebar is the accent color's only home in the system.
+- **Sidebar:** dark (`#111827`) vertical rail on desktop; below 768px it becomes an off-canvas drawer opened from a pinned dark top bar (see Layout). Inactive links are white-on-dark with no background; hover adds a soft 10%-white fill; the active route gets the Signature Teal fill — the sidebar is the accent color's only home in the system. Because Bootstrap forces `.offcanvas-md` back to a transparent background at ≥768px, `.sidebar-principal` sets its dark fill with `!important` so the static rail keeps its colour.
 - **Breadcrumb:** Bootstrap `breadcrumb`/`breadcrumb-item`, truncated to the last 3 levels with a literal "…" lead-in for deeper hierarchies, so a deeply nested locación never pushes the trail off-screen.
 
 ### Estado Vacío (signature component)
@@ -189,6 +191,7 @@ Introduced at scale by the inicio panel (specs/043): a plain `.card` whose `.car
 - **Do** require a named, two-button confirmation ("Sí, eliminar X" / "No, cancelar") for every destructive action.
 - **Do** apply `.cifra` (tabular numerals) to monetary and metered figures wherever more than one number needs to align in a column.
 - **Do** keep the Signature Teal accent to exactly one job: marking current location in the sidebar.
+- **Do** hold the auth and profile screens (Laravel Breeze origin) to the same system as the rest of the app: Spanish copy, the stock type ramp (no blanket `fs-5` body text), and the shared `x-input-label` / `x-text-input` / `x-primary-button` components. The guest layout (`layouts/guest-bootstrap`) gives each screen a `title` / `subtitle` slot for its one page heading.
 
 ### Don't:
 - **Don't** introduce Alpine.js for write-interactivity — htmx (`hx-boost`) is the documented, binding choice (constitution Principio VI, specs/011).

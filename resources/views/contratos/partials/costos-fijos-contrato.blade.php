@@ -15,7 +15,7 @@
         Estos valores se usan como referencia inicial editable al generar un recibo; no afectan a recibos ya emitidos.
     </p>
 
-    <div class="row g-4">
+    <div class="row g-3">
         @foreach ($conceptosConfigurables as $concepto)
             @php
                 $valorActual = $contrato?->valorDeConcepto($concepto);

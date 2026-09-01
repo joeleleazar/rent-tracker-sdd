@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Rent Tracker') }}</title>
@@ -44,33 +44,74 @@
             Si htmx no carga, este atributo se ignora y todo navega/envía de forma
             clásica (degradación elegante, FR-007).
         --}}
-        <div class="d-flex flex-column flex-md-row min-vh-100" hx-boost="true">
+        <div class="app-shell d-flex flex-column flex-md-row min-vh-100" hx-boost="true">
             {{--
-                Sidebar de navegación (Principio III) — vertical y siempre visible
-                en escritorio; en pantallas angostas se reordena a una franja
-                horizontal con los mismos enlaces, sin ocultar ninguno.
+                Barra superior compacta (solo < md): en pantallas angostas el
+                sidebar deja de vivir permanentemente en pantalla y pasa a un
+                panel lateral (offcanvas) que se abre con el botón ☰. Esta barra
+                queda fija arriba para dar contexto de marca y acceso al menú sin
+                empujar el contenido hacia abajo.
+            --}}
+            @auth
+                <header class="sidebar-topbar d-flex d-md-none align-items-center gap-3 px-3 py-2 text-white">
+                    <button
+                        class="sidebar-topbar__toggle btn btn-dark d-inline-flex align-items-center gap-2 border-0"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#sidebar-principal"
+                        aria-controls="sidebar-principal"
+                    >
+                        <i class="bi bi-list fs-4" aria-hidden="true"></i>
+                        <span>Menú</span>
+                    </button>
+                    <a href="{{ url('/') }}" class="ms-auto d-inline-flex align-items-center text-decoration-none" aria-label="{{ config('app.name', 'Rent Tracker') }} — ir al inicio">
+                        <span class="bg-white rounded-3 px-2 py-1 d-inline-flex align-items-center justify-content-center">
+                            <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" style="height: 1.75rem; width: auto;">
+                        </span>
+                    </a>
+                </header>
+            @endauth
+
+            {{--
+                Sidebar de navegación (Principio III) — rail vertical fijo y
+                siempre visible en escritorio (≥768px); en pantallas angostas es
+                un `offcanvas` que se abre desde el borde izquierdo con la barra
+                superior y se cierra al elegir una opción o tocar fuera. La clase
+                `offcanvas-md` de Bootstrap conmuta sola entre ambos modos.
             --}}
             <nav
-                class="sidebar-principal d-flex flex-column flex-shrink-0 p-3 text-white"
+                id="sidebar-principal"
+                class="sidebar-principal offcanvas-md offcanvas-start d-flex flex-column flex-shrink-0 text-white"
+                tabindex="-1"
                 aria-label="Navegación principal"
             >
-                <div class="d-flex flex-md-column flex-row flex-wrap align-items-center align-items-md-stretch justify-content-between gap-3">
+                <div class="offcanvas-header d-md-none border-bottom border-secondary">
+                    <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none" aria-label="{{ config('app.name', 'Rent Tracker') }} — ir al inicio">
+                        <span class="bg-white rounded-3 px-2 py-1 d-inline-flex align-items-center justify-content-center">
+                            <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" style="height: 1.75rem; width: auto;">
+                        </span>
+                    </a>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebar-principal" aria-label="Cerrar menú"></button>
+                </div>
+
+                <div class="offcanvas-body d-flex flex-column p-3">
                     {{--
                         specs/030: el logo (PNG con fondo transparente) usa "nicson" en azul oscuro,
                         con poco contraste directo sobre el fondo casi negro del sidebar ($dark,
                         #111827) — se enmarca en una tarjeta blanca para que se siga leyendo bien
                         (Principio III), dimensionada por alto con ancho automático para respetar la
                         proporción real del archivo (1769×962, no cuadrada) en vez de recortarlo
-                        dentro de una caja cuadrada.
+                        dentro de una caja cuadrada. En < md el logo ya vive en la barra superior y
+                        en la cabecera del panel, así que aquí solo aparece en escritorio.
                     --}}
-                    <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none mb-md-3" aria-label="{{ config('app.name', 'Rent Tracker') }} — ir al inicio">
+                    <a href="{{ url('/') }}" class="d-none d-md-flex align-items-center text-decoration-none mb-3" aria-label="{{ config('app.name', 'Rent Tracker') }} — ir al inicio">
                         <span class="bg-white rounded-3 px-2 py-1 d-inline-flex align-items-center justify-content-center">
                             <img src="{{ asset('images/logo-nicson-plaza.png') }}" alt="Nicson Plaza" style="height: 2.25rem; width: auto;">
                         </span>
                     </a>
 
                     @auth
-                        <ul class="nav nav-pills flex-md-column flex-row flex-wrap gap-2 mb-md-3" style="min-width: 0;">
+                        <ul class="nav nav-pills flex-column gap-2 mb-3">
                             <li class="nav-item">
                                 <a href="{{ route('dashboard') }}" class="nav-link text-white d-flex align-items-center gap-2 py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                                     <i class="bi bi-clipboard-data" aria-hidden="true"></i> Inicio
@@ -116,8 +157,8 @@
                             @endcan
                         </ul>
 
-                        <div class="d-flex flex-md-column flex-row align-items-center align-items-md-stretch gap-3 mt-md-auto pt-md-3 border-top border-secondary">
-                            <span class="text-white-50">{{ Auth::user()->name }}</span>
+                        <div class="d-flex flex-column align-items-stretch gap-2 mt-md-auto pt-3 border-top border-secondary">
+                            <span class="text-white-50 small text-truncate">{{ Auth::user()->name }}</span>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="btn btn-outline-light w-100">

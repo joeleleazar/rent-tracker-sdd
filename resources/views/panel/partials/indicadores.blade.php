@@ -53,7 +53,7 @@
                             <span class="badge text-bg-secondary cifra">{{ $contratosPorVencer[$clave]->count() }}</span>
                         </div>
                         @forelse ($contratosPorVencer[$clave] as $item)
-                            <div class="d-flex justify-content-between align-items-baseline border-top py-2">
+                            <div class="d-flex flex-wrap justify-content-between align-items-baseline column-gap-3 border-top py-2">
                                 <a href="{{ route('contratos.show', $item->contrato) }}">
                                     {{ $item->inquilino ?? '—' }} · {{ $item->locacion?->nombre ?? '—' }}
                                 </a>

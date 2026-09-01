@@ -1,28 +1,26 @@
 <x-layouts.guest-bootstrap>
-    <div class="fs-5 mb-3">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+    <x-slot name="title">Verifica tu correo</x-slot>
+    <x-slot name="subtitle">Te enviamos un enlace de verificación al correo de tu cuenta. Ábrelo para activarla. Si no lo recibiste, podemos enviarte otro.</x-slot>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="fs-5 fw-semibold text-success mb-3">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div class="d-flex align-items-center gap-2 fw-semibold text-success" role="status">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            Enviamos un nuevo enlace de verificación al correo indicado en tu registro.
         </div>
     @endif
 
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-
-            <x-primary-button>
-                {{ __('Resend Verification Email') }}
+            <x-primary-button class="w-100 d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-envelope-arrow-up" aria-hidden="true"></i> Reenviar correo
             </x-primary-button>
         </form>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="btn btn-link fs-5">
-                {{ __('Log Out') }}
+            <button type="submit" class="btn btn-outline-secondary w-100">
+                Cerrar sesión
             </button>
         </form>
     </div>

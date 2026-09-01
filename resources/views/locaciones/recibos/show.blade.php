@@ -63,7 +63,7 @@
                 estado del recibo a la derecha (research.md Decisión 1). Se apila por debajo de
                 `lg` (992px) sin CSS a medida, considerando el sidebar fijo del layout.
             --}}
-            <div class="row g-4">
+            <div class="row g-3">
             <div class="col-lg-7">
             <div class="card">
                 <div class="card-body d-flex flex-column gap-3">

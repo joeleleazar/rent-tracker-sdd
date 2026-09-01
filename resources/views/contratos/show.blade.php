@@ -85,7 +85,7 @@
                         @csrf
                         @method('PATCH')
 
-                        <div class="row g-4">
+                        <div class="row g-3">
                             @foreach ($conceptosConfigurables as $concepto)
                                 @php
                                     $valorActual = $contrato->valorDeConcepto($concepto);
